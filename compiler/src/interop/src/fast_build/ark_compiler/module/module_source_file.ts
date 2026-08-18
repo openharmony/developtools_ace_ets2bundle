@@ -813,7 +813,7 @@ export class ModuleSourceFile {
       ModuleSourceFile.logger.printErrorAndExit(errInfo);
     }
 
-    FileManager.glueCodeFileInfos.set(originalAPIName, {
+    FileManager.setGlueCodeFileInfo(originalAPIName, {
       recordName: recordName,
       baseUrl: glueCodeInfo.basePath,
       abstractPath: glueCodeInfo.fullPath

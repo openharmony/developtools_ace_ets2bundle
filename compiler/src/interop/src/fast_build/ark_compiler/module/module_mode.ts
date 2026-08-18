@@ -756,10 +756,12 @@ export class ModuleMode extends CommonMode {
       });
     }
 
-    for (const [pkgName, fileInfo] of FileManager.glueCodeFileInfos) {
+    const glueCodeFileInfos = FileManager.getGlueCodeFileInfos();
+    for (const [pkgName, fileInfo] of glueCodeFileInfos) {
       filesInfo += `${fileInfo.abstractPath};${fileInfo.recordName};${ESM};${fileInfo.abstractPath};${this.projectConfig.entryPackageName};` +
       `${false};ts\n`;
     }
+    FileManager.persistGlueCodeFileInfos();
     if(this.customizedHar) {
       const basePackage: string = toUnixPath(this.projectConfig.customizedOptions.basePackage);
       const pkgName: string = this.projectConfig.entryPackageName;

@@ -555,7 +555,7 @@ function setAbilityFile(projectConfig, abilityPages, extensionAbilityPages) {
         return;
       }
 
-      if (isMixCompile) {
+      if (isMixCompile()) {
         // skip static entry path
         return;
       }

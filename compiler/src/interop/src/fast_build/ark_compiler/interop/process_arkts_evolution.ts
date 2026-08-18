@@ -363,6 +363,9 @@ function createInteropVisitor(rootNode: ts.SourceFile, context: ts.Transformatio
     if (isStaticInteropDynamicImport(node, rootNode.fileName)) {
       FileManager.setStaticInteropDynamicImport(rootNode.fileName);
     }
+    if (hasConcurrentDecoratorNode(node)) {
+      FileManager.setStaticInteropConcurrentImport(rootNode.fileName);
+    }
     if (!ts.isObjectLiteralExpression(node)) {
       return ts.visitEachChild(node, visitor, context);
     }
@@ -407,6 +410,27 @@ function createInteropVisitor(rootNode: ts.SourceFile, context: ts.Transformatio
     return ts.factory.createParenthesizedExpression(
       ts.factory.createCommaListExpression(buildCommaExpressions(node, isRecordType, tmpObjName, tmpClassName)));
   };
+}
+
+function hasConcurrentDecoratorNode(node: ts.Node): boolean {
+  if (!ts.isFunctionLike(node)) {
+    return false;
+  }
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  return decorators.some(decorator => getDecoratorName(decorator.expression) === 'Concurrent');
+}
+
+function getDecoratorName(expression: ts.Expression): string | undefined {
+  if (ts.isIdentifier(expression)) {
+    return expression.text;
+  }
+  if (ts.isCallExpression(expression)) {
+    return getDecoratorName(expression.expression);
+  }
+  if (ts.isPropertyAccessExpression(expression)) {
+    return expression.name.text;
+  }
+  return undefined;
 }
 
 function isStaticInteropDynamicImport(node: ts.Node, containingFile: string): boolean {

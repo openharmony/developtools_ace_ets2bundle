@@ -58,17 +58,12 @@ export function resetStaticInteropTransformLog(): void {
 export function processStaticInteropImports(sourceFile: ts.SourceFile, id: string,
   context: ts.TransformationContext): ts.SourceFile {
   staticInteropTransformLog.sourceFile = sourceFile;
-  logger.debug('processStaticInteropImports start', {
-    id,
-    sourceFileName: sourceFile.fileName,
-    statementCount: sourceFile.statements.length
-  });
   const containingFile: string = stripQuery(id);
   const replacementStatements: ts.Statement[] = [];
   let hasStaticImportReplacement: boolean = false;
   sourceFile.statements.forEach((statement: ts.Statement) => {
-    const result: StaticInteropImportProcessResult =
-      processStaticInteropImportStatement(sourceFile.fileName, containingFile, statement, context);
+    const result: StaticInteropImportProcessResult = processStaticInteropImportStatement(
+      sourceFile.fileName, containingFile, statement, context);
     replacementStatements.push(...result.statements);
     if (result.replaced) {
       hasStaticImportReplacement = true;
@@ -80,6 +75,13 @@ export function processStaticInteropImports(sourceFile: ts.SourceFile, id: strin
   let transformedSourceFile: ts.SourceFile =
     hasStatementChanges ?
       ts.factory.updateSourceFile(sourceFile, replacementStatements) : sourceFile;
+
+  if (hasStaticImportReplacement && FileManager.hasStaticInteropConcurrentImport(sourceFile.fileName)) {
+    const concurrentUsage: StaticInteropConcurrentUsage = collectStaticInteropConcurrentUsage(sourceFile);
+    const concurrentStatements: ts.Statement[] = createConcurrentStaticInteropStatements(
+      sourceFile.fileName, [...transformedSourceFile.statements], concurrentUsage);
+    transformedSourceFile = ts.factory.updateSourceFile(transformedSourceFile, concurrentStatements);
+  }
 
   let hasDynamicImportReplacement: boolean = false;
   if (FileManager.hasStaticInteropDynamicImport(sourceFile.fileName)) {
@@ -96,17 +98,12 @@ export function processStaticInteropImports(sourceFile: ts.SourceFile, id: strin
   }
 
   if (!hasStatementChanges && !hasDynamicImportReplacement) {
-    logger.debug('processStaticInteropImports complete without source changes', {
-      sourceFileName: sourceFile.fileName
-    });
     return sourceFile;
   }
 
   const updatedSourceFile: ts.SourceFile = hasStaticImportReplacement || hasDynamicImportReplacement ?
     createSourceFileWithStaticInteropHelpers(transformedSourceFile, [...transformedSourceFile.statements], context,
       hasDynamicImportReplacement) : transformedSourceFile;
-  logger.debug('processStaticInteropImports complete with source changes',
-    { sourceFileName: sourceFile.fileName, finalStatementCount: updatedSourceFile.statements.length });
   return updatedSourceFile;
 }
 
@@ -131,35 +128,103 @@ type StaticInteropImportProcessResult = {
   replaced: boolean
 };
 
+type StaticInteropConcurrentUsage = {
+  concurrentUsedNames: Set<string>,
+  usedNames: Set<string>
+};
+
 function processStaticInteropImportStatement(sourceFileName: string, containingFile: string,
   statement: ts.Statement, context: ts.TransformationContext): StaticInteropImportProcessResult {
-  if (ts.isImportDeclaration(statement) && ts.isStringLiteral(statement.moduleSpecifier)) {
-    logger.debug('checking import declaration', { moduleName: statement.moduleSpecifier.text });
-  }
   const staticImportPath: string | undefined = getStaticImport(statement, containingFile);
   if (!staticImportPath || !ts.isImportDeclaration(statement)) {
     return { statements: [statement], replaced: false };
   }
   if (isTypeOnlyStaticInteropImport(statement)) {
-    logger.debug('drop type-only static interop import declaration');
     return { statements: [], replaced: false };
   }
   const bindings: StaticInteropImportBinding[] = getStaticInteropImportBindings(statement);
   if (bindings.length === 0) {
-    logger.debug('keep import declaration because static interop bindings are unsupported');
     return { statements: [statement], replaced: false };
   }
   const replacement: ts.Statement[] = createStaticInteropReplacement(
     sourceFileName, path.resolve(staticImportPath), bindings, context, statement.pos >= 0 ? statement.pos : 0);
   if (replacement.length === 0) {
-    logger.debug('keep import declaration because replacement is empty');
     return { statements: [statement], replaced: false };
   }
-  logger.debug('static import matched', {
-    targetFilePath: staticImportPath,
-    replacementStatementCount: replacement.length
-  });
   return { statements: replacement, replaced: true };
+}
+
+function createStaticInteropSelfImportDeclaration(
+  sourceFileName: string,
+  bridgeNameByLocalName: Map<string, string>
+): ts.ImportDeclaration {
+  const fileName: string = stripQuery(sourceFileName);
+  return ts.factory.createImportDeclaration(
+    undefined,
+    ts.factory.createImportClause(false, undefined, ts.factory.createNamedImports(
+      Array.from(bridgeNameByLocalName.entries()).map(([localName, bridgeName]: [string, string]) =>
+        ts.factory.createImportSpecifier(false,
+          ts.factory.createIdentifier(bridgeName), ts.factory.createIdentifier(localName))))),
+    ts.factory.createStringLiteral(`./${path.basename(fileName, path.extname(fileName))}`),
+    undefined
+  );
+}
+
+function createConcurrentStaticInteropStatements(sourceFileName: string, statements: ts.Statement[],
+  usage: StaticInteropConcurrentUsage): ts.Statement[] {
+  const bridgeNameByLocalName: Map<string, string> = new Map<string, string>();
+  const declarations: ts.Statement[] = statements.map((statement: ts.Statement) => {
+    const localName: string | undefined = getGeneratedStaticInteropDeclarationName(statement);
+    if (!localName || !usage.concurrentUsedNames.has(localName)) {
+      return statement;
+    }
+    const bridgeName: string = createUniqueStaticInteropConcurrentBridgeName(localName, usage.usedNames);
+    bridgeNameByLocalName.set(localName, bridgeName);
+    return createStaticInteropBridgeStatement(statement, bridgeName);
+  });
+  return bridgeNameByLocalName.size === 0 ? declarations :
+    [createStaticInteropSelfImportDeclaration(sourceFileName, bridgeNameByLocalName), ...declarations];
+}
+
+function getGeneratedStaticInteropDeclarationName(statement: ts.Statement): string | undefined {
+  if (statement.pos >= 0) {
+    return undefined;
+  }
+  if (ts.isVariableStatement(statement)) {
+    const declaration: ts.VariableDeclaration = statement.declarationList.declarations[0];
+    return ts.isIdentifier(declaration.name) && ts.isCallExpression(declaration.initializer) &&
+      ts.isIdentifier(declaration.initializer.expression) && declaration.initializer.expression.text === '__createLazy__' ?
+      declaration.name.text : undefined;
+  }
+  return ts.isModuleDeclaration(statement) && ts.isIdentifier(statement.name) ? statement.name.text : undefined;
+}
+
+function createStaticInteropBridgeStatement(statement: ts.Statement, bridgeName: string): ts.Statement {
+  const exportModifier: ts.Modifier = ts.factory.createModifier(ts.SyntaxKind.ExportKeyword);
+  if (ts.isVariableStatement(statement)) {
+    const declaration: ts.VariableDeclaration = statement.declarationList.declarations[0];
+    const initializer: ts.CallExpression = declaration.initializer as ts.CallExpression;
+    const updatedDeclaration: ts.VariableDeclaration = ts.factory.updateVariableDeclaration(
+      declaration, ts.factory.createIdentifier(bridgeName), declaration.exclamationToken, declaration.type,
+      ts.factory.updateCallExpression(initializer, initializer.expression, initializer.typeArguments,
+        [initializer.arguments[0], ts.factory.createStringLiteral(bridgeName)]));
+    return ts.factory.updateVariableStatement(statement, [exportModifier],
+      ts.factory.updateVariableDeclarationList(statement.declarationList, [updatedDeclaration]));
+  }
+  const declaration: ts.ModuleDeclaration = statement as ts.ModuleDeclaration;
+  return ts.factory.updateModuleDeclaration(
+    declaration, [exportModifier], ts.factory.createIdentifier(bridgeName), declaration.body);
+}
+
+function createUniqueStaticInteropConcurrentBridgeName(localName: string, usedNames: Set<string>): string {
+  const baseName: string = `__staticInteropConcurrent_${localName}`;
+  let bridgeName: string = baseName;
+  let suffix: number = 1;
+  while (usedNames.has(bridgeName)) {
+    bridgeName = `${baseName}_${suffix++}`;
+  }
+  usedNames.add(bridgeName);
+  return bridgeName;
 }
 
 function createSourceFileWithStaticInteropHelpers(sourceFile: ts.SourceFile, replacementStatements: ts.Statement[],
@@ -169,10 +234,6 @@ function createSourceFileWithStaticInteropHelpers(sourceFile: ts.SourceFile, rep
   const helperStatements: ts.Statement[] = createStaticInteropStatements(sourceFile.fileName, helperSource, context);
   const updatedSourceFile: ts.SourceFile = ts.factory.updateSourceFile(
     sourceFile, insertStatementsAfterImports(replacementStatements, helperStatements));
-  logger.debug('source before modification\n' +
-    ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printFile(sourceFile));
-  logger.debug('source after modification\n' +
-    ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printFile(updatedSourceFile));
   return updatedSourceFile;
 }
 
@@ -183,7 +244,6 @@ function createSourceFileWithStaticInteropHelpers(sourceFile: ts.SourceFile, rep
 function getStaticInteropImportBindings(importDeclaration: ts.ImportDeclaration): StaticInteropImportBinding[] {
   const importClause: ts.ImportClause | undefined = importDeclaration.importClause;
   if (!importClause || importClause.isTypeOnly) {
-    logger.debug('skip import bindings because declaration has no runtime import clause');
     return [];
   }
   const bindings: StaticInteropImportBinding[] = [];
@@ -214,7 +274,6 @@ function getStaticInteropImportBindings(importDeclaration: ts.ImportDeclaration)
       localName: element.name.text,
       isNamespaceImport: false
     })));
-  logger.debug('resolved import bindings', { bindings });
   return bindings;
 }
 
@@ -244,29 +303,18 @@ function getStaticImport(node: ts.Node, containingFile: string): string | undefi
 
 function getStaticImportPath(moduleName: string, containingFile: string): string | undefined {
   const resolvedModule: ts.ResolvedModuleFull | undefined = resolveModuleName(moduleName, containingFile).resolvedModule;
+
   if (!resolvedModule?.resolvedFileName) {
-    logger.debug('skip static import because module is unresolved', { moduleName, containingFile });
-    return undefined;
-  }
-  const resolvedImportPath: string = normalizeFilePath(stripQuery(resolvedModule.resolvedFileName));
-  const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(resolvedImportPath);
-  logger.debug('resolved import language version', {
-    moduleName,
-    resolvedImportPath,
-    languageVersion: languageVersion?.languageVersion
-  });
-  if (languageVersion?.languageVersion !== ARKTS_1_2) {
-    logger.debug('skip static import because target is not ArkTS 1.2', {
-      moduleName,
-      resolvedImportPath
-    });
     return undefined;
   }
 
-  logger.debug('static import target resolved', {
-    moduleName,
-    resolvedImportPath
-  });
+  const resolvedImportPath: string = normalizeFilePath(stripQuery(resolvedModule.resolvedFileName));
+  const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(resolvedImportPath);
+
+  if (languageVersion?.languageVersion !== ARKTS_1_2) {
+    return undefined;
+  }
+
   return resolvedImportPath;
 }
 
@@ -275,11 +323,6 @@ function insertStatementsAfterImports(statements: ts.Statement[], insertedStatem
   const lastImportIndex: number = statements.reduce((index: number, statement: ts.Statement, currentIndex: number) =>
     ts.isImportDeclaration(statement) ? currentIndex : index, -1);
   const insertIndex: number = lastImportIndex + 1;
-  logger.debug('insert generated statements after imports', {
-    originalStatementCount: statements.length,
-    insertedStatementCount: insertedStatements.length,
-    insertIndex
-  });
   return [
     ...statements.slice(0, insertIndex),
     ...insertedStatements,
@@ -304,18 +347,12 @@ function normalizeFilePath(filePath: string): string {
 function createStaticInteropReplacement(sourceFileName: string, targetFilePath: string,
   bindings: StaticInteropImportBinding[],
   context: ts.TransformationContext, errorPos?: number): ts.Statement[] {
-  logger.debug('create static interop replacement start', {
-    sourceFileName,
-    targetFilePath,
-    bindings
-  });
   const symbols: Record<string, StaticInteropSymbol> | undefined =
     FileManager.getInstance().getStaticInteropSymbols(targetFilePath);
   if (!symbols) {
     recordMissingStaticInteropSymbolError(sourceFileName, targetFilePath, errorPos);
     return [];
   }
-  logger.debug('resolved static interop symbols', { symbols });
   const boundSymbols: BoundStaticInteropSymbol[] =
     bindStaticInteropSymbols(symbols, bindings, sourceFileName, targetFilePath, errorPos);
   if (boundSymbols.length === 0) {
@@ -325,14 +362,68 @@ function createStaticInteropReplacement(sourceFileName: string, targetFilePath: 
   if (!replacementSourceText) {
     return [];
   }
-  logger.debug('generated replacement source\n' + replacementSourceText);
-  const replacementStatements: ts.Statement[] = createStaticInteropStatements(
-    sourceFileName, replacementSourceText, context);
-  logger.debug('create static interop replacement complete', {
-    symbolCount: Object.keys(symbols).length,
-    statementCount: replacementStatements.length
-  });
-  return replacementStatements;
+  return createStaticInteropStatements(sourceFileName, replacementSourceText, context);
+}
+
+function collectStaticInteropConcurrentUsage(sourceFile: ts.SourceFile): StaticInteropConcurrentUsage {
+  const concurrentUsedNames: Set<string> = new Set<string>();
+  const usedNames: Set<string> = new Set<string>();
+  const visit = (node: ts.Node, inConcurrentFunction: boolean): void => {
+    if (ts.isIdentifier(node)) {
+      usedNames.add(node.text);
+      if (inConcurrentFunction && isConcurrentValueUsage(node)) {
+        concurrentUsedNames.add(node.text);
+      }
+    }
+    const concurrentBody: ts.ConciseBody | undefined =
+      isConcurrentFunctionWithDirective(node) ? node.body : undefined;
+    ts.forEachChild(node, (child: ts.Node) =>
+      visit(child, concurrentBody ? child === concurrentBody : inConcurrentFunction));
+  };
+  visit(sourceFile, false);
+  return { concurrentUsedNames, usedNames };
+}
+
+function isConcurrentFunctionWithDirective(node: ts.Node): node is ts.FunctionLikeDeclarationBase {
+  if (!ts.isFunctionLike(node) || !node.body || !ts.isBlock(node.body) || node.body.statements.length === 0) {
+    return false;
+  }
+  const firstStatement: ts.Statement = node.body.statements[0];
+  return ts.isExpressionStatement(firstStatement) && ts.isStringLiteral(firstStatement.expression) &&
+    firstStatement.expression.text === 'use concurrent';
+}
+
+function isConcurrentValueUsage(node: ts.Identifier): boolean {
+  const parent: ts.Node | undefined = node.parent;
+  if (!parent) {
+    return true;
+  }
+
+  if (ts.isPropertyAccessExpression(parent) && parent.name === node) {
+    return false;
+  }
+
+  const disallowedParents: boolean[] = [
+    ts.isMethodDeclaration(parent),
+    ts.isFunctionDeclaration(parent),
+    ts.isFunctionExpression(parent),
+    ts.isArrowFunction(parent),
+    ts.isClassDeclaration(parent),
+    ts.isParameter(parent),
+    ts.isVariableDeclaration(parent),
+    ts.isBindingElement(parent),
+    ts.isPropertyDeclaration(parent),
+    ts.isEnumMember(parent),
+    ts.isImportSpecifier(parent),
+    ts.isNamespaceImport(parent),
+    ts.isExportSpecifier(parent),
+    ts.isTypeReferenceNode(parent),
+    ts.isQualifiedName(parent)
+  ];
+  if (disallowedParents.some(Boolean)) {
+    return false;
+  }
+  return true;
 }
 
 function bindStaticInteropSymbols(symbols: Record<string, StaticInteropSymbol>,
@@ -492,20 +583,13 @@ function createStaticInteropStatements(sourceFileName: string, sourceText: strin
 
 /** Converts all bound symbols into source text; an empty declaration aborts the whole import replacement. */
 function createStaticInteropReplacementSource(symbols: BoundStaticInteropSymbol[]): string {
-  logger.debug('create replacement source start', {
-    symbolCount: symbols.length
-  });
   const declarationList: string[] = symbols.map(({ symbol, localName }: BoundStaticInteropSymbol) =>
     createStaticInteropDeclaration(symbol, localName, false));
   if (declarationList.some((declaration: string) => !declaration)) {
     return '';
   }
   const declarations: string = declarationList.join('\n');
-  const replacementSource: string = `${declarations}\n`;
-  logger.debug('create replacement source complete', {
-    sourceLength: replacementSource.length
-  });
-  return replacementSource;
+  return `${declarations}\n`;
 }
 
 /**
