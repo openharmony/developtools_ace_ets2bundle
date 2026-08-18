@@ -17,7 +17,7 @@ import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
 
-import { getResolveModule } from '../../../ets_checker';
+import { getResolveModule, resolveModuleName } from '../../../ets_checker';
 import {
   ARKTS_1_0,
   ARKTS_1_1,
@@ -307,9 +307,9 @@ export function interopTransform(program: ts.Program, id: string, mixCompile: bo
       const globalDeclarations: Map<string, ts.Statement> = new Map();
       interopTransformLog.sourceFile = rootNode;
       const classToInterfacesMap: Map<ts.ClassDeclaration, Set<string>> = collectInterfacesMap(rootNode, typeChecker);
-      // Support for creating 1.2 type object literals in 1.1 modules
+      // Process ArkTS interop nodes and collect static dynamic imports in the same AST traversal.
       const visitor: ts.Visitor =
-        createObjectLiteralVisitor(rootNode, context, typeChecker, scopeUsedNames, fullNameToTmpVar, globalDeclarations);
+        createInteropVisitor(rootNode, context, typeChecker, scopeUsedNames, fullNameToTmpVar, globalDeclarations);
       const processNode: ts.SourceFile = ts.visitEachChild(rootNode, visitor, context);
       // Support 1.1 classes to implement 1.2 interfaces
       const withHeritage: ts.SourceFile = classToInterfacesMap.size > 0 ?
@@ -356,10 +356,13 @@ function updateEovMaps(filePath: string, relative:string , packageName: string):
       }
 }
 
-function createObjectLiteralVisitor(rootNode: ts.SourceFile, context: ts.TransformationContext, typeChecker: ts.TypeChecker,
-  scopeUsedNames: WeakMap<ts.Node, Set<string>>, fullNameToTmpVar: Map<string, string>,
+function createInteropVisitor(rootNode: ts.SourceFile, context: ts.TransformationContext,
+  typeChecker: ts.TypeChecker, scopeUsedNames: WeakMap<ts.Node, Set<string>>, fullNameToTmpVar: Map<string, string>,
   globalDeclarations: Map<string, ts.Statement>): ts.Visitor {
-  return function visitor(node: ts.SourceFile): ts.SourceFile {
+  return function visitor(node: ts.Node): ts.VisitResult<ts.Node> {
+    if (isStaticInteropDynamicImport(node, rootNode.fileName)) {
+      FileManager.setStaticInteropDynamicImport(rootNode.fileName);
+    }
     if (!ts.isObjectLiteralExpression(node)) {
       return ts.visitEachChild(node, visitor, context);
     }
@@ -404,6 +407,17 @@ function createObjectLiteralVisitor(rootNode: ts.SourceFile, context: ts.Transfo
     return ts.factory.createParenthesizedExpression(
       ts.factory.createCommaListExpression(buildCommaExpressions(node, isRecordType, tmpObjName, tmpClassName)));
   };
+}
+
+function isStaticInteropDynamicImport(node: ts.Node, containingFile: string): boolean {
+  if (!ts.isCallExpression(node) || node.expression.kind !== ts.SyntaxKind.ImportKeyword ||
+    node.arguments.length === 0 || !ts.isStringLiteral(node.arguments[0])) {
+    return false;
+  }
+  const resolvedFileName: string | undefined =
+    resolveModuleName(node.arguments[0].text, containingFile).resolvedModule?.resolvedFileName;
+  return !!resolvedFileName &&
+    FileManager.getInstance().getLanguageVersionByFilePath(resolvedFileName)?.languageVersion === ARKTS_1_2;
 }
 
 function unwrapType(node: ts.SourceFile, type: ts.Type): ts.Type {

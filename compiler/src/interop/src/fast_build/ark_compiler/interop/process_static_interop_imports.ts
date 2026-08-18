@@ -65,27 +65,65 @@ export function processStaticInteropImports(sourceFile: ts.SourceFile, id: strin
   });
   const containingFile: string = stripQuery(id);
   const replacementStatements: ts.Statement[] = [];
-  let replacementCount: number = 0;
+  let hasStaticImportReplacement: boolean = false;
   sourceFile.statements.forEach((statement: ts.Statement) => {
     const result: StaticInteropImportProcessResult =
       processStaticInteropImportStatement(sourceFile.fileName, containingFile, statement, context);
     replacementStatements.push(...result.statements);
     if (result.replaced) {
-      replacementCount++;
+      hasStaticImportReplacement = true;
     }
   });
-  if (replacementCount === 0 && replacementStatements.length === sourceFile.statements.length) {
+
+  const hasStatementChanges: boolean =
+    hasStaticImportReplacement || replacementStatements.length !== sourceFile.statements.length;
+  let transformedSourceFile: ts.SourceFile =
+    hasStatementChanges ?
+      ts.factory.updateSourceFile(sourceFile, replacementStatements) : sourceFile;
+
+  let hasDynamicImportReplacement: boolean = false;
+  if (FileManager.hasStaticInteropDynamicImport(sourceFile.fileName)) {
+    const visitor: ts.Visitor = (node: ts.Node): ts.VisitResult<ts.Node> => {
+      const replacement: ts.Expression | undefined = isDynamicImportCall(node) ?
+        processStaticInteropDynamicImport(sourceFile.fileName, containingFile, node) : undefined;
+      if (!replacement) {
+        return ts.visitEachChild(node, visitor, context);
+      }
+      hasDynamicImportReplacement = true;
+      return replacement;
+    };
+    transformedSourceFile = ts.visitNode(transformedSourceFile, visitor) as ts.SourceFile;
+  }
+
+  if (!hasStatementChanges && !hasDynamicImportReplacement) {
     logger.debug('processStaticInteropImports complete without source changes', {
       sourceFileName: sourceFile.fileName
     });
     return sourceFile;
   }
-  const updatedSourceFile: ts.SourceFile =
-    replacementCount > 0 ? createSourceFileWithStaticInteropHelpers(sourceFile, replacementStatements, context) :
-      ts.factory.updateSourceFile(sourceFile, replacementStatements);
+
+  const updatedSourceFile: ts.SourceFile = hasStaticImportReplacement || hasDynamicImportReplacement ?
+    createSourceFileWithStaticInteropHelpers(transformedSourceFile, [...transformedSourceFile.statements], context,
+      hasDynamicImportReplacement) : transformedSourceFile;
   logger.debug('processStaticInteropImports complete with source changes',
-    { sourceFileName: sourceFile.fileName, replacementCount, finalStatementCount: updatedSourceFile.statements.length });
+    { sourceFileName: sourceFile.fileName, finalStatementCount: updatedSourceFile.statements.length });
   return updatedSourceFile;
+}
+
+function processStaticInteropDynamicImport(sourceFileName: string, containingFile: string,
+  node: ts.CallExpression): ts.Expression | undefined {
+  const moduleSpecifier: ts.Expression = node.arguments[0];
+  if (!ts.isStringLiteral(moduleSpecifier)) {
+    return undefined;
+  }
+  const targetFilePath: string | undefined = getStaticImportPath(moduleSpecifier.text, containingFile);
+  return targetFilePath ? createStaticInteropDynamicImportReplacement(
+    sourceFileName, path.resolve(targetFilePath), node.pos) : undefined;
+}
+
+function isDynamicImportCall(node: ts.Node): node is ts.CallExpression {
+  return ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+    node.arguments.length > 0;
 }
 
 type StaticInteropImportProcessResult = {
@@ -125,9 +163,10 @@ function processStaticInteropImportStatement(sourceFileName: string, containingF
 }
 
 function createSourceFileWithStaticInteropHelpers(sourceFile: ts.SourceFile, replacementStatements: ts.Statement[],
-  context: ts.TransformationContext): ts.SourceFile {
-  const helperStatements: ts.Statement[] =
-    createStaticInteropStatements(sourceFile.fileName, STATIC_INTEROP_REPLACEMENT_HELPERS, context);
+  context: ts.TransformationContext, includeDynamicImportHelpers: boolean): ts.SourceFile {
+  const helperSource: string = (includeDynamicImportHelpers ? STATIC_INTEROP_DYNAMIC_IMPORT_HELPERS : '') +
+    STATIC_INTEROP_REPLACEMENT_HELPERS;
+  const helperStatements: ts.Statement[] = createStaticInteropStatements(sourceFile.fileName, helperSource, context);
   const updatedSourceFile: ts.SourceFile = ts.factory.updateSourceFile(
     sourceFile, insertStatementsAfterImports(replacementStatements, helperStatements));
   logger.debug('source before modification\n' +
@@ -200,7 +239,10 @@ function getStaticImport(node: ts.Node, containingFile: string): string | undefi
   if (!ts.isImportDeclaration(node) || !ts.isStringLiteral(node.moduleSpecifier)) {
     return undefined;
   }
-  const moduleName: string = node.moduleSpecifier.text;
+  return getStaticImportPath(node.moduleSpecifier.text, containingFile);
+}
+
+function getStaticImportPath(moduleName: string, containingFile: string): string | undefined {
   const resolvedModule: ts.ResolvedModuleFull | undefined = resolveModuleName(moduleName, containingFile).resolvedModule;
   if (!resolvedModule?.resolvedFileName) {
     logger.debug('skip static import because module is unresolved', { moduleName, containingFile });
@@ -339,6 +381,89 @@ function recordMissingStaticInteropSymbolError(sourceFileName: string, targetFil
   });
 }
 
+function createStaticInteropDynamicImportReplacement(sourceFileName: string, targetFilePath: string,
+  errorPos: number): ts.Expression | undefined {
+  const symbols: Record<string, StaticInteropSymbol> | undefined =
+    FileManager.getInstance().getStaticInteropSymbols(targetFilePath);
+  if (!symbols) {
+    recordMissingStaticInteropSymbolError(sourceFileName, targetFilePath, errorPos >= 0 ? errorPos : 0);
+    return undefined;
+  }
+  const moduleObject: ts.Expression = createStaticInteropModuleObject(symbols);
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('Promise'), 'resolve'),
+    undefined,
+    [ts.factory.createCallExpression(
+      ts.factory.createIdentifier('__loadStaticInteropModule__'),
+      undefined,
+      [
+        ts.factory.createStringLiteral(targetFilePath),
+        ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), moduleObject)
+      ]
+    )]
+  );
+}
+
+function createStaticInteropModuleObject(symbols: Record<string, StaticInteropSymbol>): ts.Expression {
+  const properties: ts.PropertyAssignment[] = [];
+  for (const name in symbols) {
+    if (!Object.prototype.hasOwnProperty.call(symbols, name)) {
+      continue;
+    }
+    const value: ts.Expression | undefined = createStaticInteropValueExpression(symbols[name], name);
+    if (value) {
+      properties.push(ts.factory.createPropertyAssignment(ts.factory.createStringLiteral(name), value));
+    }
+  }
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('Object'), 'freeze'),
+    undefined,
+    [ts.factory.createObjectLiteralExpression(properties, true)]
+  );
+}
+
+function createStaticInteropValueExpression(symbol: StaticInteropSymbol, label: string): ts.Expression | undefined {
+  if (symbol.kind === 'namespace') {
+    if (!symbol.children || typeof symbol.children !== 'object' || Array.isArray(symbol.children)) {
+      return undefined;
+    }
+    return createStaticInteropModuleObject(symbol.children);
+  }
+  if (typeof symbol.runtimeName !== 'string') {
+    return undefined;
+  }
+  const panda: ts.Expression = ts.factory.createPropertyAccessExpression(
+    ts.factory.createParenthesizedExpression(ts.factory.createAsExpression(
+      ts.factory.createIdentifier('globalThis'), ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword))),
+    'Panda'
+  );
+  let expression: ts.Expression;
+  switch (symbol.kind) {
+    case 'function':
+      expression = ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(panda, 'getFunction'),
+        undefined, [ts.factory.createStringLiteral(symbol.runtimeName), ts.factory.createStringLiteral(symbol.name)]);
+      break;
+    case 'property':
+      expression = ts.factory.createElementAccessExpression(
+        ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(panda, 'getClass'), undefined,
+          [ts.factory.createStringLiteral(symbol.runtimeName)]),
+        ts.factory.createStringLiteral(symbol.name));
+      break;
+    case 'class':
+      expression = ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(panda, 'getClass'),
+        undefined, [ts.factory.createStringLiteral(symbol.runtimeName)]);
+      break;
+    default:
+      return undefined;
+  }
+  return ts.factory.createCallExpression(ts.factory.createIdentifier('__createLazy__'), undefined, [
+    ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), expression),
+    ts.factory.createStringLiteral(label)
+  ]);
+}
+
 /**
  * Parses generated TypeScript text into detached AST statements. Source ranges and comment flags are
  * cleared so the printer cannot attach unrelated comments from the original source at matching offsets.
@@ -448,6 +573,18 @@ function cloneTemplateMiddleOrTail(node: ts.TemplateMiddle | ts.TemplateTail): t
 }
 
 /** Runtime fallback helpers inserted once whenever the source file contains at least one replacement. */
+const STATIC_INTEROP_DYNAMIC_IMPORT_HELPERS: string = `
+const __staticInteropModuleCache__ = new Map<string, object>();
+function __loadStaticInteropModule__(moduleName: string, factory: () => object): object {
+  let module = __staticInteropModuleCache__.get(moduleName);
+  if (!module) {
+    module = factory();
+    __staticInteropModuleCache__.set(moduleName, module);
+  }
+  return module;
+}
+`;
+
 const STATIC_INTEROP_REPLACEMENT_HELPERS: string = `
 function __createLazy__<T>(loader: () => T, label?: string): T {
   try {

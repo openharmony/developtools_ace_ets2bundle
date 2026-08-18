@@ -102,6 +102,7 @@ export class FileManager {
   static dynamicFileVersionMap: Map<string, string> = new Map();
   static staticFileVersionMap: Map<string, string> = new Map();
   static interopDynamicEntryFileCache: Map<string, string> = new Map<string, string>();
+  private static staticInteropDynamicImportFileCache: Set<string> = new Set<string>();
   private static byteCodeHarDeclarationEntryCache: Set<string> = new Set();
   private static sdkPathMatchers: SDKPathMatcher[] = [];
   private static sdkPathMatchCache: Map<string, LanguageVersionInfo | undefined> = new Map();
@@ -164,6 +165,14 @@ export class FileManager {
 
   public static setMixCompile(mixCompile: boolean): void {
     FileManager.mixCompile = mixCompile;
+  }
+
+  public static setStaticInteropDynamicImport(filePath: string): void {
+    FileManager.staticInteropDynamicImportFileCache.add(path.resolve(filePath));
+  }
+
+  public static hasStaticInteropDynamicImport(filePath: string): boolean {
+    return FileManager.staticInteropDynamicImportFileCache.has(path.resolve(filePath));
   }
 
   public static initStaticInteropMetadata(interopConfig: InteropConfig): void {
@@ -389,6 +398,7 @@ export class FileManager {
     FileManager.sdkPathMatchCache?.clear();
     FileManager.modulePathMatchCache?.clear();
     FileManager.interopDynamicEntryFileCache.clear();
+    FileManager.staticInteropDynamicImportFileCache.clear();
     FileManager.staticInteropMetadata = undefined;
     FileManager.mixCompile = false;
   }
@@ -846,7 +856,7 @@ function isSharedModule(moduleInfo: ArkTSEvolutionModule | undefined): boolean {
   return moduleInfo?.moduleType === 'shared' && moduleInfo.packageName !== entryPackageName;
 }
 
-function isDirectDependency(packageName: string, pkgContextInfo: Object | undefined): boolean {
+function shouldCompilePackage(packageName: string, pkgContextInfo: Object | undefined): boolean {
   return !!pkgContextInfo && !!pkgContextInfo[packageName];
 }
 
@@ -901,8 +911,15 @@ function addConfigDynamicEntries(currentPackageName: string, currentModuleName: 
 }
 
 function addDependencySourceEntries(dependentModuleMap: Map<string, ArkTSEvolutionModule>, currentPackageName: string,
-  sourceEntries: Record<string, { dynamic?: string[] }>): void {
+  sourceEntries: Record<string, { dynamic?: string[] }>, pkgContextInfo: Object | undefined): void {
   for (const [dependencyPackageName, dependencyEntries] of Object.entries(sourceEntries)) {
+    if (!shouldCompilePackage(dependencyPackageName, pkgContextInfo)) {
+      logger.debug('skip dependency source because package does not participate in compilation', {
+        dependencyPackageName,
+        currentPackageName
+      });
+      continue;
+    }
     for (const dynamicEntry of dependencyEntries.dynamic ?? []) {
       addDynamicEntryFromModule(dependentModuleMap, dependencyPackageName, dynamicEntry, currentPackageName);
     }
@@ -910,8 +927,15 @@ function addDependencySourceEntries(dependentModuleMap: Map<string, ArkTSEvoluti
 }
 
 function addDependencyPackageEntries(dependentModuleMap: Map<string, ArkTSEvolutionModule>, currentPackageName: string,
-  dependencyPackages: string[]): void {
+  dependencyPackages: string[], pkgContextInfo: Object | undefined): void {
   for (const dependencyPackageName of dependencyPackages) {
+    if (!shouldCompilePackage(dependencyPackageName, pkgContextInfo)) {
+      logger.debug('skip dependency package because package does not participate in compilation', {
+        dependencyPackageName,
+        currentPackageName
+      });
+      continue;
+    }
     const dependencyModuleInfo = dependentModuleMap.get(dependencyPackageName);
     if (!dependencyModuleInfo) {
       logger.debug('skip dependency package because module is not present', {
@@ -1033,8 +1057,8 @@ export function addEntriesFromInteropConfig(): void {
   logger.debug('start scanning interop entry config', { moduleCount: dependentModuleMap.size });
 
   for (const [currentPackageName, currentModuleInfo] of dependentModuleMap) {
-    if (!isDirectDependency(currentPackageName, pkgContextInfo)) {
-      logger.debug('skip module because module is not a direct dependency', { currentPackageName });
+    if (!shouldCompilePackage(currentPackageName, pkgContextInfo)) {
+      logger.debug('skip module because package does not participate in compilation', { currentPackageName });
       continue;
     }
     if (currentModuleInfo.byteCodeHar) {
@@ -1065,8 +1089,18 @@ export function addEntriesFromInteropConfig(): void {
     const interopEntries: InteropEntriesConfig | undefined = config?.interopEntries;
 
     addConfigDynamicEntries(currentPackageName, currentModuleName, currentModuleRoot, interopEntries?.dynamic ?? []);
-    addDependencySourceEntries(dependentModuleMap, currentPackageName, interopEntries?.dependency?.source ?? {});
-    addDependencyPackageEntries(dependentModuleMap, currentPackageName, interopEntries?.dependency?.package ?? []);
+    addDependencySourceEntries(
+      dependentModuleMap,
+      currentPackageName,
+      interopEntries?.dependency?.source ?? {},
+      pkgContextInfo
+    );
+    addDependencyPackageEntries(
+      dependentModuleMap,
+      currentPackageName,
+      interopEntries?.dependency?.package ?? [],
+      pkgContextInfo
+    );
   }
 }
 
