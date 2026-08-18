@@ -120,7 +120,6 @@ import {
 } from './fast_build/ark_compiler/interop/process_arkts_evolution';
 import {
   FileManager,
-  getApiPathForInterop,
   isMixCompile
 } from './fast_build/ark_compiler/interop/interop_manager';
 import {
@@ -1547,14 +1546,25 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           resolvedModules.push(result.resolvedModule);
         }
       } else if (new RegExp(`^@(${sdkConfigPrefix})\\.`, 'i').test(moduleName.trim())) {
-        const apiPaths = sdkConfigs.flatMap(config => config.apiPath);
-        isMixCompile() && getApiPathForInterop(apiPaths, languageVersion);
-        const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(apiPaths, moduleName, ['.d.ts', '.d.ets']);
-        const modulePath = resolveModuleInfo.modulePath;
-        const extension = resolveModuleInfo.isEts ? '.d.ets' : '.d.ts';
-        const fullModuleName = moduleName + extension;
+        const apiPathList: string[][] = (isMixCompile() && languageVersion === ARKTS_1_2)
+          ? [Array.from(FileManager.staticSDKDeclPath), ...sdkConfigs.map(config => config.apiPath)]
+          : sdkConfigs.map(config => config.apiPath);
+        let apiFileExist: boolean = false;
+        let modulePath: string = '';
+        let isDETS: boolean = true;
+        for (let i = 0; i < apiPathList.length; i++) {
+          const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(apiPathList[i], moduleName, ['.d.ts', '.d.ets']);
+          modulePath = resolveModuleInfo.modulePath;
+          isDETS = resolveModuleInfo.isEts;
+          if (ts.sys.fileExists(modulePath)) {
+            apiFileExist = true;
+            break;
+          }
+        }
+        const extension: string = isDETS ? '.d.ets' : '.d.ts';
+        const fullModuleName: string = moduleName + extension;
 
-        if (systemModules.includes(fullModuleName) && ts.sys.fileExists(modulePath)) {
+        if (apiFileExist && systemModules.includes(fullModuleName)) {
           resolvedModules.push(getResolveModule(modulePath, extension));
         } else if (languageVersion === ARKTS_1_2) {
           resolvedModules.push(getResolveModule(modulePath, extension));

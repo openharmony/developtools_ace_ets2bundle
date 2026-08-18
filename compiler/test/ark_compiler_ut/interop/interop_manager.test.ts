@@ -28,7 +28,6 @@ import {
   initConfigForInterop,
   destroyInterop,
   transformModuleNameToRelativePath,
-  getApiPathForInterop,
   processAbilityPagesFullPath
 } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
 import { ARKTS_1_1, ARKTS_1_2, ARKTS_HYBRID } from '../../../lib/fast_build/ark_compiler/interop/pre_define';
@@ -731,54 +730,6 @@ mocha.describe('test getGlueCodePathByModuleRequest with .ets extension', functi
     expect(result).to.not.be.undefined;
     expect(result?.fullPath).to.include('@ohos.util.List.ets');
     expect(result?.basePath).to.include('bridge');
-  });
-});
-
-mocha.describe('test getApiPathForInterop api', function () {
-  mocha.before(function () {
-    const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
-    dependentModuleMap.set('application', {
-      language: ARKTS_1_1,
-      packageName: 'application',
-      moduleName: 'application',
-      modulePath: '/MyApplication16/application',
-      dynamicFiles: [],
-      staticFiles: [],
-      cachePath: '/MyApplication16/application/build/cache',
-      byteCodeHarInfo: {}
-    });
-    const staticSDKDeclPath: Set<string> = new Set([
-      '/sdk/static/declarations/kit',
-      '/sdk/static/declarations/api'
-    ]);
-    FileManager.cleanFileManagerObject();
-    FileManager.initForTest(
-      dependentModuleMap,
-      undefined,
-      undefined,
-      staticSDKDeclPath,
-      undefined,
-      '/MyApplication16'
-    );
-  });
-
-  mocha.after(() => {
-    FileManager.cleanFileManagerObject();
-  });
-
-  mocha.it('7-1: should not modify apiDirs when languageVersion is not ARKTS_1_2', function () {
-    const apiDirs: string[] = ['/original/api'];
-    getApiPathForInterop(apiDirs, ARKTS_1_1);
-    expect(apiDirs).to.deep.equal(['/original/api']);
-  });
-
-  mocha.it('7-2: should prepend static SDK paths when languageVersion is ARKTS_1_2', function () {
-    const apiDirs: string[] = ['/original/api'];
-    getApiPathForInterop(apiDirs, ARKTS_1_2);
-    expect(apiDirs.length).to.equal(3);
-    expect(apiDirs[0]).to.equal('/sdk/static/declarations/kit');
-    expect(apiDirs[1]).to.equal('/sdk/static/declarations/api');
-    expect(apiDirs[2]).to.equal('/original/api');
   });
 });
 

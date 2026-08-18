@@ -763,15 +763,6 @@ export function transformModuleNameToRelativePath(filePath: string): string {
   return './' + relativePath;
 }
 
-export function getApiPathForInterop(apiDirs: string[], languageVersion: string): void {
-  if (languageVersion !== ARKTS_1_2) {
-    return;
-  }
-
-  const staticPaths = [...FileManager.staticSDKDeclPath];
-  apiDirs.unshift(...staticPaths);
-}
-
 export function rebuildEntryObj(projectConfig: Object): void {
   const entryObj = projectConfig.entryObj;
 
