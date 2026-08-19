@@ -14,6 +14,7 @@
  */
 
 import path from 'path';
+import { EXT_WHITE_LIST } from './component_map';
 
 export const NATIVE_MODULE: Set<string> = new Set(
   ['system.app', 'ohos.app', 'system.router', 'system.curves', 'ohos.curves', 'system.matrix4', 'ohos.matrix4']);
@@ -79,7 +80,6 @@ export const REUSE_ATTRIBUTE: string = 'reuse';
 export const GET_UI_NATIVE_MODULE = 'getUINativeModule';
 export const COMMON = 'common';
 export const GET_API_TARGET_VERSION = 'getApiTargetVersion';
-export const CUSTOM_ENV: string = 'CustomEnv';
 
 export const COMPONENT_USER_INTENTS_DECORATOR_PAGE: string = '@InsightIntentPage';
 export const COMPONENT_USER_INTENTS_DECORATOR_LINK: string = '@InsightIntentLink';
@@ -118,6 +118,7 @@ export const MIN_OBSERVED: string = 'ObservedV2';
 export const SENDABLE: string = 'Sendable';
 export const TYPE: string = 'Type';
 export const ENV: string = 'Env';
+export const CUSTOM_ENV: string = 'CustomEnv';
 export const COMPONENT_BUILDER_DECORATOR: string = '@Builder';
 export const COMPONENT_LOCAL_BUILDER_DECORATOR: string = '@LocalBuilder';
 export const COMPONENT_EXTEND_DECORATOR: string = '@Extend';
@@ -450,6 +451,7 @@ export const CONTAINER_READER: string = 'ContainerReader';
 export const SIZE: string = 'size';
 export const WIDTH_BREAKPOINT: string = 'widthBreakpoint';
 export const HEIGHT_BREAKPOINT: string = 'heightBreakpoint';
+
 const SCROLL: string = 'Scroll';
 const ZOOM_SCALE: string = 'zoomScale';
 
@@ -515,10 +517,10 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [ARC_ALPHABET_INDEXER, new Set([SELECTED])],
   [SELECT, new Set([SELECTED, VALUE])],
   [CALENDAR, new Set([DATE])],
-  [GRID, new Set([ENABLE_EDIT_MODE])],
-  [LIST, new Set([ENABLE_EDIT_MODE])],
   [GRID_ITEM, new Set([SELECTED])],
   [LIST_ITEM, new Set([SELECTED])],
+  [GRID, new Set([ENABLE_EDIT_MODE])],
+  [LIST, new Set([ENABLE_EDIT_MODE])],
   [SCROLL, new Set([ZOOM_SCALE])],
   [CONTAINER_READER, new Set([SIZE, WIDTH_BREAKPOINT, HEIGHT_BREAKPOINT])],
 ]);
@@ -674,6 +676,14 @@ export const CARD_ENABLE_COMPONENTS: Set<string> = new Set([
 ]);
 export const TabContentAndNavDestination: Set<string> = new Set(['TabContent',
   'NavDestination']);
+if (EXT_WHITE_LIST.length) {
+    for (const compName of EXT_WHITE_LIST) {
+        CREATE_ROUTER_COMPONENT_COLLECT.add(compName);
+    }
+}
+if (EXT_WHITE_LIST.length >= 2) {
+    TabContentAndNavDestination.add(EXT_WHITE_LIST[1]);
+}
 export const CARD_LOG_TYPE_DECORATORS = 1;
 export const CARD_LOG_TYPE_COMPONENTS = 2;
 export const CARD_LOG_TYPE_IMPORT = 3;
@@ -684,7 +694,6 @@ export const RESERT = 'reset';
 export const TS_NOCHECK: string = '// @ts-nocheck';
 
 export const BUILDER_PARAM_PROXY: string = 'makeBuilderParameterProxy';
-export const BUILDER_PARAM_PROXY_INTEROP: string = '__makeBuilderParameterStaticProxy_Interop_Internal';
 export const BUILDER_TYPE: string = 'BuilderType';
 
 export const FUNCTION: string = 'function';
@@ -738,14 +747,11 @@ export const ARKTS_MODULE_NAME: string = 'arkts';
 export const COLD_RELOAD_MODE: string = 'coldReload';
 export const INTEGRATED_HSP: string = 'integratedHsp';
 export const USE_NORMALIZED_OHMURL: string = 'useNormalizedOHMUrl';
-export const API_VERSION_26: number = 26;
 
 export const _CONTAINER_READER: string = 'ContainerReader';
 
-export const CREATESTATICCOMPONENT: string = '__Interop_CreateStaticComponent_Internal';
-export const UPDATESTATICCOMPONENT: string = '__Interop_UpdateStaticComponent_Internal';
-
 export const MAX_LINK_SOURCE_DATA_NESTING_LEVEL: number = 2;
+export const API_VERSION_26: number = 26;
 
 export const SDK_API_VERSION_FUNCTION_NAME: string = 'sdkApiVersion';
 export const DISTRIBUTE_API_VERSION_FUNCTION_NAME: string = 'distributionOSApiVersion';

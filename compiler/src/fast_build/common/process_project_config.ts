@@ -14,10 +14,6 @@
  */
 import fs from 'fs';
 import path from 'path';
-import {
-  isMixCompile,
-  rebuildEntryObj
-} from '../ark_compiler/interop/interop_manager';
 
 const {
   projectConfig,
@@ -39,10 +35,6 @@ export function getEntryObj() {
   workerFile = readWorkerFile();
   if (!projectConfig.isPreview) {
     loadWorker(projectConfig, workerFile);
-  }
-  if (isMixCompile()) {
-    rebuildEntryObj(projectConfig);
-    return;
   }
   projectConfig.entryObj = Object.keys(projectConfig.entryObj).reduce((newEntry, key) => {
     const newKey: string = key.replace(/^\.\//, '');
