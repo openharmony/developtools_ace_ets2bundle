@@ -591,3 +591,132 @@ mocha.describe('function isOhExport', () => {
       expect(result).to.be.false;
     });
 });
+
+const externalApiPathsSandbox: sinon.SinonSandbox = sinon.createSandbox();
+let resolveModuleNameStub: sinon.SinonStub;
+let resolveModuleNamesIsolated: typeof resolveModuleNamesMain;
+let savedExternalApiConfig: Record<string, unknown> = {};
+
+function makeResolvedModule(resolvedFileName?: string, originalPath?: string):
+  ts.ResolvedModuleFull & { originalPath?: string } {
+  return { resolvedFileName, extension: ts.Extension.Dts, originalPath } as
+    ts.ResolvedModuleFull & { originalPath?: string };
+}
+
+function setupIsolatedEtsChecker(): void {
+  resolveModuleNameStub = externalApiPathsSandbox.stub();
+  // Load an isolated lib/ets_checker instance whose typescript import is stubbed,
+  // so per-test resolveModuleName results do not touch the real file system.
+  const tsWithStub: typeof ts = Object.assign({}, ts, { resolveModuleName: resolveModuleNameStub });
+  resolveModuleNamesIsolated =
+    proxyquire('../../lib/ets_checker', { 'typescript': tsWithStub }).resolveModuleNames;
+}
+
+function snapshotProjectConfig(): void {
+  savedExternalApiConfig = {
+    externalApiPaths: projectConfig.externalApiPaths,
+    compileHar: projectConfig.compileHar,
+    compileShared: projectConfig.compileShared,
+    hotReload: projectConfig.hotReload,
+    xtsMode: projectConfig.xtsMode
+  };
+}
+
+function quarantineProjectConfig(): void {
+  projectConfig.compileHar = false;
+  projectConfig.compileShared = false;
+  projectConfig.hotReload = false;
+  projectConfig.xtsMode = false;
+}
+
+function restoreProjectConfig(): void {
+  projectConfig.externalApiPaths = savedExternalApiConfig.externalApiPaths as never;
+  projectConfig.compileHar = savedExternalApiConfig.compileHar as never;
+  projectConfig.compileShared = savedExternalApiConfig.compileShared as never;
+  projectConfig.hotReload = savedExternalApiConfig.hotReload as never;
+  projectConfig.xtsMode = savedExternalApiConfig.xtsMode as never;
+}
+
+function runResolveCase(
+  externalApiPaths: string[] | undefined,
+  ...modules: Array<ts.ResolvedModuleFull & { originalPath?: string }>
+): Array<ts.ResolvedModuleFull | null> {
+  projectConfig.externalApiPaths = externalApiPaths as never;
+  resolveModuleNameStub.resetBehavior();
+  resolveModuleNameStub.resetHistory();
+  modules.forEach((mod: ts.ResolvedModuleFull & { originalPath?: string }, idx: number): void => {
+    resolveModuleNameStub.onCall(idx).returns({ resolvedModule: mod });
+  });
+  return resolveModuleNamesIsolated(
+    modules.map((unused: ts.ResolvedModuleFull, idx: number): string => `lib${idx}`),
+    '/project/src/main/ets/Index.ets'
+  ) as Array<ts.ResolvedModuleFull | null>;
+}
+
+mocha.describe('function resolveModuleNames externalApiPaths filtering', () => {
+  mocha.before((): void => setupIsolatedEtsChecker());
+  mocha.beforeEach((): void => {
+    snapshotProjectConfig();
+    quarantineProjectConfig();
+  });
+  mocha.afterEach((): void => {
+    restoreProjectConfig();
+    resolveModuleNameStub.resetBehavior();
+  });
+  mocha.after((): void => externalApiPathsSandbox.restore());
+  mocha.it('1-1: should return null when resolvedFileName starts with an externalApiPath', () => {
+    const result = runResolveCase(['/sdk/external'],
+      makeResolvedModule('/sdk/external/api/lib.d.ts', '/real/path/lib.d.ts'));
+    expect(result).to.deep.equal([null]);
+  });
+  mocha.it('1-2: should return null when only originalPath starts with an externalApiPath', () => {
+    const result = runResolveCase(['/oh_modules/.ohpm'],
+      makeResolvedModule('/real/cache/path/lib.d.ts', '/oh_modules/.ohpm/lib@1.0.0/lib.d.ts'));
+    expect(result).to.deep.equal([null]);
+  });
+  mocha.it('1-3: should pass through the resolved module when no path matches', () => {
+    const mod = makeResolvedModule('/project/oh_modules/lib/lib.d.ts', '/project/oh_modules/lib/lib.d.ts');
+    expect(runResolveCase(['/sdk/external'], mod)).to.deep.equal([mod]);
+  });
+  mocha.it('1-4: should pass through when externalApiPaths is undefined or an empty array', () => {
+    const mod = makeResolvedModule('/any/path/lib.d.ts');
+    expect(runResolveCase(undefined, mod)).to.deep.equal([mod]);
+    expect(runResolveCase([], mod)).to.deep.equal([mod]);
+  });
+  mocha.it('1-5: should return null when the second externalApiPath matches', () => {
+    const result = runResolveCase(['/first/prefix', '/sdk/external'],
+      makeResolvedModule('/sdk/external/api/lib.d.ts'));
+    expect(result).to.deep.equal([null]);
+  });
+  mocha.it('1-6: should not treat a prefix occurring in the middle of the path as a match', () => {
+    const mod = makeResolvedModule('/sdk/api/external/lib.d.ts');
+    expect(runResolveCase(['/sdk/external'], mod)).to.deep.equal([mod]);
+  });
+  mocha.it('1-7: should filter before the .js to .d.ets redirection when path matches', () => {
+    const result = runResolveCase(['/sdk/external'],
+      makeResolvedModule('/sdk/external/api/lib.js'));
+    expect(result).to.deep.equal([null]);
+  });
+  mocha.it('1-8: should filter each module independently in a mixed list', () => {
+    const externalMod = makeResolvedModule('/ext/hidden/lib1.d.ts');
+    const normalMod = makeResolvedModule('/project/oh_modules/lib2/lib2.d.ts');
+    expect(runResolveCase(['/ext/hidden'], externalMod, normalMod)).to.deep.equal([null, normalMod]);
+  });
+  mocha.it('1-9: should not match a sibling directory whose name starts with the externalApiPath', () => {
+    const mod = makeResolvedModule('/sdk/externalBeta/api/lib.d.ts');
+    expect(runResolveCase(['/sdk/external'], mod)).to.deep.equal([mod]);
+  });
+  mocha.it('1-10: should not match when resolvedFileName extends the externalApiPath without a path separator', () => {
+    const mod = makeResolvedModule('/sdk/externalbackup/lib.d.ts');
+    expect(runResolveCase(['/sdk/external'], mod)).to.deep.equal([mod]);
+  });
+  mocha.it('1-11: should not match a sibling directory via originalPath prefix', () => {
+    const mod = makeResolvedModule('/real/cache/lib.d.ts', '/oh_modules/.ohpm-beta/lib.d.ts');
+    expect(runResolveCase(['/oh_modules/.ohpm'], mod)).to.deep.equal([mod]);
+  });
+  mocha.it('1-12: should still match when the externalApiPath has a trailing separator', () => {
+    const result = runResolveCase(['/sdk/external/'],
+      makeResolvedModule('/sdk/external/api/lib.d.ts'));
+    expect(result).to.deep.equal([null]);
+  });
+});
