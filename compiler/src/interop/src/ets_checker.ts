@@ -117,6 +117,7 @@ import { concatenateEtsOptions, getExternalComponentPaths } from './external_com
 import {
   getArkTSEvoDeclFilePath,
   queryDeclFileForInterop,
+  resolveRelativeModuleFromDecl
 } from './fast_build/ark_compiler/interop/process_arkts_evolution';
 import {
   FileManager,
@@ -1607,7 +1608,8 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           const DETSModulePath: string = path.resolve(path.dirname(containingFile),
             /\.d\.ets$/.test(moduleName) ? moduleName : moduleName + EXTNAME_D_ETS);
           const arktsEvoDeclFilePath: string = isMixCompile() ?
-            getArkTSEvoDeclFilePath({ moduleRequest: moduleName, resolvedFileName: '' }) : '';
+            (resolveRelativeModuleFromDecl(moduleName, containingFile) ||
+              getArkTSEvoDeclFilePath({ moduleRequest: moduleName, resolvedFileName: '' })) : '';
           if (ts.sys.fileExists(modulePath)) {
             resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
           } else if (ts.sys.fileExists(systemDETSModulePath)) {
@@ -1622,8 +1624,9 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
             resolvedModules.push(getResolveModule(fileModulePath, '.js'));
           } else if (ts.sys.fileExists(DETSModulePath)) {
             resolvedModules.push(getResolveModule(DETSModulePath, '.d.ets'));
-          } else if (isMixCompile() && ts.sys.fileExists(arktsEvoDeclFilePath)) {
-            resolvedModules.push(getResolveModule(arktsEvoDeclFilePath, '.d.ets'));
+          } else if (isMixCompile() && arktsEvoDeclFilePath && ts.sys.fileExists(arktsEvoDeclFilePath)) {
+            const evoExt = arktsEvoDeclFilePath.endsWith(EXTNAME_D_ETS) ? EXTNAME_D_ETS : '.ets';
+            resolvedModules.push(getResolveModule(arktsEvoDeclFilePath, evoExt));
           } else {
             const srcIndex: number = projectConfig.projectPath.indexOf('src' + path.sep + 'main');
             let DETSModulePathFromModule: string;
