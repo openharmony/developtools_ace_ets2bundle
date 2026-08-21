@@ -741,7 +741,7 @@ mocha.describe('process arkts evolution tests', function () {
       ['./src/main', './src/target']
     );
     
-    expect(result).to.equal('/TestProject/declgenV1/testModule/src/target/SubModule.d.ets');
+    expect(result).to.equal('/TestProject/declgenV1/src/target/SubModule.d.ets');
     existsSyncStub.restore();
   });
 
@@ -758,7 +758,7 @@ mocha.describe('process arkts evolution tests', function () {
       ['./src/main', './src/target']
     );
     
-    expect(result).to.equal('/TestProject/declgenV1/testModule/src/main/SubModule.d.ets');
+    expect(result).to.equal('/TestProject/declgenV1/src/main/SubModule.d.ets');
     existsSyncStub.restore();
   });
 
@@ -773,7 +773,7 @@ mocha.describe('process arkts evolution tests', function () {
       ['./src/main', './src/target']
     );
     
-    expect(result).to.equal('/TestProject/declgenV1/testModule/src/main/SubModule.d.ets');
+    expect(result).to.equal('/TestProject/declgenV1/src/main/SubModule.d.ets');
     existsSyncStub.restore();
   });
 
