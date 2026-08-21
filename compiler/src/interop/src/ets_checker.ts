@@ -1500,6 +1500,15 @@ export function resolveModuleName(moduleName: string, containingFile: string): t
     moduleResolutionCache);
 }
 
+function isResolvedPathUnderExternalApi(target: string | undefined, externalApiPath: string): boolean {
+  if (!target) {
+    return false;
+  }
+  const resolvedRoot: string = path.resolve(externalApiPath);
+  const resolvedTarget: string = path.resolve(target);
+  return resolvedTarget === resolvedRoot || resolvedTarget.startsWith(resolvedRoot + path.sep);
+}
+
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   ts.PerformanceDotting?.startAdvanced('resolveModuleNames');
   const languageVersion = FileManager.mixCompile ? FileManager.getInstance().getLanguageVersionByFilePath(containingFile).languageVersion : ARKTS_1_1;
@@ -1514,7 +1523,12 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
         result.resolvedModule.isNotOhExport = true;
       }
       if (result.resolvedModule) {
-        if (result.resolvedModule.resolvedFileName &&
+        const resolvedModule: ts.ResolvedModuleFull & { originalPath?: string } = result.resolvedModule;
+        if (projectConfig?.externalApiPaths?.some((externalApiPath: string) =>
+          isResolvedPathUnderExternalApi(resolvedModule.resolvedFileName, externalApiPath) ||
+          isResolvedPathUnderExternalApi(resolvedModule.originalPath, externalApiPath))) {
+          resolvedModules.push(null);
+        } else if (result.resolvedModule.resolvedFileName &&
           path.extname(result.resolvedModule.resolvedFileName) === EXTNAME_JS) {
           const resultDETSPath: string =
             result.resolvedModule.resolvedFileName.replace(EXTNAME_JS, EXTNAME_D_ETS);
