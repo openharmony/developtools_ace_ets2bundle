@@ -65,7 +65,7 @@ export function etsChecker() {
     name: 'etsChecker',
     buildStart() {
       if (isMixCompile()) {
-        collectArkTSEvolutionModuleInfo(this.share);
+        collectArkTSEvolutionModuleInfo(this);
       }
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsChecker', 'buildStart');

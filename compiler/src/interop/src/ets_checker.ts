@@ -1575,7 +1575,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
         }
       } else if (new RegExp(`^@(${sdkConfigPrefix})\\.`, 'i').test(moduleName.trim())) {
         const apiPathList: string[][] = (isMixCompile() && languageVersion === ARKTS_1_2)
-          ? [Array.from(FileManager.staticSDKDeclPath), ...sdkConfigs.map(config => config.apiPath)]
+          ? [...sdkConfigs.map(config => config.apiPath), Array.from(FileManager.staticSDKDeclPath)]
           : sdkConfigs.map(config => config.apiPath);
         let apiFileExist: boolean = false;
         let modulePath: string = '';
