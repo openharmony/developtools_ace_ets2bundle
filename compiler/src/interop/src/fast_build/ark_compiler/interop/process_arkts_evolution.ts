@@ -33,6 +33,7 @@ import { getPkgInfo } from '../../../ark_utils';
 import {
   EXTNAME_D_ETS,
   EXTNAME_ETS,
+  EXTNAME_TS,
   SUPER_ARGS
 } from '../../../pre_define';
 import {
@@ -763,6 +764,49 @@ export function redirectToDeclFileForInterop(resolvedFileName: string): ts.Resol
   const resultDETSPath: string = getArkTSEvoDeclFilePath({ moduleRequest: '', resolvedFileName: filePath });
   if (ts.sys.fileExists(resultDETSPath)) {
     return getResolveModule(resultDETSPath, EXTNAME_D_ETS);
+  }
+  return undefined;
+}
+
+export function mapDeclFileToSourcePath(declFilePath: string): string | undefined {
+  const filePath: string = toUnixPath(declFilePath);
+  for (const [, moduleInfo] of FileManager.arkTSModuleMap) {
+    if (moduleInfo.language !== ARKTS_1_2 && moduleInfo.language !== ARKTS_HYBRID) {
+      continue;
+    }
+    const declgenV1OutPath: string = toUnixPath(moduleInfo.declgenV1OutPath || '');
+    if (!declgenV1OutPath) {
+      continue;
+    }
+    const pkgName: string = moduleInfo.packageName;
+    const declPrefix: string = toUnixPath(path.join(declgenV1OutPath, pkgName)) + '/';
+    if (filePath.startsWith(declPrefix)) {
+      const relativePath: string = filePath.substring(declPrefix.length);
+      return toUnixPath(path.join(toUnixPath(moduleInfo.modulePath),
+        relativePath.replace(/\.d\.ets$/, EXTNAME_ETS)));
+    }
+  }
+  return undefined;
+}
+
+export function resolveRelativeModuleFromDecl(
+  moduleName: string, containingFile: string
+): string | undefined {
+  if (!/^\.\.?\//.test(moduleName) || !/\.d\.ets$/.test(containingFile)) {
+    return undefined;
+  }
+  const sourceContainingPath: string | undefined = mapDeclFileToSourcePath(containingFile);
+  if (!sourceContainingPath) {
+    return undefined;
+  }
+  const sourceDir: string = path.dirname(sourceContainingPath);
+  for (const ext of [EXTNAME_ETS, EXTNAME_TS, EXTNAME_D_ETS]) {
+    const candidate: string = toUnixPath(path.resolve(sourceDir,
+      moduleName.endsWith(ext) ? moduleName : moduleName + ext));
+    if (fs.existsSync(candidate)) {
+      const declRedirect: ts.ResolvedModuleFull | undefined = redirectToDeclFileForInterop(candidate);
+      return declRedirect ? declRedirect.resolvedFileName : candidate;
+    }
   }
   return undefined;
 }

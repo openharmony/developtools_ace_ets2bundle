@@ -2458,6 +2458,17 @@ mocha.describe('test module_mode file api', function () {
     expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
   });
+  mocha.it('18-18: test generateCompileContext inter—app hsp deps bytecode har with bundleType appService', function () {
+    this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    this.rollup.share.projectConfig.bundleType = 'appService';
+    this.rollup.share.projectConfig.bundleName = 'com.inter-app.hsp';
+    const moduleMode: ModuleModeMock = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
 
   mocha.it('19-1: test the error message of removeCompilationCache', function () {
     this.rollup.build();
