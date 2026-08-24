@@ -167,14 +167,18 @@ interface HasJSDocNode extends ts.Node {
 }
 
 /**
- * get the bundleInfo of ohm
+ * Parse the bundleInfo from the bundle tag comment embedded in an SDK API file.
+ *
+ * The SDK API declaration carries a metadata comment of the form
+ * `<tag> <bundlePath> <bundleVersion>` (e.g. `@bundle ...` or `@normalized ...`).
  *
  * @param {string} modulePath
+ * @param {string} tag - bundle tag prefix, e.g. '@bundle' or '@normalized'
  * @return {BundleInfo}
  */
-function parseOhmBundle(modulePath: string): BundleInfo {
+function parseBundleInfo(modulePath: string, tag: string): BundleInfo {
   const apiCode: string = fs.readFileSync(modulePath, { encoding: 'utf-8' });
-  const bundleTags: string[] = apiCode.match(/@bundle.+/g);
+  const bundleTags: string[] = apiCode.match(new RegExp(`${tag}.+`, 'g'));
   const bundleInfo: BundleInfo = {
     bundlePath: '',
     bundleVersion: ''
@@ -282,20 +286,28 @@ export function moduleRequestCallback(moduleRequest: string, _: string,
     if (config.prefix === '@arkui-x') {
       continue;
     }
-    if (moduleRequest.startsWith(config.prefix + '.')) {
-      let compileRequest: string = `${config.prefix}:${systemKey}`;
-      const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(config.apiPath, moduleRequest,
-        ['.d.ts', '.d.ets']);
-      const modulePath: string = resolveModuleInfo.modulePath;
-      if (!fs.existsSync(modulePath)) {
-        return compileRequest;
-      }
-      const bundleInfo: BundleInfo = parseOhmBundle(modulePath);
-      if (checkBundleVersion(bundleInfo.bundleVersion)) {
-        compileRequest = `@bundle:${bundleInfo.bundlePath}`;
-      }
+    if (!moduleRequest.startsWith(config.prefix + '.')) {
+      continue;
+    }
+    let compileRequest: string = `${config.prefix}:${systemKey}`;
+    const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(config.apiPath, moduleRequest,
+      ['.d.ts', '.d.ets']);
+    const modulePath: string = resolveModuleInfo.modulePath;
+    if (!fs.existsSync(modulePath)) {
       return compileRequest;
     }
+    if (projectConfig.useNormalizedOHMUrl) {
+      const bundleInfo: BundleInfo = parseBundleInfo(modulePath, '@normalized');
+      if (checkBundleVersion(bundleInfo.bundleVersion)) {
+        compileRequest = `@normalized:${bundleInfo.bundlePath}`;
+        return compileRequest;
+      }
+    }
+    const bundleInfo: BundleInfo = parseBundleInfo(modulePath, '@bundle');
+    if (checkBundleVersion(bundleInfo.bundleVersion)) {
+      compileRequest = `@bundle:${bundleInfo.bundlePath}`;
+    }
+    return compileRequest;
   }
   return '';
 }
