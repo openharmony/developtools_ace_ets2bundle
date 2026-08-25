@@ -42,6 +42,21 @@ if (!koala_mr.is_rri) {
     external_deps += [ static_linker_build_deps ]
     external_deps += [ "ets_frontend:libes2panda_public(${host_toolchain})" ]
 
+    # gen_sdk.py copies es2panda binaries and generated headers of the CURRENT
+    # toolchain from $out_root/$compiler_type (see gn/sdk_config.json). The
+    # host-toolchain dependencies above do not order the current toolchain's
+    # generated headers, so for cross-toolchain SDK builds (e.g. windows/mingw)
+    # this action could run before ark_gen produces
+    # $root_gen_dir/arkcompiler/ets_frontend/ets2panda/generated/es2panda_lib,
+    # copying stale headers and breaking es2panda_lib with
+    # "no member named ... in 'es2panda_Impl'" errors. Depend on the current
+    # toolchain's es2panda artifacts to guarantee both ordering and freshness.
+    external_deps += [
+      "ets_frontend:libes2panda_public",
+      "ets_frontend:ets2panda",
+      "runtime_core:ark_link",
+    ]
+
     args = [
       "--config",
       rebase_path("gn/sdk_config.json"),
