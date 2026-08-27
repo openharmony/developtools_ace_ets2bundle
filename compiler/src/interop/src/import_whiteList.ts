@@ -697,6 +697,7 @@ export const whiteList: Set<string> = new Set([
   'LocalStorage',
   'LocalStorageLink',
   'LocalStorageProp',
+  'LocalStoragePropRef',
   'LocalizedAlignRuleOptions',
   'LocalizedAlignment',
   'LocalizedBarrierDirection',
@@ -1064,6 +1065,7 @@ export const whiteList: Set<string> = new Set([
   'ProgressStyleOptions',
   'ProgressType',
   'Prop',
+  'PropRef',
   'ProtectedResourceType',
   'Provide',
   'ProvideOptions',
@@ -1332,6 +1334,7 @@ export const whiteList: Set<string> = new Set([
   'Storage',
   'StorageLink',
   'StorageProp',
+  'StoragePropRef',
   'StyleOptions',
   'StyledString',
   'StyledStringChangeValue',
@@ -1638,25 +1641,21 @@ export const stateManagementWhiteList: string[] = [
 export const decoratorsWhiteList: string[] = [
   'State',
   'Prop',
+  'PropRef',
   'Link',
   'Observed',
   'Track',
   'ObjectLink',
   'StorageProp',
+  'StoragePropRef',
   'StorageLink',
   'LocalStorageProp',
+  'LocalStoragePropRef',
   'LocalStorageLink',
   'Provide',
   'Consume',
   'Watch',
-  'Require',
-  'Builder',
-  'BuilderParam',
-  'AnimatableExtend',
-  'Reusable',
-  'Entry',
-  'Component',
-  'CustomDialog',
+  'Require'
 ];
 
 export const decoratorsV2WhiteList: string[] = [
@@ -1670,9 +1669,6 @@ export const decoratorsV2WhiteList: string[] = [
   'Monitor',
   'Once',
   'Trace',
-  'ReusableV2',
-  'ComponentV2',
   'IMonitor',
-  'IMonitorValue',
-  'ReusePoolOwnership'
+  'IMonitorValue'
 ];

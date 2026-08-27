@@ -275,7 +275,6 @@ export function generateBytecodePathFragement(
         throw new Error('declgenV1 path not found.');
     }
 
-    const targetPath = match[1];
     let packageName: string = '';
     const combinedMap = new Map([...arkTSHybridModuleMap, ...arkTSEvolutionModuleMap]);
     for (const arkTSEvolutionModuleInfo of combinedMap.values()) {
@@ -285,6 +284,7 @@ export function generateBytecodePathFragement(
         break;
       }
     }
+    const targetPath = packageName + '/' + match[1];
 
     const targetPathWithDollar: string = packageName + '$' + targetPath.replace(/\//g, '$');
     return {
