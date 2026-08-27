@@ -28,7 +28,7 @@ import {
     createInitReturn,
 } from './utils';
 import { DecoratorNames, LANGUAGE_VERSION, NodeCacheNames } from '../../common/predefines';
-import { hasDecoratorInterop } from './utils';
+import { hasDecorator } from '../property-translators/utils';
 import { FileManager } from '../../common/file-manager';
 import { NodeCacheFactory } from '../../common/node-cache';
 
@@ -347,7 +347,7 @@ function generateVarMap(context: InteropContext, decl: arkts.ClassDefinition): M
         if (node instanceof arkts.ClassProperty && node.key instanceof arkts.Identifier) {
             const key = node.key.name;
             result.set(key, node);
-            if (needBuilderParam && hasDecoratorInterop(node, DecoratorNames.BUILDER_PARAM)) {
+            if (needBuilderParam && hasDecorator(node, DecoratorNames.BUILDER_PARAM)) {
                 context.arguments = updateArguments(context, key);
                 needBuilderParam = false;
             }

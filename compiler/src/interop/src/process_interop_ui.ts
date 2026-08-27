@@ -34,6 +34,12 @@ const ARKUI_EXTEND: string = 'Extend';
 const ARKUI_STYLES: string = 'Styles';
 const ARKUI_BUILDER: string = 'Builder';
 
+const PROPERTY_REF_DECORATOR_MAP: Map<string, string> = new Map([
+  ['Prop', 'PropRef'],
+  ['LocalStorageProp', 'LocalStoragePropRef'],
+  ['StorageProp', 'StoragePropRef'],
+]);
+
 export function isStructDeclaration(node: ts.Node): boolean {
   return ts.isStructDeclaration(node);
 }
@@ -46,6 +52,7 @@ export class HandleUIImports {
   private printer: ts.Printer = ts.createPrinter();
 
   private importedInterfaces: Set<string> = new Set<string>();
+  private dynamicPropertyDecorators: Set<string> = new Set<string>();
   private interfacesNeedToImport: Set<string> = new Set<string>();
   private insertPosition = 0;
 
@@ -95,16 +102,21 @@ export class HandleUIImports {
 
     if (ts.isIdentifier(result) && !this.shouldSkipIdentifier(result)) {
       const component = ['Component', 'Reusable', 'ComponentV2', 'ReusableV2'];
-      if (component.includes(result.text)) {
+      const importName = this.getDecoratorImportName(result);
+      if (component.includes(importName)) {
         this.interfacesNeedToImport.add('LocalStorage');
       }
-      this.interfacesNeedToImport.add(result.text);
+      this.interfacesNeedToImport.add(importName);
     } else if (ts.isSourceFile(result)) {
       return this.addUIImports(result);
     }
 
     if (ts.isMethodDeclaration(result)) {
       return this.transformMethodDeclaration(result);
+    }
+
+    if (ts.isPropertyDeclaration(result)) {
+      return this.transformPropertyDeclaration(result);
     }
 
     return result;
@@ -171,6 +183,95 @@ export class HandleUIImports {
     };
   }
 
+  // Rewrite Prop/LocalStorageProp/StorageProp to PropRef/LocalStoragePropRef/StoragePropRef.
+  private transformPropertyDeclaration(node: ts.PropertyDeclaration): ts.PropertyDeclaration {
+    const { decorators, updated } = this.transformPropertyRefDecorators(ts.getAllDecorators(node));
+    if (!updated) {
+      return node;
+    }
+    return ts.factory.updatePropertyDeclaration(
+      node,
+      ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(node)),
+      node.name,
+      node.questionToken ?? node.exclamationToken,
+      node.type,
+      node.initializer
+    );
+  }
+
+  private transformPropertyRefDecorators(decorators: readonly ts.Decorator[] | undefined): {
+    decorators: ts.NodeArray<ts.Decorator> | undefined;
+    updated: boolean;
+  } {
+    if (!decorators || decorators.length === 0) {
+      return { decorators: undefined, updated: false };
+    }
+
+    let updated = false;
+    const newDecorators = decorators.map((decorator) => {
+      const newDecorator = this.transformPropertyRefDecorator(decorator);
+      updated = updated || newDecorator !== decorator;
+      return newDecorator;
+    });
+
+    return {
+      decorators: updated ? ts.factory.createNodeArray(newDecorators) : undefined,
+      updated
+    };
+  }
+
+  // Handles @Prop and @LocalStorageProp('xxx')/@StorageProp('xxx').
+  private transformPropertyRefDecorator(decorator: ts.Decorator): ts.Decorator {
+    const expression = decorator.expression;
+    if (ts.isIdentifier(expression)) {
+      const newName = this.getPropertyRefDecoratorName(expression);
+      if (!newName) {
+        return decorator;
+      }
+      return ts.factory.updateDecorator(decorator, ts.factory.createIdentifier(newName));
+    }
+
+    if (!ts.isCallExpression(expression) || !ts.isIdentifier(expression.expression)) {
+      return decorator;
+    }
+    const newName = this.getPropertyRefDecoratorName(expression.expression);
+    if (!newName) {
+      return decorator;
+    }
+    const newCallExpression = ts.factory.updateCallExpression(
+      expression,
+      ts.factory.createIdentifier(newName),
+      expression.typeArguments,
+      expression.arguments
+    );
+    return ts.factory.updateDecorator(decorator, newCallExpression);
+  }
+
+  private getPropertyRefDecoratorName(identifier: ts.Identifier): string | undefined {
+    const newName = PROPERTY_REF_DECORATOR_MAP.get(identifier.text);
+    if (!newName || this.dynamicPropertyDecorators.has(identifier.text)) {
+      return undefined;
+    }
+    return newName;
+  }
+
+  private getDecoratorImportName(identifier: ts.Identifier): string {
+    if (!this.isDecoratorIdentifier(identifier)) {
+      return identifier.text;
+    }
+    return this.getPropertyRefDecoratorName(identifier) ?? identifier.text;
+  }
+
+  private isDecoratorIdentifier(identifier: ts.Identifier): boolean {
+    const parent = identifier.parent;
+    if (!parent) {
+      return false;
+    }
+    return (ts.isDecorator(parent) && parent.expression === identifier) ||
+      (ts.isCallExpression(parent) && parent.expression === identifier &&
+        !!parent.parent && ts.isDecorator(parent.parent));
+  }
+
   private handleImportBuilder(node: ts.Node): void {
     const decorators: readonly ts.Decorator[] | undefined = ts.getAllDecorators(node);
     if (!decorators?.length) {
@@ -198,9 +299,7 @@ export class HandleUIImports {
         return;
       }
       const identifier = ts.factory.createIdentifier(interfaceName);
-      if ([...decoratorsWhiteList, ...decoratorsV2WhiteList].includes(interfaceName)) {
-        dynamicImportSpecifiers.push(ts.factory.createImportSpecifier(false, undefined, identifier));
-      } else if (stateManagementWhiteList.includes(interfaceName)) {
+      if ([...decoratorsWhiteList, ...decoratorsV2WhiteList, ...stateManagementWhiteList].includes(interfaceName)) {
         stateImportSpecifiers.push(ts.factory.createImportSpecifier(false, undefined, identifier));
       } else {
         compImportSpecifiers.push(ts.factory.createImportSpecifier(false, undefined, identifier));
@@ -354,15 +453,28 @@ export class HandleUIImports {
         continue;
       }
 
+      const moduleSpecifier = statement.moduleSpecifier;
+      const modulePath = ts.isStringLiteral(moduleSpecifier) ? moduleSpecifier.text : undefined;
+      if (importClause.name) {
+        this.recordImportedInterface(importClause.name.getText(sourceFile), modulePath);
+      }
+
       const namedBindings = importClause.namedBindings;
       if (!namedBindings || !ts.isNamedImports(namedBindings)) {
         continue;
       }
 
       for (const specifier of namedBindings.elements) {
-        const importedName = specifier.name.getText(sourceFile);
-        this.importedInterfaces.add(importedName);
+        this.recordImportedInterface(specifier.name.getText(sourceFile), modulePath);
       }
+    }
+  }
+
+  // Do not rewrite Prop imported from dynamic GlobalAnnotation.
+  private recordImportedInterface(importedName: string, modulePath: string | undefined): void {
+    this.importedInterfaces.add(importedName);
+    if (modulePath === OHOS_ARKUI_GLOBAL_ANNOTATION && PROPERTY_REF_DECORATOR_MAP.has(importedName)) {
+      this.dynamicPropertyDecorators.add(importedName);
     }
   }
 }
