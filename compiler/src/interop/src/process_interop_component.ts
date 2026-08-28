@@ -286,7 +286,7 @@ export function generateBytecodePathFragement(
     }
     const targetPath = packageName + '/' + match[1];
 
-    const targetPathWithDollar: string = packageName + '$' + targetPath.replace(/\//g, '$');
+    const targetPathWithDollar: string = packageName + targetPath.slice(packageName.length).replace(/\//g, '$');
     return {
       instanceName: `__Options_${className}`,
       classPath: `L${targetPath}/__Options_${className};`,

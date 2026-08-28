@@ -530,7 +530,7 @@ function resolveStaticInteropSdkModule(
     return null;
   }
 
-  const actualModuleName = moduleName.replace(/^static@/, '');
+  const actualModuleName = moduleName.replace(/^static@/, '@');
 
   for (const sdkConfig of DeclfileProductor.interopSdkConfigs) {
     const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(sdkConfig.apiPath, actualModuleName, [
