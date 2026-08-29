@@ -2,10 +2,10 @@
 校验 `@Monitor`/`@SyncMonitor` 装饰器的参数路径必须指向存在的状态变量，通配符 `.*` 必须在字符串末尾，`enableWildcard` 选项必须是布尔值。
 
 ## 源码参考位置
-- 动态：`compiler/src/validate_ui_syntax.ts:1233-1836`（多个函数）
+- 动态：`compiler/src/validate_ui_syntax.ts`（多个函数）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-monitor-decorator.ts:57`
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-sync-monitor-decorator.ts:56`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-monitor-decorator.ts`（`checkMonitorDecorator`）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-sync-monitor-decorator.ts`（`checkSyncMonitorDecorator`）
 
 ## 适用对象
 struct/class 方法（@Monitor/@SyncMonitor 装饰的方法）
@@ -80,17 +80,17 @@ struct MyComp {
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-monitor-decorator.ts:71`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-monitor-decorator.ts`（`checkMonitorDecorator`）
 ### 静态工具链处理
 静态工具链通过 `check-monitor-decorator.ts`（2824 行，最大规则文件）校验 @Monitor 装饰器：仅用于方法、struct 中需 @ComponentV2、class 中需 @ObservedV2、参数路径必须解析到存在的状态变量、支持通配符 `.*`。深度路径解析含数组索引、Map/Set、union 类型、跨文件导入。支持 `FixSuggestion`。
 
-- `arkui-plugins/common/predefines.ts:236`（`DecoratorNames.MONITOR = 'Monitor'`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.MONITOR = 'Monitor'`）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | validate_ui_syntax.ts:1233-1836（多个函数） | check-monitor-decorator.ts:71（2824 行） |
+| 校验入口 | validate_ui_syntax.ts（多个函数） | check-monitor-decorator.ts（2824 行） |
 | 路径解析 | 基础路径检测 | 深度路径解析（数组索引/Map/Set/union/跨文件） |
 | 报错级别 | 变量不存在为 WARN | 变量不存在为 WARN |
 | 自动修复 | 无 | 有 FixSuggestion |

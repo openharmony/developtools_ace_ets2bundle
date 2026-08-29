@@ -12,13 +12,13 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_member.ts:546-555`（`isRequireCanReleaseMandatoryDecorators`，默认值放宽判定）
-- `compiler/src/process_component_member.ts:557-562`（`validatePropertyDecorator`，多装饰器校验入口）
-- `compiler/src/process_component_member.ts:564-576`（`validateRequireDecorator`，组合校验）
-- `compiler/src/process_component_member.ts:157-159`（`requireCanReleaseMandatoryDecorators` Set 定义）
-- `compiler/src/process_component_member.ts:161-162`（`forbiddenSpecifyDefaultValueDecorators` Set 定义）
-- `compiler/src/process_component_member.ts:164-165`（`mandatoryToInitViaParamDecorators` Set 定义）
-- `compiler/src/pre_define.ts:50`（`COMPONENT_REQUIRE_DECORATOR = '@Require'`）
+- `compiler/src/process_component_member.ts`（`isRequireCanReleaseMandatoryDecorators`，默认值放宽判定）
+- `compiler/src/process_component_member.ts`（`validatePropertyDecorator`，多装饰器校验入口）
+- `compiler/src/process_component_member.ts`（`validateRequireDecorator`，组合校验）
+- `compiler/src/process_component_member.ts`（`requireCanReleaseMandatoryDecorators` Set 定义）
+- `compiler/src/process_component_member.ts`（`forbiddenSpecifyDefaultValueDecorators` Set 定义）
+- `compiler/src/process_component_member.ts`（`mandatoryToInitViaParamDecorators` Set 定义）
+- `compiler/src/pre_define.ts`（`COMPONENT_REQUIRE_DECORATOR = '@Require'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -53,7 +53,7 @@ this.__value = new SynchedPropertySimpleOneWayPU(params.value, this, 'value')
 > 校验：只能与 `@Prop`/`@BuilderParam`/`@State`/`@Provide`/`@Watch` 组合，且最多两个装饰器（`SUPPORT_REQUIRE_DECORATOR` 列表，`DECORATOR_LENGTH = 2`）。
 
 ### 关键转换逻辑
-- **`isRequireCanReleaseMandatoryDecorators`**（line 546-555）：判定是否放宽默认值要求。
+- **`isRequireCanReleaseMandatoryDecorators`**：判定是否放宽默认值要求。
   ```typescript
   function isRequireCanReleaseMandatoryDecorators(node: ts.PropertyDeclaration, decoratorName: string): boolean {
     if (decoratorName === COMPONENT_REQUIRE_DECORATOR) {
@@ -67,14 +67,14 @@ this.__value = new SynchedPropertySimpleOneWayPU(params.value, this, 'value')
   ```
   - `decoratorName === '@Require'`：直接返回 `true`，@Require 本身无需默认值。
   - 其他装饰器：检查属性上是否存在 `@Require` 装饰器，且当前装饰器在 `requireCanReleaseMandatoryDecorators` Set 中。
-  - `requireCanReleaseMandatoryDecorators`（line 157-159）：
+  - `requireCanReleaseMandatoryDecorators`：
     ```typescript
     new Set([COMPONENT_PROP_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR, ...observedPropertyDecorators])
     ```
     包含 `@Prop`、`@BuilderParam` 和所有 observed 属性装饰器（`@State`、`@StorageLink`、`@StorageProp`、`@LocalStorageLink`、`@LocalStorageProp` 等）。
-  - **不在放宽范围中的装饰器**：`@Link`、`@ObjectLink`、`@Env`（`forbiddenSpecifyDefaultValueDecorators`，line 161-162），这些装饰器本身就不允许设置默认值，@Require 无法放宽。
+  - **不在放宽范围中的装饰器**：`@Link`、`@ObjectLink`、`@Env`（`forbiddenSpecifyDefaultValueDecorators`），这些装饰器本身就不允许设置默认值，@Require 无法放宽。
 
-- **`validatePropertyDecorator`**（line 557-562）：多装饰器校验入口。
+- **`validatePropertyDecorator`**：多装饰器校验入口。
   ```typescript
   if (propertyDecorators.length > 1 && !validateRequireDecorator(propertyDecorators)) {
     validateMultiDecorators(name, log);  // 不满足 @Require 组合规则时报错
@@ -82,7 +82,7 @@ this.__value = new SynchedPropertySimpleOneWayPU(params.value, this, 'value')
   ```
   当装饰器数量 > 1 时，先检查是否满足 @Require 组合规则，不满足才报多装饰器错误。
 
-- **`validateRequireDecorator`**（line 570-576）：校验 @Require 装饰器组合合法性。
+- **`validateRequireDecorator`**：校验 @Require 装饰器组合合法性。
   ```typescript
   const DECORATOR_LENGTH: number = 2;
   const SUPPORT_REQUIRE_DECORATOR: string[] = [COMPONENT_PROP_DECORATOR,
@@ -111,8 +111,8 @@ this.__value = new SynchedPropertySimpleOneWayPU(params.value, this, 'value')
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/require.ts:49`（`RequireTranslator`）
-- `arkui-plugins/common/predefines.ts:50`（compiler 端常量）
+- `arkui-plugins/ui-plugins/property-translators/require.ts`（`RequireTranslator`）
+- `arkui-plugins/common/predefines.ts`（compiler 端常量）
 
 ### 转换前的原始代码
 ```typescript

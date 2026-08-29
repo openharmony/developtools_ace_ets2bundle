@@ -3,14 +3,14 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_ui_syntax.ts:657`（`isCustomDialogController`，识别 Controller 构造）
-- `compiler/src/process_ui_syntax.ts:674`（`createCustomDialogController`，Controller 变换）
-- `compiler/src/process_ui_syntax.ts:728`（`processCustomDialogControllerBuilder`，builder 属性变换）
-- `compiler/src/process_component_class.ts:1390`（`validateHasControllerAndControllerCount`，校验必须含 Controller 属性）
-- `compiler/src/process_component_member.ts:440`（`createControllerSet`，生成 setController 方法）
-- `compiler/src/pre_define.ts:343`（`JS_DIALOG = 'jsDialog'`）
-- `compiler/src/pre_define.ts:340`（`SET_CONTROLLER_METHOD = 'setController'`）
-- `compiler/src/pre_define.ts:344`（`CUSTOM_DIALOG_CONTROLLER_BUILDER = 'builder'`）
+- `compiler/src/process_ui_syntax.ts`（`isCustomDialogController`，识别 Controller 构造）
+- `compiler/src/process_ui_syntax.ts`（`createCustomDialogController`，Controller 变换）
+- `compiler/src/process_ui_syntax.ts`（`processCustomDialogControllerBuilder`，builder 属性变换）
+- `compiler/src/process_component_class.ts`（`validateHasControllerAndControllerCount`，校验必须含 Controller 属性）
+- `compiler/src/process_component_member.ts`（`createControllerSet`，生成 setController 方法）
+- `compiler/src/pre_define.ts`（`JS_DIALOG = 'jsDialog'`）
+- `compiler/src/pre_define.ts`（`SET_CONTROLLER_METHOD = 'setController'`）
+- `compiler/src/pre_define.ts`（`CUSTOM_DIALOG_CONTROLLER_BUILDER = 'builder'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -45,16 +45,16 @@ let dialogController = new CustomDialogController({
 ```
 
 ### 关键转换逻辑
-- `@CustomDialog` struct 走与 @Component 相同的 `processComponentClass`，但校验必须含 `CustomDialogController` 类型属性（`validateHasControllerAndControllerCount`，line 1390，错误码 10905211）
-- `createCustomDialogController`（line 674）：遍历 Controller 构造参数，对 `builder` 属性检查其值是否是 @CustomDialog 组件（`componentCollection.customDialogs.has`，line 699），第二参数追加 `this`（line 687）
-- `processCustomDialogControllerBuilder`（line 728）：生成 `new MyDialog(...)` 实例化 + `jsDialog.setController(mountNode)` 调用，包装为箭头函数
+- `@CustomDialog` struct 走与 @Component 相同的 `processComponentClass`，但校验必须含 `CustomDialogController` 类型属性（`validateHasControllerAndControllerCount`，错误码 10905211）
+- `createCustomDialogController`：遍历 Controller 构造参数，对 `builder` 属性检查其值是否是 @CustomDialog 组件（`componentCollection.customDialogs.has`），第二参数追加 `this`
+- `processCustomDialogControllerBuilder`：生成 `new MyDialog(...)` 实例化 + `jsDialog.setController(mountNode)` 调用，包装为箭头函数
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/struct-translators/factory.ts:1732`（`transformCustomDialogController`）
-- `arkui-plugins/ui-plugins/struct-translators/factory.ts:1771`（`createDialogBuilderArrow`）
-- `arkui-plugins/common/predefines.ts:600`（`CustomDialogNames` 枚举）
-- `arkui-plugins/interop-plugins/emit_transformer.ts:175`（`processProvide`，interop 阶段）
+- `arkui-plugins/ui-plugins/struct-translators/factory.ts`（`transformCustomDialogController`）
+- `arkui-plugins/ui-plugins/struct-translators/factory.ts`（`createDialogBuilderArrow`）
+- `arkui-plugins/common/predefines.ts`（`CustomDialogNames` 枚举）
+- `arkui-plugins/interop-plugins/emit_transformer.ts`（`processProvide`，interop 阶段）
 
 ### 转换前的原始代码
 同动态工具链
@@ -70,7 +70,7 @@ __gensym__ as CustomDialogController
 ```
 
 ### 关键转换逻辑
-- `transformCustomDialogController`（line 1732-1769）：提取 builder 属性，通过 `createDialogBuilderArrow`（line 1771-1798）包装为箭头函数并添加 `@memo` 注解
+- `transformCustomDialogController`：提取 builder 属性，通过 `createDialogBuilderArrow`包装为箭头函数并添加 `@memo` 注解
 - 注入 `baseComponent: this` 属性
 - 生成 `let <gensym> = new CustomDialogController({...}); <gensym> as CustomDialogController` 块表达式
 

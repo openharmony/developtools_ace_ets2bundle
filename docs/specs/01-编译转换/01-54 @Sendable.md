@@ -3,18 +3,18 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/pre_define.ts:127`（`COMPONENT_SENDABLE_DECORATOR = '@Sendable'`）
-- `compiler/src/pre_define.ts:118`（`SENDABLE = 'Sendable'`）
-- `compiler/src/process_sendable.ts:105`（`processSendableClass`）
-- `compiler/src/process_sendable.ts:139`（`processSendableFunction`）
-- `compiler/src/process_sendable.ts:151`（`processSendableType`）
-- `compiler/src/process_ui_syntax.ts:446-458`（class 检测和 `processSendableClass` 调用）
-- `compiler/src/process_ui_syntax.ts:404-409`（function 检测和 `processSendableFunction` 调用）
-- `compiler/src/process_ui_syntax.ts:459-463`（type alias 检测和 `processSendableType` 调用）
-- `compiler/src/process_sendable.ts:19-43`（`transformOptionalMemberForSendable`）
-- `compiler/src/process_sendable.ts:45-52`（`removeSendableDecorator`）
-- `compiler/src/process_sendable.ts:54-70`（`updateSendableConstructor`）
-- `compiler/src/process_sendable.ts:72-103`（`addConstructorForSendableClass`）
+- `compiler/src/pre_define.ts`（`COMPONENT_SENDABLE_DECORATOR = '@Sendable'`）
+- `compiler/src/pre_define.ts`（`SENDABLE = 'Sendable'`）
+- `compiler/src/process_sendable.ts`（`processSendableClass`）
+- `compiler/src/process_sendable.ts`（`processSendableFunction`）
+- `compiler/src/process_sendable.ts`（`processSendableType`）
+- `compiler/src/process_ui_syntax.ts`（class 检测和 `processSendableClass` 调用）
+- `compiler/src/process_ui_syntax.ts`（function 检测和 `processSendableFunction` 调用）
+- `compiler/src/process_ui_syntax.ts`（type alias 检测和 `processSendableType` 调用）
+- `compiler/src/process_sendable.ts`（`transformOptionalMemberForSendable`）
+- `compiler/src/process_sendable.ts`（`removeSendableDecorator`）
+- `compiler/src/process_sendable.ts`（`updateSendableConstructor`）
+- `compiler/src/process_sendable.ts`（`addConstructorForSendableClass`）
 
 ### 转换前的原始代码
 ```typescript
@@ -75,28 +75,28 @@ type MyType = string;
 
 ### 关键转换逻辑
 
-#### 1. processSendableClass（line 105-137）
+#### 1. processSendableClass
 | 步骤 | 函数 | 说明 |
 |---|---|---|
-| 移除装饰器 | `removeSendableDecorator:45-52` | 过滤 `@Sendable` 装饰器 |
-| 可选属性变换 | `transformOptionalMemberForSendable:19-43` | 对有 `?` 的属性：类型追加 `\| undefined`，初始化为 `undefined` |
-| 构造函数注入 | `updateSendableConstructor:54-70` | 若已有构造函数：首行注入 `'use sendable'` |
-| 缺省构造函数 | `addConstructorForSendableClass:72-103` | 若无构造函数：创建含 `'use sendable'` 的构造函数；若继承父类则追加 `super(...args)` |
+| 移除装饰器 | `removeSendableDecorator` | 过滤 `@Sendable` 装饰器 |
+| 可选属性变换 | `transformOptionalMemberForSendable` | 对有 `?` 的属性：类型追加 `\| undefined`，初始化为 `undefined` |
+| 构造函数注入 | `updateSendableConstructor` | 若已有构造函数：首行注入 `'use sendable'` |
+| 缺省构造函数 | `addConstructorForSendableClass` | 若无构造函数：创建含 `'use sendable'` 的构造函数；若继承父类则追加 `super(...args)` |
 
-#### 2. processSendableFunction（line 139-149）
+#### 2. processSendableFunction
 - 若函数有 body：在 `body.statements` 首部插入 `'use sendable'` 表达式语句。
 - 若无 body（声明）：重建函数声明。
 
-#### 3. processSendableType（line 151-153）
+#### 3. processSendableType
 - 仅移除 `@Sendable` 装饰器，保留类型别名声明本身不变。
 
-#### 4. 继承处理（`addConstructorForSendableClass:109-110`）
+#### 4. 继承处理（`addConstructorForSendableClass`）
 ```typescript
 let needSuper = node.heritageClauses?.some(clause => clause.token === ts.SyntaxKind.ExtendsKeyword) || false;
 ```
 若类有 `extends` 父类，构造函数追加 `super(...args)` 和 `...args` 参数。
 
-#### 5. HAR 警告（`process_ui_syntax.ts:447-456`）
+#### 5. HAR 警告（`process_ui_syntax.ts`）
 当 `compileHar && !useTsHar` 时，警告：`@Sendable` 在 JS HAR 中运行时会异常，建议使用 TS HAR。
 
 ## 静态

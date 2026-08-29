@@ -3,9 +3,9 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/validate_ui_syntax.ts:1233-1836`（多个 @Monitor/@SyncMonitor 校验函数，含通配符和常量表达式检查）
+  - `compiler/src/validate_ui_syntax.ts`（多个 @Monitor/@SyncMonitor 校验函数，含通配符和常量表达式检查）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-sync-monitor-decorator.ts:71`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-sync-monitor-decorator.ts`（`checkSyncMonitorDecorator`）
 
 ## 适用对象
 `@SyncMonitor` 装饰的方法（struct 方法或 class 方法）
@@ -128,16 +128,16 @@ struct MyComp {
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-sync-monitor-decorator.ts:56`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-sync-monitor-decorator.ts`（`checkSyncMonitorDecorator`）
 ### 静态工具链处理
 静态工具链通过 `check-sync-monitor-decorator.ts`（2040 行）校验 @SyncMonitor 装饰器。与 @Monitor 的关键差异：不可观察变量报 ERROR（@Monitor 为 WARN）、通配符总是启用（不依赖 API 版本）、有独立的 `isWildcardPathInvalid` 通符合法性检查。支持 `FixSuggestion`。
-- `compiler/src/validate_ui_syntax.ts:1440`（`checkSyncMonitorDecoratorArgInStruct`）
-- `compiler/src/validate_ui_syntax.ts:1383`（`checkSyncMonitorDecoratorArgContent`）
+- `compiler/src/validate_ui_syntax.ts`（`checkSyncMonitorDecoratorArgInStruct`）
+- `compiler/src/validate_ui_syntax.ts`（`checkSyncMonitorDecoratorArgContent`）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts:1233-1836` | `check-sync-monitor-decorator.ts:56` |
+| 校验入口 | `validate_ui_syntax.ts` | `check-sync-monitor-decorator.ts`（`checkSyncMonitorDecorator`） |
 | 通配符 | 按 API 版本条件启用 | 总是启用 |
 | 报错级别 | ERROR（变量不存在） | ERROR |

@@ -3,11 +3,11 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_custom_component.ts:153`（`processCustomComponent`）
-- `compiler/src/process_custom_component.ts:263`（`createRecycleComponent`）
-- `compiler/src/pre_define.ts:30`（`COMPONENT_DECORATOR_REUSEABLE = '@Reusable'`）
-- `compiler/src/pre_define.ts:31`（`DECORATOR_REUSEABLE = 'Reusable'`）
-- `compiler/src/pre_define.ts:248`（`OBSERVE_RECYCLE_COMPONENT_CREATION`）
+- `compiler/src/process_custom_component.ts`（`processCustomComponent`）
+- `compiler/src/process_custom_component.ts`（`createRecycleComponent`）
+- `compiler/src/pre_define.ts`（`COMPONENT_DECORATOR_REUSEABLE = '@Reusable'`）
+- `compiler/src/pre_define.ts`（`DECORATOR_REUSEABLE = 'Reusable'`）
+- `compiler/src/pre_define.ts`（`OBSERVE_RECYCLE_COMPONENT_CREATION`）
 
 ### 转换前的原始代码
 ```typescript
@@ -42,8 +42,8 @@ this.observeRecycleComponentCreation('MyReusable',
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/common/predefines.ts:125`（`StructDecoratorNames.RESUABLE = 'Reusable'`）
-- `arkui-plugins/common/predefines.ts:221`（`DecoratorNames.REUSABLE = 'Reusable'`）
+- `arkui-plugins/common/predefines.ts`（`StructDecoratorNames.RESUABLE = 'Reusable'`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.REUSABLE = 'Reusable'`）
 - ReusePoolOwnership import
 
 ### 转换前的原始代码
@@ -63,12 +63,12 @@ class MyReusable extends CustomComponent<MyReusable, __Options_MyReusable> {
   // ...
 }
 ```
-- @Reusable 仅在 Partial Update 模式下生效（`process_custom_component.ts:227`）
+- @Reusable 仅在 Partial Update 模式下生效（`process_custom_component.ts`）
 - @Reusable 的可选参数 `reusePool`/`poolAccepts` 生成 `__reusePool__Internal` 属性
 - API >= 26 时额外生成 `Reusable(name)` 调用注册到全局复用池
 - 使用 `observeRecycleComponentCreation` 而非 `observeComponentCreation2`
 
-- @Reusable 仅在 Partial Update 模式生效（`process_custom_component.ts:227`）
+- @Reusable 仅在 Partial Update 模式生效（`process_custom_component.ts`）
 - API >= 26 时额外生成 `Reusable(name)` 调用
 ## 动静态差异说明
 

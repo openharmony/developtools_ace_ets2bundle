@@ -2,11 +2,11 @@
 校验 `reuse` 属性只能用于 `@ComponentV2`+`@ReusableV2` 组件、`reuseId` 属性不能用于 `@ComponentV2`+`@ReusableV2` 组件。
 
 ## 补充说明
-- `arkui-plugins/common/predefines.ts:129`（`StructDecoratorNames.REUSABLE_V2`）
-- `arkui-plugins/common/predefines.ts:128`（`StructDecoratorNames.REUSABLE`）
+- `arkui-plugins/common/predefines.ts`（`StructDecoratorNames.REUSABLE_V2`）
+- `arkui-plugins/common/predefines.ts`（`StructDecoratorNames.REUSABLE`）
 ## 源码参考位置
-- 动态：`compiler/src/process_component_build.ts:3092`（`addComponentAttr`，reuse/reuseId 属性检测） 中的 reuse 属性处理逻辑
-- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-reuse-attribute.ts:47`
+- 动态：`compiler/src/process_component_build.ts`（`addComponentAttr`，reuse/reuseId 属性检测） 中的 reuse 属性处理逻辑
+- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-reuse-attribute.ts`（`checkReuseAttribute`）
 
 ## 适用对象
 - 组件初始化调用（使用 `.reuse()` 或 `.reuseId()` 链式属性的组件调用）
@@ -124,12 +124,12 @@ V2Comp().reuse('v2Key')           // V2+ReusableV2 组件使用 reuse
 - 此规则仅静态工具链实现，动态工具链无对应校验
 - reuse / reuseId 是 V2 复用机制引入的属性，动态工具链（V1 优先）不涉及 V2 属性校验
 
-- `compiler/src/pre_define.ts:31`（`DECORATOR_REUSEABLE = 'Reusable'`，@Reusable 装饰器名常量）
+- `compiler/src/pre_define.ts`（`DECORATOR_REUSEABLE = 'Reusable'`，@Reusable 装饰器名常量）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `process_component_build.ts` | `check-reuse-attribute.ts:24` |
+| 校验入口 | `process_component_build.ts` | `check-reuse-attribute.ts`（`checkReuseAttribute`） |
 | 报错条数 | 分散 | 2 条（reuse 仅 V2+ReusableV2、reuseId 不可 V2+ReusableV2） |
 | 自动修复 | 无 | 有（建议 reuse↔reuseId 互换） |

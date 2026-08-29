@@ -3,12 +3,12 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/pre_define.ts:27`（`COMPONENT_DECORATOR_PREVIEW = '@Preview'`）
-- `compiler/src/process_ui_syntax.ts:1981`（`createPreviewComponentFunction`）
-- `compiler/src/process_ui_syntax.ts:1506`（`createEntryNode`，判断是否走 preview 分支）
-- `compiler/src/process_ui_syntax.ts:2034`（`storePreviewComponents`）
-- `compiler/src/process_ui_syntax.ts:1537`（`createEntryFunction`）
-- `compiler/src/process_ui_syntax.ts:2223`（`addCardStringliteral`，卡片路径处理）
+- `compiler/src/pre_define.ts`（`COMPONENT_DECORATOR_PREVIEW = '@Preview'`）
+- `compiler/src/process_ui_syntax.ts`（`createPreviewComponentFunction`）
+- `compiler/src/process_ui_syntax.ts`（`createEntryNode`，判断是否走 preview 分支）
+- `compiler/src/process_ui_syntax.ts`（`storePreviewComponents`）
+- `compiler/src/process_ui_syntax.ts`（`createEntryFunction`）
+- `compiler/src/process_ui_syntax.ts`（`addCardStringliteral`，卡片路径处理）
 - `compiler/src/validate_ui_syntax.ts`（Preview 收集逻辑，`componentCollection.previewComponent`）
 
 ### 转换前的原始代码
@@ -57,12 +57,12 @@ if (getPreviewComponentFlag()) {
 ```
 
 ### 关键转换逻辑
-1. **入口判断**（`createEntryNode:1512`）：当 `componentCollection.previewComponent.length === 0` 或非 `projectConfig.isPreview` 时走普通 entry 分支；否则调用 `createPreviewComponentFunction`。
-2. **参数数组构造**（`createPreviewComponentFunction:1983-1992`）：
+1. **入口判断**（`createEntryNode`）：当 `componentCollection.previewComponent.length === 0` 或非 `projectConfig.isPreview` 时走普通 entry 分支；否则调用 `createPreviewComponentFunction`。
+2. **参数数组构造**（`createPreviewComponentFunction`）：
    - Legacy 模式：`[id.toString(), undefined, {}]`（含编译器分配的 id）
    - Partial Update 模式：`[undefined, {}]`（不含 id）
-3. **Storage 参数**（`addStorageParam:1993`）：读取 `componentCollection.localStorageName`/`localStorageNode`，有则追加到 newArray。
-4. **storePreviewComponents**（line 2034）：遍历 `componentCollection.previewComponent`，为每个预览组件构造 `new componentName(...)` 并配对 `[componentName, newExpression]` 压入 `argsArr`。
+3. **Storage 参数**（`addStorageParam`）：读取 `componentCollection.localStorageName`/`localStorageNode`，有则追加到 newArray。
+4. **storePreviewComponents**：遍历 `componentCollection.previewComponent`，为每个预览组件构造 `new componentName(...)` 并配对 `[componentName, newExpression]` 压入 `argsArr`。
 5. **cardRelativePath**：若 `projectConfig.cardObj` 存在当前文件的卡片路径，则通过 `addCardStringliteral` 将 `bundleName/moduleName/cardRelativePath` 追加到参数末尾，调用 `loadEtsCard` 而非 `loadDocument`。
 6. **entryNodeKey**：`@Entry(storageName)` 中的标识符参数，在 Partial Update 模式下追加到 newArray 末尾。
 

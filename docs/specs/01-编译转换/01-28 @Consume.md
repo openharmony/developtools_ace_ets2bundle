@@ -3,8 +3,8 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_member.ts:975-1015`（`updateConsumeProperty`）
-- `compiler/src/pre_define.ts:43`（`COMPONENT_CONSUME_DECORATOR = '@Consume'`）
+- `compiler/src/process_component_member.ts`（`updateConsumeProperty`）
+- `compiler/src/pre_define.ts`（`COMPONENT_CONSUME_DECORATOR = '@Consume'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -30,10 +30,10 @@ set theme(newValue: string) { this.__theme.set(newValue) }
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/consume.ts:48`（`initializeStructWithConsumeProperty`）
-- `arkui-plugins/common/predefines.ts:212`（`DecoratorNames.CONSUME = 'Consume'`）
-- `arkui-plugins/common/predefines.ts:283`（`StateManagementTypes.CONSUME_DECORATED`）
-- `arkui-plugins/common/predefines.ts:317`（`StateManagementTypes.MAKE_CONSUME = 'makeConsume'`）
+- `arkui-plugins/ui-plugins/property-translators/consume.ts`（`initializeStructWithConsumeProperty`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.CONSUME = 'Consume'`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.CONSUME_DECORATED`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.MAKE_CONSUME = 'makeConsume'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -56,19 +56,19 @@ __initializeStruct(initializers, content): void {
 ```
 
 > 声明文件参考：`@Consume(alias: string = "")`。
-- @Consume 通过 `initializeConsume`（`process_component_member.ts:975`）从祖先查找 ProvidedVar
+- @Consume 通过 `initializeConsume`（`process_component_member.ts`）从祖先查找 ProvidedVar
 - @Consume 的 alias 参数指定消费的 @Provide alias 名称
 - @Consume 不需要默认值（`mandatorySpecifyDefaultValueDecorators` 不含 @Consume）
 - @Consume 通过 `initializeConsume` 从祖先组件查找 ProvidedVar
 - @Consume 的 alias 参数指定要消费的 @Provide alias 名称
 - 类型映射为 `ObservedPropertyAbstract`/`ObservedPropertyAbstractPU`
 
-- `initializeConsume` 从祖先查找（`process_component_member.ts:975`）
+- `initializeConsume` 从祖先查找（`process_component_member.ts`）
 - @Consume 不需要默认值
-- `initializeConsume` 从祖先查找（`process_component_member.ts:975`）
+- `initializeConsume` 从祖先查找（`process_component_member.ts`）
 - @Consume 不需要默认值（不在 `mandatorySpecifyDefaultValueDecorators` 中）
 
-- @Consume 的 alias 参数：`process_component_member.ts:990`（从装饰器参数提取 alias）
+- @Consume 的 alias 参数：`process_component_member.ts`（从装饰器参数提取 alias）
 
 ## 动静态差异说明
 

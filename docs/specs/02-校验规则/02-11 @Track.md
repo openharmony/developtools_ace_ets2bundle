@@ -2,9 +2,9 @@
 校验 `@Track` 装饰器只能用于 class 成员变量，且不可用于 `@ObservedV2` 装饰的类（应使用 `@Trace`）。
 
 ## 源码参考位置
-- 动态：`compiler/src/validate_ui_syntax.ts:1189`（`validateClassDecorator`）
-  - `compiler/src/validate_ui_syntax.ts:1202`（`validateMemberInClass`，@Track 成员校验） 中的 `@Track` 装饰器校验逻辑
-- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-track-decorator.ts:54`
+- 动态：`compiler/src/validate_ui_syntax.ts`（`validateClassDecorator`）
+  - `compiler/src/validate_ui_syntax.ts`（`validateMemberInClass`，@Track 成员校验） 中的 `@Track` 装饰器校验逻辑
+- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-track-decorator.ts`（`checkTrackDecorator`）
 
 ## 适用对象
 - class 的成员变量
@@ -128,14 +128,14 @@ class MyV2Data {
 - 静态工具链（arkui-plugins）扩展覆盖 struct/方法/接口/全局属性的非法使用检测，以及 @ObservedV2 类的 @Trace 替换提示
 - 两条工具链均为 ERROR 级别
 
-- `compiler/src/pre_define.ts:72`（`CLASS_TRACK_DECORATOR = 'Track'`）
+- `compiler/src/pre_define.ts`（`CLASS_TRACK_DECORATOR = 'Track'`）
 
-- `arkui-plugins/ui-plugins/property-translators/observedTrack.ts:39`（`ObservedTrackTranslator`，@Track/@Observed 转换器）
+- `arkui-plugins/ui-plugins/property-translators/observedTrack.ts`（`ObservedTrackTranslator`，@Track/@Observed 转换器）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts:1189`（`validateClassDecorator`） | `check-track-decorator.ts:40` |
+| 校验入口 | `validate_ui_syntax.ts`（`validateClassDecorator`） | `check-track-decorator.ts`（`checkTrackDecorator`） |
 | 报错条数 | 分散 | 2 条（不可用于 @ObservedV2 + 仅 class 成员变量） |
 | 自动修复 | 无 | 有（建议移除 @Track） |

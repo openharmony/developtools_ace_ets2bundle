@@ -3,16 +3,16 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/validate_ui_syntax.ts:3394-3413`（`validateStateVariable`）
-  - `compiler/src/validate_ui_syntax.ts:2678-2684`（`getAccessQualifier`，protected 限制）
-  - `compiler/src/validate_ui_syntax.ts:3415-3421`（`validateStaticBlock`，静态代码块限制）
-  - `compiler/src/validate_ui_syntax.ts:3467-3477`（`validateStmgmtKeywords`，关键字命名）
+  - `compiler/src/validate_ui_syntax.ts`（`validateStateVariable`）
+  - `compiler/src/validate_ui_syntax.ts`（`getAccessQualifier`，protected 限制）
+  - `compiler/src/validate_ui_syntax.ts`（`validateStaticBlock`，静态代码块限制）
+  - `compiler/src/validate_ui_syntax.ts`（`validateStmgmtKeywords`，关键字命名）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-attribute-no-type.ts:22`
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-variable-initialization.ts:22`
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-property-optional.ts:22`
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-property-decorator.ts:25`
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-property-modifiers.ts:23`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-attribute-no-type.ts`（`checkStructAttributeNoType`）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-variable-initialization.ts`（`checkStructVariableInitialization`）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-property-optional.ts`（`checkStructPropertyOptional`）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-property-decorator.ts`（`checkStructPropertyDecorator`）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-property-modifiers.ts`（`checkPropertyModifiers`）
 
 ## 适用对象
 struct 声明及其成员
@@ -78,11 +78,11 @@ struct MyComp {
 
 ## 静态
 ### 源参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-attribute-no-type.ts:22`
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-property-decorator.ts:25`
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-property-optional.ts:22`
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-variable-initialization.ts:22`
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-property-modifiers.ts:23`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-attribute-no-type.ts`（`checkStructAttributeNoType`）
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-property-decorator.ts`（`checkStructPropertyDecorator`）
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-property-optional.ts`（`checkStructPropertyOptional`）
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-variable-initialization.ts`（`checkStructVariableInitialization`）
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-property-modifiers.ts`（`checkPropertyModifiers`）
 ### 静态工具链处理
 静态工具链通过 5 个独立规则文件分别校验 struct 成员规则：属性必须有类型注解（check-struct-attribute-no-type）、静态属性不可使用装饰器（check-struct-property-decorator）、@Link/@ObjectLink 不可为可选参数（check-struct-property-optional）、必须/禁止初始化的装饰器规则（check-struct-variable-initialization）、访问修饰符与装饰器兼容性（check-property-modifiers）。
 
@@ -90,9 +90,9 @@ struct MyComp {
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 属性类型注解 | validate_ui_syntax.ts:3394（validateStateVariable） | check-struct-attribute-no-type.ts:22 |
-| 静态成员限制 | validate_ui_syntax.ts:3415（validateStaticBlock） | check-struct-property-decorator.ts:25 |
-| 可选参数 | validate_ui_syntax.ts | check-struct-property-optional.ts:22 |
-| 初始化规则 | validate_ui_syntax.ts | check-struct-variable-initialization.ts:22 |
-| 访问修饰符 | validate_ui_syntax.ts:2610（validateAccessQualifier） | check-property-modifiers.ts:23 |
-| 关键字命名 | validate_ui_syntax.ts:3467（validateStmgmtKeywords） | 无对应 |
+| 属性类型注解 | validate_ui_syntax.ts（validateStateVariable） | check-struct-attribute-no-type.ts（checkStructAttributeNoType） |
+| 静态成员限制 | validate_ui_syntax.ts（validateStaticBlock） | check-struct-property-decorator.ts（checkStructPropertyDecorator） |
+| 可选参数 | validate_ui_syntax.ts | check-struct-property-optional.ts（checkStructPropertyOptional） |
+| 初始化规则 | validate_ui_syntax.ts | check-struct-variable-initialization.ts（checkStructVariableInitialization） |
+| 访问修饰符 | validate_ui_syntax.ts（validateAccessQualifier） | check-property-modifiers.ts（checkPropertyModifiers） |
+| 关键字命名 | validate_ui_syntax.ts（validateStmgmtKeywords） | 无对应 |

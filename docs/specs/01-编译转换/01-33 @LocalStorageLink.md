@@ -3,8 +3,8 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/pre_define.ts:47`（`COMPONENT_LOCAL_STORAGE_LINK_DECORATOR = '@LocalStorageLink'`）
-- `compiler/src/pre_define.ts:655`（`CREATE_LOCAL_STORAGE_LINK = 'createLocalStorageLink'`）
+- `compiler/src/pre_define.ts`（`COMPONENT_LOCAL_STORAGE_LINK_DECORATOR = '@LocalStorageLink'`）
+- `compiler/src/pre_define.ts`（`CREATE_LOCAL_STORAGE_LINK = 'createLocalStorageLink'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -30,10 +30,10 @@ set ldata(newValue: number) { this.__ldata.set(newValue) }
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/localstoragelink.ts:49`（`initializeStructWithLocalStorageLinkProperty`）
-- `arkui-plugins/common/predefines.ts:220`（`DecoratorNames.LOCAL_STORAGE_LINK = 'LocalStorageLink'`）
-- `arkui-plugins/common/predefines.ts:280`（`StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED`）
-- `arkui-plugins/common/predefines.ts:315`（`StateManagementTypes.MAKE_LOCAL_STORAGE_LINK = 'makeLocalStorageLink'`）
+- `arkui-plugins/ui-plugins/property-translators/localstoragelink.ts`（`initializeStructWithLocalStorageLinkProperty`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.LOCAL_STORAGE_LINK = 'LocalStorageLink'`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.MAKE_LOCAL_STORAGE_LINK = 'makeLocalStorageLink'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -54,21 +54,21 @@ __initializeStruct(initializers, content): void {
     "ldata", defaultValue)
 }
 ```
-- @LocalStorageLink 常量：`CREATE_LOCAL_STORAGE_LINK`（`pre_define.ts:655`）
+- @LocalStorageLink 常量：`CREATE_LOCAL_STORAGE_LINK`（`pre_define.ts`）
 - Partial Update 模式下生成 reset 重用语句（`createStoragePropReuseDecl`）
 - @LocalStorageLink 通过 `createLocalStorageLink` 实现双向同步
 - @LocalStorageLink 必须指定默认值
 - Partial Update 模式下生成 reset 重用语句（`createStoragePropReuseDecl`）
 - 与 LocalStorage 的绑定需要在 @Entry 中传入 storage 参数
 
-- 常量 `CREATE_LOCAL_STORAGE_LINK`（`pre_define.ts:655`）
+- 常量 `CREATE_LOCAL_STORAGE_LINK`（`pre_define.ts`）
 - Partial Update 模式下生成 reset 重用语句
-- 常量 `CREATE_LOCAL_STORAGE_LINK`（`pre_define.ts:655`）
+- 常量 `CREATE_LOCAL_STORAGE_LINK`（`pre_define.ts`）
 - Partial Update 模式下生成 reset 重用语句
 
-- Partial Update 模式重用：`createStoragePropReuseDecl`（`process_component_member.ts:747`）生成 reset 语句
+- Partial Update 模式重用：`createStoragePropReuseDecl`（`process_component_member.ts`）生成 reset 语句
 
-- @LocalStorageLink 常量 `CREATE_LOCAL_STORAGE_LINK`（`pre_define.ts:655`），生成 `this.createLocalStorageLink(key, default, this, name)`
+- @LocalStorageLink 常量 `CREATE_LOCAL_STORAGE_LINK`（`pre_define.ts`），生成 `this.createLocalStorageLink(key, default, this, name)`
 
 ## 动静态差异说明
 

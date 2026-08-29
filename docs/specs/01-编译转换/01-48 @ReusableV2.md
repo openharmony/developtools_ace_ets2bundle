@@ -3,10 +3,10 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_struct_componentV2.ts:135-153`（`processStructComponentV2` 中 `ReusableV2` 处理）
-- `compiler/src/process_struct_componentV2.ts:155-200`（`createReusableV2ReflectFunction`）
-- `compiler/src/pre_define.ts:77`（`REUSABLE_V2_INNER_DECORATOR`）
-- `compiler/src/pre_define.ts:664`（`IS_REUSABLE_ = 'isReusable_'`）
+- `compiler/src/process_struct_componentV2.ts`（`processStructComponentV2` 中 `ReusableV2` 处理）
+- `compiler/src/process_struct_componentV2.ts`（`createReusableV2ReflectFunction`）
+- `compiler/src/pre_define.ts`（`REUSABLE_V2_INNER_DECORATOR`）
+- `compiler/src/pre_define.ts`（`IS_REUSABLE_ = 'isReusable_'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -56,13 +56,13 @@ class Parent extends ViewV2 {
 ```
 
 ### 关键转换逻辑
-- `processStructComponentV2`（line 135-153）：检测 `isReusableV2`，注入 `@__ReusableV2_Inner_Decorator__` 装饰器。
-- `createReusableV2ReflectFunction`（line 155-200）：生成 reflect 函数，通过 `Reflect.defineProperty` 在原型上设置 `isReusable_` getter 返回 `true`。
+- `processStructComponentV2`：检测 `isReusableV2`，注入 `@__ReusableV2_Inner_Decorator__` 装饰器。
+- `createReusableV2ReflectFunction`：生成 reflect 函数，通过 `Reflect.defineProperty` 在原型上设置 `isReusable_` getter 返回 `true`。
 - 使用处通过 `this.reuseOrCreateNewComponent` 替换直接构造，实现组件复用。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/common/predefines.ts:129`（`DecoratorNames.RESUABLE_V2 = 'ReusableV2'`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.RESUABLE_V2 = 'ReusableV2'`）
 
 ### 转换前的原始代码
 ```typescript

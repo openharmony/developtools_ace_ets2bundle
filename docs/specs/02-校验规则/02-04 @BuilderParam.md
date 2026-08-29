@@ -2,8 +2,8 @@
 校验尾随闭包调用的组件必须有且仅有一个 @BuilderParam 属性（ArkTS 1.1）或至少一个 @BuilderParam 且最后一个无参数（ArkTS 1.2）；@BuilderParam 不可同时作为参数和尾随闭包。
 
 ## 源码参考位置
-- 动态：`compiler/src/process_component_build.ts:855`（尾随闭包校验）
-- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-builder-param.ts:23`
+- 动态：`compiler/src/process_component_build.ts`（尾随闭包校验）
+- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-builder-param.ts`（`checkBuilderParam`）
 
 ## 适用对象
 组件初始化调用（使用尾随闭包语法的组件调用）
@@ -75,20 +75,20 @@ The @BuilderParam decorated parameter '${lastBuilderParam.name}' cannot be passe
 ```
 
 ### 源码位置
-`arkui-plugins/collectors/ui-collectors/validators/rules/check-builder-param.ts:23`
+`arkui-plugins/collectors/ui-collectors/validators/rules/check-builder-param.ts`（`checkBuilderParam`）
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-builder-param.ts:23`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-builder-param.ts`（`checkBuilderParam`）
 ### 静态工具链处理
 静态工具链通过 `check-builder-param.ts` 校验尾随闭包调用的 @BuilderParam 规则，区分 ArkTS 1.1（仅 1 个 @BuilderParam）和 1.2（至少 1 个且最后一个无参数）版本差异。报错通过 `this.report()` 输出，无数字错误码。
 
-- `compiler/src/pre_define.ts:49`（`COMPONENT_BUILDERPARAM_DECORATOR = '@BuilderParam'`）
+- `compiler/src/pre_define.ts`（`COMPONENT_BUILDERPARAM_DECORATOR = '@BuilderParam'`）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `process_component_build.ts:855`（尾随闭包校验） | `check-builder-param.ts:23` |
+| 校验入口 | `process_component_build.ts`（尾随闭包校验） | `check-builder-param.ts`（`checkBuilderParam`） |
 | ArkTS 版本差异 | 不区分 | 区分 ArkTS 1.1（仅 1 个 @BuilderParam）和 1.2（至少 1 个） |
 | 自动修复 | 无 | 无 |

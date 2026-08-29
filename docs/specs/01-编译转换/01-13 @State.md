@@ -3,11 +3,11 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_member.ts:578`（`processStateDecorators`）
-- `compiler/src/process_component_member.ts:870-878`（`updateObservedProperty`，Legacy）
-- `compiler/src/process_component_member.ts:1501`（`updateObservedPropertyPU`，Partial Update）
-- `compiler/src/process_component_member.ts:1428-1435`（`createTypeReference`，类型映射）
-- `compiler/src/pre_define.ts:37`（`COMPONENT_STATE_DECORATOR = '@State'`）
+- `compiler/src/process_component_member.ts`（`processStateDecorators`）
+- `compiler/src/process_component_member.ts`（`updateObservedProperty`，Legacy）
+- `compiler/src/process_component_member.ts`（`updateObservedPropertyPU`，Partial Update）
+- `compiler/src/process_component_member.ts`（`createTypeReference`，类型映射）
+- `compiler/src/pre_define.ts`（`COMPONENT_STATE_DECORATOR = '@State'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -42,9 +42,9 @@ purgeVariableDependenciesOnElmtId(rmElmtId: number) {
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/state.ts:38`（`StateTranslator`）
-- `arkui-plugins/common/predefines.ts:208`（`DecoratorNames.STATE = 'State'`）
-- `arkui-plugins/ui-plugins/property-translators/base.ts:171`（`initializeStruct`，工厂调用生成）
+- `arkui-plugins/ui-plugins/property-translators/state.ts`（`StateTranslator`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.STATE = 'State'`）
+- `arkui-plugins/ui-plugins/property-translators/base.ts`（`initializeStruct`，工厂调用生成）
 
 ### 转换后的代码
 ```typescript
@@ -57,17 +57,17 @@ __initializeStruct(initializers, content): void {
     initializers?.count ?? 0, watchCb?)
 }
 ```
-- @State 的 setter 生成 `set count(newValue) { this.__count.set(newValue) }`（`process_component_member.ts:596`）
-- Partial Update 模式额外生成 `purgeDependencyOnElmtId` 方法（`process_component_member.ts:611`）
+- @State 的 setter 生成 `set count(newValue) { this.__count.set(newValue) }`（`process_component_member.ts`）
+- Partial Update 模式额外生成 `purgeDependencyOnElmtId` 方法（`process_component_member.ts`）
 - 简单类型（number/string/boolean）映射为 `ObservedPropertySimple`/`ObservedPropertySimplePU`
 - 复杂类型（object/class）映射为 `ObservedPropertyObject`/`ObservedPropertyObjectPU`
 - Partial Update 模式额外生成 `purgeVariableDependenciesOnElmtId` 方法
 - @State 与 @Require 配合时可免除必须指定默认值的要求
 
-- getter/setter 生成：`process_component_member.ts:596`（`createGetAccessor`）/`:601`（`createSetAccessor`）
-- Partial Update 模式额外生成 `purgeDependencyOnElmtId`（`:611`）
-- getter/setter 生成：`createGetAccessor`/`createSetAccessor`（`process_component_member.ts:596-601`）
-- Partial Update 模式额外生成 `purgeDependencyOnElmtId`（`process_component_member.ts:611-615`）
+- getter/setter 生成：`process_component_member.ts`（`createGetAccessor`）/`:601`（`createSetAccessor`）
+- Partial Update 模式额外生成 `purgeDependencyOnElmtId`
+- getter/setter 生成：`createGetAccessor`/`createSetAccessor`（`process_component_member.ts`）
+- Partial Update 模式额外生成 `purgeDependencyOnElmtId`（`process_component_member.ts`）
 
 ## 接口声明交叉验证
 

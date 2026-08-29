@@ -3,10 +3,10 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/process_component_member.ts:634-668`（`processWatch` 函数，检查参数是否为 `StringLiteral` 且方法是否存在）
-  - `compiler/src/process_component_member.ts:1492-1499`（`validateWatchParam` 函数，检查参数是否为字符串）
+  - `compiler/src/process_component_member.ts`（`processWatch` 函数，检查参数是否为 `StringLiteral` 且方法是否存在）
+  - `compiler/src/process_component_member.ts`（`validateWatchParam` 函数，检查参数是否为字符串）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-function.ts:36`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-function.ts`（`checkWatchDecoratorFunction`）
 
 ## 适用对象
 `@Watch` 装饰的自定义组件成员属性（@Component struct 的 ClassProperty）
@@ -73,11 +73,11 @@ struct MyComp {
 `getMethodNames` 遍历 `ClassDefinition.body`，筛选 `MethodDefinition` 且 `Identifier` 非空的成员，记录方法名，用于后续参数匹配。
 
 ### 源码位置
-`arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-function.ts:24`
+`arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-function.ts`（`checkWatchDecoratorFunction`）
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-function.ts:24`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-function.ts`（`checkWatchDecoratorFunction`）
 ### 静态工具链处理
 静态工具链通过 `check-watch-decorator-function.ts` 校验 @Watch 参数必须指向 struct 中已存在的方法名。支持 `FixSuggestion`（建议添加对应方法 `{parameterName}(){\n}`）。
 
@@ -85,5 +85,5 @@ struct MyComp {
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts`（分散校验） | `check-watch-decorator-function.ts:24` |
+| 校验入口 | `validate_ui_syntax.ts`（分散校验） | `check-watch-decorator-function.ts`（`checkWatchDecoratorFunction`） |
 | 自动修复 | 无 | 有（建议添加对应方法 `{parameterName}(){\n}`） |

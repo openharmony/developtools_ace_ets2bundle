@@ -3,9 +3,9 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_class.ts:890`（`processComponentMethod`）
-- `compiler/src/process_component_class.ts:924`（`isBuilderOrLocalBuilder` 判断）
-- `compiler/src/pre_define.ts:121`（`COMPONENT_BUILDER_DECORATOR = '@Builder'`）
+- `compiler/src/process_component_class.ts`（`processComponentMethod`）
+- `compiler/src/process_component_class.ts`（`isBuilderOrLocalBuilder` 判断）
+- `compiler/src/pre_define.ts`（`COMPONENT_BUILDER_DECORATOR = '@Builder'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -39,8 +39,8 @@ myBuilder = ($$: string, parent: any = null) => { Text($$) }
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/builder-lambda-translators/builder-factory.ts:44`（`rewriteBuilderMethod`）
-- `arkui-plugins/common/predefines.ts:218`（`DecoratorNames.BUILDER = 'Builder'`）
+- `arkui-plugins/ui-plugins/builder-lambda-translators/builder-factory.ts`（`rewriteBuilderMethod`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.BUILDER = 'Builder'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -71,18 +71,18 @@ myBuilder($$: string) { Text($$) }
 ## 深度转换逻辑
 
 ### 源码参考位置
-- `compiler/src/pre_define.ts:121`（`COMPONENT_BUILDER_DECORATOR = '@Builder'`）
-- `compiler/src/pre_define.ts:122`（`COMPONENT_LOCAL_BUILDER_DECORATOR = '@LocalBuilder'`）
-- `compiler/src/pre_define.ts:686`（`BUILDER_PARAM_PROXY = 'makeBuilderParameterProxy'`）
-- `compiler/src/pre_define.ts:707`（`WRAPBUILDER_FUNCTION = 'wrapBuilder'`）
-- `compiler/src/process_component_class.ts:997-1017`（`isBuilderOrLocalBuilder`，@Builder/@LocalBuilder 识别）
-- `compiler/src/process_component_class.ts:1019-1028`（`localBuilderNode`，@LocalBuilder 转箭头函数属性）
-- `compiler/src/process_component_build.ts:633-667`（`transferBuilderCall`，@Builder 调用变换）
-- `compiler/src/process_component_build.ts:277-287`（`parseGlobalBuilderParams`，firstParam 机制）
-- `compiler/src/process_component_build.ts:319-321`（`forkBuilderParamNode`，全局 @Builder 参数 fork）
-- `compiler/src/process_ui_syntax.ts:516-555`（`globalBuilderParamAssignment`，PUV2 parent 取栈顶）
-- `compiler/src/process_ui_syntax.ts:601-613`（`initializeMYIDS`，Partial Update 模式 @Builder 的 MYIDS 参数）
-- `compiler/src/process_ui_syntax.ts:557-599`（NavigationBuilderRegister 注册，使用 wrapBuilder）
+- `compiler/src/pre_define.ts`（`COMPONENT_BUILDER_DECORATOR = '@Builder'`）
+- `compiler/src/pre_define.ts`（`COMPONENT_LOCAL_BUILDER_DECORATOR = '@LocalBuilder'`）
+- `compiler/src/pre_define.ts`（`BUILDER_PARAM_PROXY = 'makeBuilderParameterProxy'`）
+- `compiler/src/pre_define.ts`（`WRAPBUILDER_FUNCTION = 'wrapBuilder'`）
+- `compiler/src/process_component_class.ts`（`isBuilderOrLocalBuilder`，@Builder/@LocalBuilder 识别）
+- `compiler/src/process_component_class.ts`（`localBuilderNode`，@LocalBuilder 转箭头函数属性）
+- `compiler/src/process_component_build.ts`（`transferBuilderCall`，@Builder 调用变换）
+- `compiler/src/process_component_build.ts`（`parseGlobalBuilderParams`，firstParam 机制）
+- `compiler/src/process_component_build.ts`（`forkBuilderParamNode`，全局 @Builder 参数 fork）
+- `compiler/src/process_ui_syntax.ts`（`globalBuilderParamAssignment`，PUV2 parent 取栈顶）
+- `compiler/src/process_ui_syntax.ts`（`initializeMYIDS`，Partial Update 模式 @Builder 的 MYIDS 参数）
+- `compiler/src/process_ui_syntax.ts`（NavigationBuilderRegister 注册，使用 wrapBuilder）
 
 ### 全局 @Builder 函数 vs 组件内 @Builder 方法
 
@@ -176,7 +176,7 @@ class MyComponent {
 
 ### 关键转换逻辑
 
-#### 1. @Builder/@LocalBuilder 识别（process_component_class.ts:997-1017）
+#### 1. @Builder/@LocalBuilder 识别（process_component_class.ts）
 
 `isBuilderOrLocalBuilder` 遍历装饰器，识别 `@Builder` 和 `@LocalBuilder`：
 
@@ -196,7 +196,7 @@ if ([COMPONENT_LOCAL_BUILDER_DECORATOR, COMPONENT_BUILDER_DECORATOR].includes(or
 - `@Builder` 设置 `isBuilder = true`
 - `@LocalBuilder` 设置 `isLocalBuilder = true`
 
-#### 2. @LocalBuilder 转箭头函数属性（process_component_class.ts:1019-1028）
+#### 2. @LocalBuilder 转箭头函数属性（process_component_class.ts）
 
 ```typescript
 function localBuilderNode(node: ts.MethodDeclaration, componentBlock: ts.Block): ts.PropertyDeclaration {
@@ -213,13 +213,13 @@ function localBuilderNode(node: ts.MethodDeclaration, componentBlock: ts.Block):
 
 - 将 `@LocalBuilder` 方法转换为 `PropertyDeclaration`（箭头函数属性）
 - **关键设计**：箭头函数捕获外层 `this`，确保 `this` 词法绑定到组件实例
-- 静态方法不能被 `@LocalBuilder` 装饰（line 984-993，报错 `10905104`）
+- 静态方法不能被 `@LocalBuilder` 装饰（报错 `10905104`）
 
-#### 3. transferBuilderCall 参数传递（process_component_build.ts:633-667）
+#### 3. transferBuilderCall 参数传递（process_component_build.ts）
 
 `transferBuilderCall` 处理 @Builder 调用的参数：
 
-**对象字面量参数 → makeBuilderParameterProxy（line 639-652）**：
+**对象字面量参数 → makeBuilderParameterProxy**：
 ```typescript
 if (ts.isObjectLiteralExpression(node.expression.arguments[0])) {
   return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
@@ -232,7 +232,7 @@ if (ts.isObjectLiteralExpression(node.expression.arguments[0])) {
 }
 ```
 
-**非对象参数 → 追加 null 和 myIds（line 657-664）**：
+**非对象参数 → 追加 null 和 myIds**：
 ```typescript
 return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
   node.expression, newNode, undefined,
@@ -245,7 +245,7 @@ return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
 - 当处于 LazyForEach 优化或 @Builder 场景时，追加 `null`（reuseId 占位）和 `myIds`（元素 ID 数组）
 - 非优化模式下保持原参数
 
-#### 4. parseGlobalBuilderParams 的 firstParam 机制（line 277-287）
+#### 4. parseGlobalBuilderParams 的 firstParam 机制
 
 ```typescript
 export function parseGlobalBuilderParams(parameters: ts.NodeArray<ts.ParameterDeclaration>,
@@ -261,10 +261,10 @@ export function parseGlobalBuilderParams(parameters: ts.NodeArray<ts.ParameterDe
 - 全局 @Builder 必须有且仅有 1 个参数
 - 参数名必须是 `Identifier`（非解构）
 - 提取的 `firstParam` 用于：
-  - `forkBuilderParamNode`（line 319-321）：在全局 @Builder 代码块前插入参数 fork 语句
-  - `createCustomComponent`（process_custom_component.ts:796-800）：为优化模式组件追加参数
+  - `forkBuilderParamNode`：在全局 @Builder 代码块前插入参数 fork 语句
+  - `createCustomComponent`（process_custom_component.ts）：为优化模式组件追加参数
 
-#### 5. globalBuilderParamAssignment 从 PUV2ViewBase.contextStack 栈顶取 parent（process_ui_syntax.ts:516-555）
+#### 5. globalBuilderParamAssignment 从 PUV2ViewBase.contextStack 栈顶取 parent（process_ui_syntax.ts）
 
 ```typescript
 export function globalBuilderParamAssignment(): ts.VariableStatement {
@@ -308,7 +308,7 @@ const parent = (PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.length)
 - 从 `PUV2ViewBase.contextStack` 栈顶获取 parent 组件
 - 用于全局 @Builder 中 `this` 的绑定上下文
 
-#### 6. initializeMYIDS 参数（process_ui_syntax.ts:601-613）
+#### 6. initializeMYIDS 参数（process_ui_syntax.ts）
 
 ```typescript
 export function initializeMYIDS(): ts.ParameterDeclaration {
@@ -323,7 +323,7 @@ export function initializeMYIDS(): ts.ParameterDeclaration {
 - 生成 `myIds = []` 参数声明
 - Partial Update 模式下 @Builder 方法追加此参数，用于元素 ID 追踪
 
-#### 7. NavigationBuilderRegister 注册（process_ui_syntax.ts:557-599）
+#### 7. NavigationBuilderRegister 注册（process_ui_syntax.ts）
 
 ```typescript
 function createNavigationRegister(routerInfo: RouterInfo): ts.Statement {
@@ -363,12 +363,12 @@ function createNavigationRegister(routerInfo: RouterInfo): ts.Statement {
 部分内置组件的 create 参数需要特殊的 builder 变换处理，通过 `CUSTOM_BUILDER_CONSTRUCTORS`、`CREATE_BIND_COMPONENT` 和 `BIND_OBJECT_PROPERTY` 三个集合控制。
 
 ### 源码参考位置
-- `compiler/src/component_map.ts:159`（`CUSTOM_BUILDER_CONSTRUCTORS`）
-- `compiler/src/pre_define.ts:526`（`CREATE_BIND_COMPONENT`）
-- `compiler/src/pre_define.ts:369-383`（`BIND_OBJECT_PROPERTY`）
-- `compiler/src/process_component_build.ts:2274-2286`（`checkArguments` 中 builder 参数变换）
-- `compiler/src/process_component_build.ts:3982-3986`（`checkCreateArgumentBuilder` 判断）
-- `compiler/src/process_component_build.ts:2526-2528`（`isBuilderArgument` 中 `BIND_OBJECT_PROPERTY` 检测）
+- `compiler/src/component_map.ts`（`CUSTOM_BUILDER_CONSTRUCTORS`）
+- `compiler/src/pre_define.ts`（`CREATE_BIND_COMPONENT`）
+- `compiler/src/pre_define.ts`（`BIND_OBJECT_PROPERTY`）
+- `compiler/src/process_component_build.ts`（`checkArguments` 中 builder 参数变换）
+- `compiler/src/process_component_build.ts`（`checkCreateArgumentBuilder` 判断）
+- `compiler/src/process_component_build.ts`（`isBuilderArgument` 中 `BIND_OBJECT_PROPERTY` 检测）
 
 ### CUSTOM_BUILDER_CONSTRUCTORS
 
@@ -400,7 +400,7 @@ Refresh(createBuilderParameterProxy({ refreshing: {...}, builder: this.refreshBu
 | `ListItemGroup` | create 调用参数走 `transformBuilder` 全量 builder 变换 |
 | `Refresh` | 同上（同时也在 `CUSTOM_BUILDER_CONSTRUCTORS` 中） |
 
-`checkCreateArgumentBuilder`（line 3982-3986）：当组件在 `CREATE_BIND_COMPONENT` 中且 `type === COMPONENT_CREATE_FUNCTION` 时，调用 `transformBuilder` 对所有参数执行 `parseCreateParameterBuilder` 变换。
+`checkCreateArgumentBuilder`：当组件在 `CREATE_BIND_COMPONENT` 中且 `type === COMPONENT_CREATE_FUNCTION` 时，调用 `transformBuilder` 对所有参数执行 `parseCreateParameterBuilder` 变换。
 
 ### BIND_OBJECT_PROPERTY
 
@@ -418,6 +418,6 @@ Refresh(createBuilderParameterProxy({ refreshing: {...}, builder: this.refreshBu
 | 所有组件（ALL_COMPONENTS） | `bindMenu`、`bindContextMenu`、`bindContextMenuByResponseType`、`bindContextMenuByIsShow`、`bindContextMenuWithResponse`、`bindSheet`、`dragPreview` |
 
 ### 关键转换逻辑
-1. `checkArguments`（line 2274-2286）：`CUSTOM_BUILDER_CONSTRUCTORS` 中的组件，create 参数逐个检测：条件表达式→`processConditionalBuilder`，builder 节点→`parseBuilderNode`，否则原样 push
-2. `checkCreateArgumentBuilder`（line 3982-3986）：`CREATE_BIND_COMPONENT` 中的组件，create 参数走 `transformBuilder` 全量变换
-3. `isBuilderArgument`（line 2526-2528）：参数为对象字面量时，检查 `BIND_OBJECT_PROPERTY` 中该组件是否有该属性，是则触发 builder 参数处理
+1. `checkArguments`：`CUSTOM_BUILDER_CONSTRUCTORS` 中的组件，create 参数逐个检测：条件表达式→`processConditionalBuilder`，builder 节点→`parseBuilderNode`，否则原样 push
+2. `checkCreateArgumentBuilder`：`CREATE_BIND_COMPONENT` 中的组件，create 参数走 `transformBuilder` 全量变换
+3. `isBuilderArgument`：参数为对象字面量时，检查 `BIND_OBJECT_PROPERTY` 中该组件是否有该属性，是则触发 builder 参数处理

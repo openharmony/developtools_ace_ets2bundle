@@ -3,9 +3,9 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/validate_ui_syntax.ts:381`（`isObservedClass`）
-- `compiler/src/validate_ui_syntax.ts:289-291`（收集 `observedClassCollection`）
-- `compiler/src/pre_define.ts:114`（`COMPONENT_OBSERVED_DECORATOR = '@Observed'`）
+- `compiler/src/validate_ui_syntax.ts`（`isObservedClass`）
+- `compiler/src/validate_ui_syntax.ts`（收集 `observedClassCollection`）
+- `compiler/src/pre_define.ts`（`COMPONENT_OBSERVED_DECORATOR = '@Observed'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -36,9 +36,9 @@ class MyClass {
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/observedTrack.ts:39`（`createAddRef`）
-- `arkui-plugins/common/predefines.ts:214`（`DecoratorNames.OBSERVED = 'Observed'`）
-- `arkui-plugins/common/predefines.ts:125`（`StructDecoratorNames.RESUABLE`，附近 enum）
+- `arkui-plugins/ui-plugins/property-translators/observedTrack.ts`（`createAddRef`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.OBSERVED = 'Observed'`）
+- `arkui-plugins/common/predefines.ts`（`StructDecoratorNames.RESUABLE`，附近 enum）
 
 ### 转换前的原始代码
 ```typescript
@@ -65,7 +65,7 @@ class MyClass {
 
 > 声明文件参考：`@Observed` 为类装饰器，`@Track` 为属性装饰器，二者配合使用。
 - @Observed 类本身不生成额外代码（运行时由状态管理框架处理）
-- compiler 收集 `observedClassCollection`（`validate_ui_syntax.ts:289`）用于 @ObjectLink 类型校验
+- compiler 收集 `observedClassCollection`（`validate_ui_syntax.ts`）用于 @ObjectLink 类型校验
 - @Observed 与 @Track 配合实现精确属性级追踪
 - @Observed 和 @ObservedV2 不可同时使用（错误码 10905226）
 

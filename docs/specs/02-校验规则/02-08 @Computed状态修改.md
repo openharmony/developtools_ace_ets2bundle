@@ -2,8 +2,8 @@
 校验 `@Computed` getter 方法中不可修改状态变量（包括赋值、自增/自减等操作）。
 
 ## 源码参考位置
-- 动态：`compiler/src/validate_ui_syntax.ts:3514`（`handleLifecycleDecorator`，@Computed getter 修改检测）
-- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-computed-state-modification.ts:46`
+- 动态：`compiler/src/validate_ui_syntax.ts`（`handleLifecycleDecorator`，@Computed getter 修改检测）
+- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-computed-state-modification.ts`（`checkComputedStateModification`）
 
 ## 适用对象
 - struct/class 的成员方法（`@Computed` 装饰的 getter 方法）
@@ -71,20 +71,20 @@ struct MyComp {
 - 通过 `isStateVariableProperty` 解析属性声明节点（`getPeerIdentifierDecl`），检查该 `ClassProperty` 是否含状态装饰器（`hasStateDecorator`）
 
 ### 源码位置
-`arkui-plugins/collectors/ui-collectors/validators/rules/check-computed-state-modification.ts:46`
+`arkui-plugins/collectors/ui-collectors/validators/rules/check-computed-state-modification.ts`（`checkComputedStateModification`）
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-computed-state-modification.ts:46`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-computed-state-modification.ts`（`checkComputedStateModification`）
 ### 静态工具链处理
 静态工具链通过 `check-computed-state-modification.ts`（Copyright 2026 新规则）校验 @Computed getter 中不可修改状态变量。遍历方法体检测赋值/自增/自减操作，箭头函数内的修改豁免。报错级别为 ERROR。
 
-- `arkui-plugins/common/predefines.ts:233`（`DecoratorNames.COMPUTED = 'Computed'`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.COMPUTED = 'Computed'`）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts` 中 @Computed getter 修改检测 | `check-computed-state-modification.ts:46` 专责校验 |
+| 校验入口 | `validate_ui_syntax.ts` 中 @Computed getter 修改检测 | `check-computed-state-modification.ts` 专责校验 |
 | 检测范围 | 检测 @Computed getter 内的状态变量赋值/自增 | 同动态，含 17 种状态装饰器变量检测 |
 | 箭头函数豁免 | 箭头函数内修改不报错 | 同动态

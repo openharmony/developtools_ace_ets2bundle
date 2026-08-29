@@ -3,8 +3,8 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_member.ts:1016-1029`（`updateBuilderParamProperty`）
-- `compiler/src/pre_define.ts:46`（`COMPONENT_BUILDERPARAM_DECORATOR = '@BuilderParam'`）
+- `compiler/src/process_component_member.ts`（`updateBuilderParamProperty`）
+- `compiler/src/pre_define.ts`（`COMPONENT_BUILDERPARAM_DECORATOR = '@BuilderParam'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -33,8 +33,8 @@ get content(): () => void { return this.content }
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/builderParam.ts:40`（`BuilderParamTranslator`）
-- `arkui-plugins/common/predefines.ts:217`（`DecoratorNames.BUILDER_PARAM = 'BuilderParam'`）
+- `arkui-plugins/ui-plugins/property-translators/builderParam.ts`（`BuilderParamTranslator`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.BUILDER_PARAM = 'BuilderParam'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -56,15 +56,15 @@ __initializeStruct(initializers, content): void {
     ?? initialValue
 }
 ```
-- @BuilderParam 校验：不可用 Builder 直接初始化（`judgeBuilderParamAssignedByBuilder`，`process_component_member.ts:1033`，错误码 10905107）
+- @BuilderParam 校验：不可用 Builder 直接初始化（`judgeBuilderParamAssignedByBuilder`，`process_component_member.ts`，错误码 10905107）
 - @BuilderParam 是 immutable（`immutableDecorators`，不生成 setter）
-- `compiler/src/process_component_member.ts:1033`（`judgeBuilderParamAssignedByBuilder`，错误码 10905107）
+- `compiler/src/process_component_member.ts`（`judgeBuilderParamAssignedByBuilder`，错误码 10905107）
 - @BuilderParam 是 immutable（不生成 setter）
 - @BuilderParam 不可用 Builder 直接初始化（错误码 10905107）
 - 静态工具链中，最后一个 @BuilderParam 通过尾随闭包注入（`isLastBuilderParam`）
 - @BuilderParam 类型为函数类型时，静态工具链自动添加 @memo 注解让 memo 插件介入
 
-- 不可用 Builder 直接初始化（`judgeBuilderParamAssignedByBuilder`，`process_component_member.ts:1033`，错误码 10905107）
+- 不可用 Builder 直接初始化（`judgeBuilderParamAssignedByBuilder`，`process_component_member.ts`，错误码 10905107）
 - @BuilderParam 是 immutable（`immutableDecorators`，不生成 setter）
 - 不可用 Builder 直接初始化（错误码 10905107）
 - @BuilderParam 是 immutable（不生成 setter）

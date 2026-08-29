@@ -7,12 +7,12 @@ interop 变换是静态工具链中 ArkTS 组件的 struct 到 class 桥接机�
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/interop-plugins/index.ts:27`（`interopTransform`，插件入口）
-- `arkui-plugins/interop-plugins/decl_transformer.ts:22`（`DeclTransformer`，parsed 阶段）
-- `arkui-plugins/interop-plugins/emit_transformer.ts:24`（`EmitTransformer`，checked 阶段）
-- `arkui-plugins/interop-plugins/arkuiImportList.ts:17`（`ARKUI_DECLARE_LIST`，165 个组件/装饰器名）
-- `arkui-plugins/ui-plugins/interop/interop.ts:407`（`generateArkUICompatible`）
-- `arkui-plugins/ui-plugins/interop/builder-interop.ts:558`（`generateBuilderCompatible`）
+- `arkui-plugins/interop-plugins/index.ts`（`interopTransform`，插件入口）
+- `arkui-plugins/interop-plugins/decl_transformer.ts`（`DeclTransformer`，parsed 阶段）
+- `arkui-plugins/interop-plugins/emit_transformer.ts`（`EmitTransformer`，checked 阶段）
+- `arkui-plugins/interop-plugins/arkuiImportList.ts`（`ARKUI_DECLARE_LIST`，165 个组件/装饰器名）
+- `arkui-plugins/ui-plugins/interop/interop.ts`（`generateArkUICompatible`）
+- `arkui-plugins/ui-plugins/interop/builder-interop.ts`（`generateBuilderCompatible`）
 
 ### 转换前的原始代码
 ```typescript
@@ -48,25 +48,25 @@ arkUICompatible(
 ```
 
 ### 关键转换逻辑
-- **流水线**（interop-plugins/index.ts:27-99）：
-  1. parsed 阶段（L38-68）：`DeclTransformer` 做 struct -> class 变换，清空 build 方法体
-  2. checked 阶段（L70-99）：`EmitTransformer` 处理注解变换，调 `arkts.recheckSubtree(script)`（L91）
-- **DeclTransformer**（decl_transformer.ts:22-189）：
-  - `processComponent()`（L27-52）：struct -> class（同 definition）
-  - `transformMethodDefinition()`（L87-121）：对 build 方法清空函数体
-  - `transformWrappedBuilderVarDecl()`（L149-188）：`WrappedBuilder<(...)=>void>` -> `WrappedBuilder<[Tuple<...>]>` 元组类型
-  - `updateImportDeclaration()`（L130-147）：对 `@ohos.arkui.*` 导入中 `ARKUI_DECLARE_LIST` 集合的 specifier 标记 `setRemovable(true)`
-- **EmitTransformer**（emit_transformer.ts:24-274）：
-  - `transformReusePoolInAnnotations()`（L58-107）：`reusePool` 值转字符串，添加 `freezeWhenInactive: true`
-  - `processAlias()`（L131-162）：`@Provider('alias')` -> `@Provider({ value: 'alias' })`
-  - `processRefDecorators()`（L221-237）：V2 装饰器名映射为 V1 旧名
-  - `processMethodDefinition()`（L256-261）：清除 `@Monitor`/`@Computed` 方法注解
-- **arkUICompatible 生成**（ui-plugins/interop/interop.ts:407-451）：
+- **流水线**（interop-plugins/index.ts）：
+  1. parsed 阶段：`DeclTransformer` 做 struct -> class 变换，清空 build 方法体
+  2. checked 阶段：`EmitTransformer` 处理注解变换，调 `arkts.recheckSubtree(script)`
+- **DeclTransformer**（decl_transformer.ts）：
+  - `processComponent()`：struct -> class（同 definition）
+  - `transformMethodDefinition()`：对 build 方法清空函数体
+  - `transformWrappedBuilderVarDecl()`：`WrappedBuilder<(...)=>void>` -> `WrappedBuilder<[Tuple<...>]>` 元组类型
+  - `updateImportDeclaration()`：对 `@ohos.arkui.*` 导入中 `ARKUI_DECLARE_LIST` 集合的 specifier 标记 `setRemovable(true)`
+- **EmitTransformer**（emit_transformer.ts）：
+  - `transformReusePoolInAnnotations()`：`reusePool` 值转字符串，添加 `freezeWhenInactive: true`
+  - `processAlias()`：`@Provider('alias')` -> `@Provider({ value: 'alias' })`
+  - `processRefDecorators()`：V2 装饰器名映射为 V1 旧名
+  - `processMethodDefinition()`：清除 `@Monitor`/`@Computed` 方法注解
+- **arkUICompatible 生成**（ui-plugins/interop/interop.ts）：
   - 对 interop 组件调用生成 `arkUICompatible(initializer, updater, this)` 调用
-  - `getFunctionName()`（builder-interop.ts:614-644）：根据参数数量选择 `createCompatibleNodeWithFuncVoid` / `createCompatibleNodeWithFunc2` 等
+  - `getFunctionName()`（builder-interop.ts）：根据参数数量选择 `createCompatibleNodeWithFuncVoid` / `createCompatibleNodeWithFunc2` 等
 - interop 插件流水线顺序：interop（parsed）-> ui（parsed+checked）-> ui-syntax（checked）-> memo（checked）
-- `ARKUI_DECLARE_LIST`（`arkuiImportList.ts:17`）包含 165 个 ArkUI 组件/装饰器名称
-- interop 插件的 `EmitTransformer` 在 checked 阶段调用 `arkts.recheckSubtree(script)`（`interop-plugins/index.ts:91`）
+- `ARKUI_DECLARE_LIST`（`arkuiImportList.ts`）包含 165 个 ArkUI 组件/装饰器名称
+- interop 插件的 `EmitTransformer` 在 checked 阶段调用 `arkts.recheckSubtree(script)`（`interop-plugins/index.ts`）
 - `DeclTransformer` 在 parsed 阶段清空 build 方法体（保留签名用于跨语言互操作）
 
 ### 转换后的代码（Legacy）

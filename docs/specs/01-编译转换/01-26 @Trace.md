@@ -3,9 +3,9 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/constant_define.ts:20`（`TRACE = 'Trace'`，命名为 `MIN_TRACK`）
-- `compiler/src/validate_ui_syntax.ts:1189-1229`（`validateClassDecorator` -> `validateMemberInClass`）
-- `compiler/src/pre_define.ts:99`（`CLASS_MIN_TRACK_DECORATOR = 'Trace'`）
+- `compiler/src/constant_define.ts`（`TRACE = 'Trace'`，命名为 `MIN_TRACK`）
+- `compiler/src/validate_ui_syntax.ts`（`validateClassDecorator` -> `validateMemberInClass`）
+- `compiler/src/pre_define.ts`（`CLASS_MIN_TRACK_DECORATOR = 'Trace'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -27,15 +27,15 @@ class MyData {
 ```
 
 ### 关键转换逻辑
-- `validateMemberInClass`（line 1202-1231）：校验 `@Trace` 只能在 `@ObservedV2` class 内使用。
-- `@Trace` 命名为 `MIN_TRACK`（`constant_define.ts:20`），与 V1 的 `@Track`（`CLASS_TRACK_DECORATOR`）区分。
-- compiler 收集 `observedClassCollection` 并校验 `@Trace` 不能用于 `@Observed` class（line 1205-1211），应使用 `@Trace` 替代。
+- `validateMemberInClass`：校验 `@Trace` 只能在 `@ObservedV2` class 内使用。
+- `@Trace` 命名为 `MIN_TRACK`（`constant_define.ts`），与 V1 的 `@Track`（`CLASS_TRACK_DECORATOR`）区分。
+- compiler 收集 `observedClassCollection` 并校验 `@Trace` 不能用于 `@Observed` class，应使用 `@Trace` 替代。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/observedV2Trace.ts:41`（`getterBodyWithObservedV2TraceProperty`）
-- `arkui-plugins/ui-plugins/property-translators/observedV2Trace.ts:70`（`getterWithObservedV2TraceProperty`）
-- `arkui-plugins/ui-plugins/property-translators/observedV2Trace.ts:97`（`setterWithObservedV2TraceProperty`）
+- `arkui-plugins/ui-plugins/property-translators/observedV2Trace.ts`（`getterBodyWithObservedV2TraceProperty`）
+- `arkui-plugins/ui-plugins/property-translators/observedV2Trace.ts`（`getterWithObservedV2TraceProperty`）
+- `arkui-plugins/ui-plugins/property-translators/observedV2Trace.ts`（`setterWithObservedV2TraceProperty`）
 - `arkui-plugins/common/predefines.ts`（`DecoratorNames.TRACE = 'Trace'`）
 
 ### 转换前的原始代码
@@ -81,7 +81,7 @@ class MyData {
 | 维度 | 状态 |
 |---|---|
 | SDK 声明 | **已移除** — `decorator.static.d.ets` 中无 `@Type` 声明 |
-| 动态工具链 | `pre_define.ts:119`：`export const TYPE: string = 'Type';` — **遗留常量仍存在** |
+| 动态工具链 | `pre_define.ts`：`export const TYPE: string = 'Type';` — **遗留常量仍存在** |
 | 静态工具链 | `predefines.ts` 的 `DecoratorNames` 枚举 — **无 `TYPE` 条目** |
 
 **历史背景**：`@Type` 装饰器曾用于 `@Observed` class 中标记嵌套可观察属性。在 `@ObservedV2` + `@Trace` 推出后，`@Type` 被废弃并从 SDK 移除，`@Trace` 完全替代了其功能。

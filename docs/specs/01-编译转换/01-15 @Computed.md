@@ -3,9 +3,9 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_struct_componentV2.ts:253`（`isComputedDecorator`）
-- `compiler/src/process_struct_componentV2.ts:513`（`parseGetAccessor`）
-- `compiler/src/pre_define.ts:99`（`COMPONENTV2_COMPUTED_DECORATOR`）
+- `compiler/src/process_struct_componentV2.ts`（`isComputedDecorator`）
+- `compiler/src/process_struct_componentV2.ts`（`parseGetAccessor`）
+- `compiler/src/pre_define.ts`（`COMPONENTV2_COMPUTED_DECORATOR`）
 
 ### 转换前的原始代码
 ```typescript
@@ -39,15 +39,15 @@ class MyComponent extends ViewV2 {
 ```
 
 ### 关键转换逻辑
-- `isComputedDecorator`（line 253-256）：检测 `@Computed` 装饰器。
-- `parseGetAccessor`（line 513-519）：将属性名加入 `structInfo.computedDecoratorSet`（line 517），同时将属性名存入 `structInfo.propertiesMap`（值为 `undefined`）。
+- `isComputedDecorator`：检测 `@Computed` 装饰器。
+- `parseGetAccessor`：将属性名加入 `structInfo.computedDecoratorSet`，同时将属性名存入 `structInfo.propertiesMap`（值为 `undefined`）。
 - 保留为 GetAccessor，不生成额外代码。组件重用时通过 `resetComputed` 重置计算属性缓存。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/computed.ts:35`（`fieldWithComputedMethod`）
-- `arkui-plugins/ui-plugins/property-translators/computed.ts:67`（`getterWithComputedMethod`）
-- `arkui-plugins/ui-plugins/property-translators/computed.ts:81`（`resetOnReuseWithComputedMethod`）
+- `arkui-plugins/ui-plugins/property-translators/computed.ts`（`fieldWithComputedMethod`）
+- `arkui-plugins/ui-plugins/property-translators/computed.ts`（`getterWithComputedMethod`）
+- `arkui-plugins/ui-plugins/property-translators/computed.ts`（`resetOnReuseWithComputedMethod`）
 - `arkui-plugins/common/predefines.ts`（`DecoratorNames.COMPUTED = 'Computed'`）
 
 ### 转换前的原始代码
@@ -81,8 +81,8 @@ class MyComponent extends CustomComponentV2 {
 
 ### 深度逻辑
 - 是方法装饰器（继承 `MethodCacheTranslator`），`newName = computedField(originalName)` 即 `__computed_<name>`。
-- `fieldWithComputedMethod`（line 35-65）：生成 backing field，传入箭头函数（计算逻辑）和原始属性名。
-- `getterWithComputedMethod`（line 67-79）：将原方法体替换为 `return this.__backing_computed_doubled!.get()`。
+- `fieldWithComputedMethod`：生成 backing field，传入箭头函数（计算逻辑）和原始属性名。
+- `getterWithComputedMethod`：将原方法体替换为 `return this.__backing_computed_doubled!.get()`。
 - `cacheTranslatedInitializer` 收集到 `ComputedCache` 并生成 `resetStateVarsOnReuse` 调用。
 - 声明文件：`@Computed`，`IComputedDecoratedVariable<T> extends IDecoratedReadableVariable`。
 

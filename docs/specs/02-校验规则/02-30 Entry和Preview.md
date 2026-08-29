@@ -3,13 +3,13 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/validate_ui_syntax.ts:342-379`（`validateEntryAndPreviewCount`）
-  - `compiler/src/validate_ui_syntax.ts:3380-3392`（`checkEntryComponent`，@Entry struct 不可导出）
+  - `compiler/src/validate_ui_syntax.ts`（`validateEntryAndPreviewCount`）
+  - `compiler/src/validate_ui_syntax.ts`（`checkEntryComponent`，@Entry struct 不可导出）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-main-pages-entry-check.ts:24`
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-no-duplicate-preview.ts:23`
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-entry-struct-no-export.ts:22`
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-main-pages-entry-check.ts:24`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-main-pages-entry-check.ts`（`checkMainPagesEntry`）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-no-duplicate-preview.ts`（`checkNoDuplicatePreview`）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-entry-struct-no-export.ts`（`checkEntryStructNoExport`）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-main-pages-entry-check.ts`（`checkMainPagesEntry`）
 
 ## 适用对象
 - @Entry struct 声明
@@ -71,9 +71,9 @@ struct PreviewPage {
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-main-pages-entry-check.ts:24`
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-no-duplicate-preview.ts:23`
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-entry-struct-no-export.ts:22`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-main-pages-entry-check.ts`（`checkMainPagesEntry`）
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-no-duplicate-preview.ts`（`checkNoDuplicatePreview`）
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-entry-struct-no-export.ts`（`checkEntryStructNoExport`）
 ### 静态工具链处理
 静态工具链通过 3 个独立规则文件校验：main_pages 配置页面必须有且仅有一个 @Entry（check-main-pages-entry-check）、@Preview 数量不超过 10（check-no-duplicate-preview）、@Entry struct 不可导出（check-entry-struct-no-export）。支持 `FixSuggestion`。
 
@@ -81,7 +81,7 @@ struct PreviewPage {
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| @Entry 数量 | validate_ui_syntax.ts:342（validateEntryAndPreviewCount） | check-main-pages-entry-check.ts:24 |
-| @Preview 数量 | validate_ui_syntax.ts:342 | check-no-duplicate-preview.ts:23 |
-| @Entry 导出 | validate_ui_syntax.ts:3380（checkEntryComponent） | check-entry-struct-no-export.ts:22 |
+| @Entry 数量 | validate_ui_syntax.ts（validateEntryAndPreviewCount） | check-main-pages-entry-check.ts（checkMainPagesEntry） |
+| @Preview 数量 | validate_ui_syntax.ts（validateEntryAndPreviewCount） | check-no-duplicate-preview.ts（checkNoDuplicatePreview） |
+| @Entry 导出 | validate_ui_syntax.ts（checkEntryComponent） | check-entry-struct-no-export.ts（checkEntryStructNoExport） |
 | 自动修复 | 无 | 有 FixSuggestion |

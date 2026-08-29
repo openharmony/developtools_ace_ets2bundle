@@ -3,8 +3,8 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_struct_componentV2.ts:695`（`parseLocalDecorator`）
-- `compiler/src/pre_define.ts:99`（`COMPONENTV2_LOCAL_DECORATOR = '@Local'`）
+- `compiler/src/process_struct_componentV2.ts`（`parseLocalDecorator`）
+- `compiler/src/pre_define.ts`（`COMPONENTV2_LOCAL_DECORATOR = '@Local'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -33,14 +33,14 @@ class MyComponent extends ViewV2 {
 ```
 
 ### 关键转换逻辑
-- `parseLocalDecorator`（line 695-698）：将属性名加入 `structInfo.localDecoratorSet`，移除 `@Local` 装饰器，保留为普通属性。
+- `parseLocalDecorator`：将属性名加入 `structInfo.localDecoratorSet`，移除 `@Local` 装饰器，保留为普通属性。
 - 不生成 ObservedProperty 包装类，直接通过属性赋值管理状态。
-- 支持静态 `@Local`：当属性为 `static` 时，`makeType = MAKE_STATIC_LOCAL`，`hasResetOnReuse = false`（见 `arkui-plugins/ui-plugins/property-translators/local.ts:201-215`）。
+- 支持静态 `@Local`：当属性为 `static` 时，`makeType = MAKE_STATIC_LOCAL`，`hasResetOnReuse = false`（见 `arkui-plugins/ui-plugins/property-translators/local.ts`）。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/local.ts:48`（`factoryCallWithLocalProperty`）
-- `arkui-plugins/ui-plugins/property-translators/local.ts:201-215`（静态 `@Local` 处理）
+- `arkui-plugins/ui-plugins/property-translators/local.ts`（`factoryCallWithLocalProperty`）
+- `arkui-plugins/ui-plugins/property-translators/local.ts`（静态 `@Local` 处理）
 - `arkui-plugins/common/predefines.ts`（`DecoratorNames.LOCAL = 'Local'`）
 
 ### 转换前的原始代码
@@ -67,7 +67,7 @@ class MyComponent extends CustomComponentV2 {
 
 ### 深度逻辑
 - `makeType = MAKE_LOCAL`，生成 backing field + getter/setter + `__initializeStruct` 中的工厂调用。
-- 静态 `@Local`（`local.ts:201-215`）：`makeType` 切换为 `MAKE_STATIC_LOCAL`，`hasResetOnReuse = false`，`hasInitializeStruct = false`，通过 `fieldWithStaticLocalProperty` 和 `getterWithStaticLocalProperty` 生成静态版本。
+- 静态 `@Local`（`local.ts`）：`makeType` 切换为 `MAKE_STATIC_LOCAL`，`hasResetOnReuse = false`，`hasInitializeStruct = false`，通过 `fieldWithStaticLocalProperty` 和 `getterWithStaticLocalProperty` 生成静态版本。
 - 声明文件：`@Local`，`ILocalDecoratedVariable<T> extends IDecoratedMutableVariable, IDecoratedV2Variable`。
 
 ## 动静态差异说明

@@ -3,8 +3,8 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/pre_define.ts:99`（`COMPONENT_TRACK_DECORATOR`，`CLASS_TRACK_DECORATOR = 'Track'`）
-- `compiler/src/validate_ui_syntax.ts:1205-1211`（`validateMemberInClass` 中 `@Track` 校验）
+- `compiler/src/pre_define.ts`（`COMPONENT_TRACK_DECORATOR`，`CLASS_TRACK_DECORATOR = 'Track'`）
+- `compiler/src/validate_ui_syntax.ts`（`validateMemberInClass` 中 `@Track` 校验）
 
 ### 转换前的原始代码
 ```typescript
@@ -29,13 +29,13 @@ class MyData {
 
 ### 关键转换逻辑
 - `@Track` 仅用于 `@Observed` class（V1 数据模型）。
-- `validateMemberInClass`（line 1205-1211）：校验 `@Track` 不能用于 `@ObservedV2` class，应使用 `@Trace` 替代。
+- `validateMemberInClass`：校验 `@Track` 不能用于 `@ObservedV2` class，应使用 `@Trace` 替代。
 - compiler 收集 `observedClassCollection` 并校验 `@Track` 属性必须在 `@Observed` class 内使用。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/observedTrack.ts:39`（`createAddRef`）
-- `arkui-plugins/ui-plugins/property-translators/observedTrack.ts:84`（`getterBodyWithObservedTrackProperty`）
+- `arkui-plugins/ui-plugins/property-translators/observedTrack.ts`（`createAddRef`）
+- `arkui-plugins/ui-plugins/property-translators/observedTrack.ts`（`getterBodyWithObservedTrackProperty`）
 - `arkui-plugins/common/predefines.ts`（`DecoratorNames.TRACK = 'Track'`）
 
 ### 转换前的原始代码
@@ -70,7 +70,7 @@ class MyData {
 - 仅在 `isTracked` 或 `classHasTrack || isObserved` 时才执行转换。
 - getter 中调用 `conditionalAddRef(metaMember)` 建立引用关系（与 `@Trace` 类似但不调用 `UIUtils.makeObserved`）。
 - 声明文件：`@Track` 属性装饰器，`@Retention({policy: "SOURCE"})`。
-- `compiler/src/pre_define.ts:72`（`CLASS_TRACK_DECORATOR = 'Track'`）
+- `compiler/src/pre_define.ts`（`CLASS_TRACK_DECORATOR = 'Track'`）
 
 ## 动静态差异说明
 

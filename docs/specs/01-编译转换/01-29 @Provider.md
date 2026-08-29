@@ -4,7 +4,7 @@
 ## 动态
 ### 源码参考位置
 - `compiler/src/process_struct_componentV2.ts`（V2 属性处理逻辑，`parseProviderDecorator`）
-- `compiler/src/pre_define.ts:99`（`COMPONENTV2_PROVIDER_DECORATOR = '@Provider'`）
+- `compiler/src/pre_define.ts`（`COMPONENTV2_PROVIDER_DECORATOR = '@Provider'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -33,15 +33,15 @@ class ParentComponent extends ViewV2 {
 ```
 
 ### 关键转换逻辑
-- `parseProviderDecorator`（line 700-703）：将属性名加入 `structInfo.providerDecoratorSet`。
+- `parseProviderDecorator`：将属性名加入 `structInfo.providerDecoratorSet`。
 - 移除 `@Provider` 装饰器，保留为普通属性。
 - 别名（alias）用于匹配 `@Consumer` 的 key。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/provider.ts:47`（`initializeStructWithProviderProperty`）
-- `arkui-plugins/ui-plugins/property-translators/provider.ts:92`（`ProviderTranslator`）
-- `arkui-plugins/interop-plugins/emit_transformer.ts:175`（`allowOverride` 和 `alias` 兼容性转换）
+- `arkui-plugins/ui-plugins/property-translators/provider.ts`（`initializeStructWithProviderProperty`）
+- `arkui-plugins/ui-plugins/property-translators/provider.ts`（`ProviderTranslator`）
+- `arkui-plugins/interop-plugins/emit_transformer.ts`（`allowOverride` 和 `alias` 兼容性转换）
 - `arkui-plugins/common/predefines.ts`（`DecoratorNames.PROVIDER = 'Provider'`）
 
 ### 转换前的原始代码
@@ -69,9 +69,9 @@ class ParentComponent extends CustomComponentV2 {
 ### 深度逻辑
 - `makeType = MAKE_PROVIDER`，生成 backing field + getter/setter + `__initializeStruct` 工厂调用。
 - 工厂参数：属性名、别名（alias，从注解中提取或默认为属性名）、初始值。
-- interop emit 阶段（`emit_transformer.ts:175`）：处理 `allowOverride` 和 `alias` 的兼容性转换。
+- interop emit 阶段（`emit_transformer.ts`）：处理 `allowOverride` 和 `alias` 的兼容性转换。
 - 声明文件：`@Provider(alias: string = "")`，`IProviderDecoratedVariable<T> extends IDecoratedMutableVariable, IDecoratedV2Variable`。
-- `arkui-plugins/common/predefines.ts:234`（`DecoratorNames.PROVIDER = 'Provider'`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.PROVIDER = 'Provider'`）
 
 ## 动静态差异说明
 

@@ -3,9 +3,9 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_struct_componentV2.ts:521`（`parseMethodDeclaration`）
-- `compiler/src/process_struct_componentV2.ts:811`（`generateResetMonitor`）
-- `compiler/src/pre_define.ts:99`（`COMPONENTV2_MONITOR_DECORATOR`）
+- `compiler/src/process_struct_componentV2.ts`（`parseMethodDeclaration`）
+- `compiler/src/process_struct_componentV2.ts`（`generateResetMonitor`）
+- `compiler/src/pre_define.ts`（`COMPONENTV2_MONITOR_DECORATOR`）
 
 ### 转换前的原始代码
 ```typescript
@@ -39,15 +39,15 @@ class MyComponent extends ViewV2 {
 ```
 
 ### 关键转换逻辑
-- `parseMethodDeclaration`（line 521-540）：检测 `@Monitor` 装饰器，将方法名加入 `structInfo.monitorDecoratorSet`（line 531）。
-- `generateResetMonitor`（line 811-820）：生成 `this.resetMonitorsOnReuse()` 调用，在 `resetStateVarsOnReuse` 中重置所有 monitor。
+- `parseMethodDeclaration`：检测 `@Monitor` 装饰器，将方法名加入 `structInfo.monitorDecoratorSet`。
+- `generateResetMonitor`：生成 `this.resetMonitorsOnReuse()` 调用，在 `resetStateVarsOnReuse` 中重置所有 monitor。
 - 保留为普通方法，监听逻辑由运行时框架通过装饰器元数据处理。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/monitor.ts:30`（`fieldWithMonitorMethod`）
-- `arkui-plugins/ui-plugins/property-translators/monitor.ts:49`（`monitorInfo`）
-- `arkui-plugins/ui-plugins/property-translators/factory.ts:929`（`generateinitAssignment`）
+- `arkui-plugins/ui-plugins/property-translators/monitor.ts`（`fieldWithMonitorMethod`）
+- `arkui-plugins/ui-plugins/property-translators/monitor.ts`（`monitorInfo`）
+- `arkui-plugins/ui-plugins/property-translators/factory.ts`（`generateinitAssignment`）
 - `arkui-plugins/common/annotation-utils.ts`（`findPathArrayFromMonitorAnnotation`）
 
 ### 转换前的原始代码

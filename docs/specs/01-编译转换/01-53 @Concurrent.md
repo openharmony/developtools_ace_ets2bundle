@@ -3,11 +3,11 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/pre_define.ts:126`（`COMPONENT_CONCURRENT_DECORATOR = '@Concurrent'`）
-- `compiler/src/process_ui_syntax.ts:1331`（`processConcurrent`）
-- `compiler/src/process_ui_syntax.ts:397-403`（visitor 中调用 `processConcurrent`）
-- `compiler/src/validate_ui_syntax.ts:499-518`（`checkConcurrentDecorator`）
-- `compiler/src/validate_ui_syntax.ts:574-576`（`visitAllNode` 中检测 `@Concurrent`）
+- `compiler/src/pre_define.ts`（`COMPONENT_CONCURRENT_DECORATOR = '@Concurrent'`）
+- `compiler/src/process_ui_syntax.ts`（`processConcurrent`）
+- `compiler/src/process_ui_syntax.ts`（visitor 中调用 `processConcurrent`）
+- `compiler/src/validate_ui_syntax.ts`（`checkConcurrentDecorator`）
+- `compiler/src/validate_ui_syntax.ts`（`visitAllNode` 中检测 `@Concurrent`）
 
 ### 转换前的原始代码
 ```typescript
@@ -35,11 +35,11 @@ function myFunc(arg: string): string {
 ```
 
 ### 关键转换逻辑
-1. **检测入口**（`process_ui_syntax.ts:397`）：在 `processAllNodes` 的 visitor 中，当节点为 `FunctionDeclaration` 且有 `@Concurrent` 装饰器时，调用 `processConcurrent`。
-2. **注入指令**（`processConcurrent:1332-1337`）：若函数有 body，在 body.statements 数组首部插入 `ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use concurrent'))`，然后通过 `ts.factory.updateFunctionDeclaration` 重建函数节点。
-3. **装饰器移除**（line 400-402）：转换后 `node.illegalDecorators = undefined` 移除装饰器。
+1. **检测入口**（`process_ui_syntax.ts`）：在 `processAllNodes` 的 visitor 中，当节点为 `FunctionDeclaration` 且有 `@Concurrent` 装饰器时，调用 `processConcurrent`。
+2. **注入指令**（`processConcurrent`）：若函数有 body，在 body.statements 数组首部插入 `ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use concurrent'))`，然后通过 `ts.factory.updateFunctionDeclaration` 重建函数节点。
+3. **装饰器移除**：转换后 `node.illegalDecorators = undefined` 移除装饰器。
 
-### 校验规则（`checkConcurrentDecorator:499-518`）
+### 校验规则（`checkConcurrentDecorator`）
 | 校验项 | 条件 | 错误码 | 消息 |
 |---|---|---|---|
 | 编译模式限制 | `projectConfig.compileMode === JSBUNDLE` | - | `'@Concurrent' can only be used in ESMODULE compile mode.` |

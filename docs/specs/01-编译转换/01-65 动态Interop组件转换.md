@@ -3,29 +3,29 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_interop_component.ts:93-104`（`createStaticArrowBlock`）
-- `compiler/src/process_interop_component.ts:107-136`（`createIfStaticComponent`）
-- `compiler/src/process_interop_component.ts:139-151`（`createInteropExtendableComponent`）
-- `compiler/src/process_interop_component.ts:153-177`（`setInteropRenderingFlag`/`resetInteropRenderingFlag`）
-- `compiler/src/process_interop_component.ts:180-197`（`createStaticOptions`）
-- `compiler/src/process_interop_component.ts:205-263`（`createStaticComponentOptions`）
-- `compiler/src/process_interop_component.ts:265-289`（`makeStaticFactory`）
-- `compiler/src/process_interop_component.ts:295-324`（`getBuilderParamCount`）
-- `compiler/src/process_interop_component.ts:341-364`（`transformBuilderParam`）
-- `compiler/src/process_interop_component.ts:366-407`（`cloneExpressionClean`）
-- `compiler/src/process_interop_component.ts:414-420`（`transformLink`）
-- `compiler/src/process_interop_component.ts:427-435`（`getStateVar`）
-- `compiler/src/process_interop_component.ts:443-460`（`createStaticComponent`）
-- `compiler/src/process_interop_component.ts:466-482`（`pushStaticComponent`）
-- `compiler/src/process_interop_component.ts:488-499`（`popStaticComponent`）
-- `compiler/src/process_interop_component.ts:501-524`（`createStaticTuple`）
-- `compiler/src/process_interop_component.ts:526-579`（`validateInteropProperty`，V1/V2 混用校验）
-- `compiler/src/process_interop_component.ts:62-66`（`insertGetOptionsAtTop`）
-- `compiler/src/process_interop_component.ts:68-90`（`generateBytecodePathFragement`）
-- `compiler/src/process_interop_ui.ts:60-74`（`createCustomTransformer`）
-- `compiler/src/process_interop_builder.ts:61-78`（`updateInteropObjectLiteralxpression`）
-- `compiler/src/pre_define.ts:745`（`CREATESTATICCOMPONENT = '__Interop_CreateStaticComponent_Internal'`）
-- `compiler/src/pre_define.ts:746`（`UPDATESTATICCOMPONENT = '__Interop_UpdateStaticComponent_Internal'`）
+- `compiler/src/process_interop_component.ts`（`createStaticArrowBlock`）
+- `compiler/src/process_interop_component.ts`（`createIfStaticComponent`）
+- `compiler/src/process_interop_component.ts`（`createInteropExtendableComponent`）
+- `compiler/src/process_interop_component.ts`（`setInteropRenderingFlag`/`resetInteropRenderingFlag`）
+- `compiler/src/process_interop_component.ts`（`createStaticOptions`）
+- `compiler/src/process_interop_component.ts`（`createStaticComponentOptions`）
+- `compiler/src/process_interop_component.ts`（`makeStaticFactory`）
+- `compiler/src/process_interop_component.ts`（`getBuilderParamCount`）
+- `compiler/src/process_interop_component.ts`（`transformBuilderParam`）
+- `compiler/src/process_interop_component.ts`（`cloneExpressionClean`）
+- `compiler/src/process_interop_component.ts`（`transformLink`）
+- `compiler/src/process_interop_component.ts`（`getStateVar`）
+- `compiler/src/process_interop_component.ts`（`createStaticComponent`）
+- `compiler/src/process_interop_component.ts`（`pushStaticComponent`）
+- `compiler/src/process_interop_component.ts`（`popStaticComponent`）
+- `compiler/src/process_interop_component.ts`（`createStaticTuple`）
+- `compiler/src/process_interop_component.ts`（`validateInteropProperty`，V1/V2 混用校验）
+- `compiler/src/process_interop_component.ts`（`insertGetOptionsAtTop`）
+- `compiler/src/process_interop_component.ts`（`generateBytecodePathFragement`）
+- `compiler/src/process_interop_ui.ts`（`createCustomTransformer`）
+- `compiler/src/process_interop_builder.ts`（`updateInteropObjectLiteralxpression`）
+- `compiler/src/pre_define.ts`（`CREATESTATICCOMPONENT = '__Interop_CreateStaticComponent_Internal'`）
+- `compiler/src/pre_define.ts`（`UPDATESTATICCOMPONENT = '__Interop_UpdateStaticComponent_Internal'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -91,7 +91,7 @@ class ParentComp extends ViewPU {
 
 ### 关键转换逻辑
 
-#### 1. createStaticArrowBlock（line 93-104）
+#### 1. createStaticArrowBlock
 生成三语句块：
 ```typescript
 [
@@ -101,7 +101,7 @@ class ParentComp extends ViewPU {
 ]
 ```
 
-#### 2. createIfStaticComponent（line 107-136）
+#### 2. createIfStaticComponent
 ```typescript
 if (isInitialRender) {
   __Interop_UpdateInteropExtendableComponent_Internal(this);
@@ -114,7 +114,7 @@ if (isInitialRender) {
 }
 ```
 
-#### 3. createStaticComponent（line 443-460）
+#### 3. createStaticComponent
 ```typescript
 static_ChildComp = __Interop_CreateStaticComponent_Internal(
   makeStaticFactory(name, componentNode),  // () => new ChildComp(undefined, undefined)
@@ -122,7 +122,7 @@ static_ChildComp = __Interop_CreateStaticComponent_Internal(
 )
 ```
 
-#### 4. createStaticComponentOptions（line 205-263）
+#### 4. createStaticComponentOptions
 - 创建 `const result = new __Options_ChildComp()`
 - 遍历 ObjectLiteralExpression 的属性：
   - **普通属性**：`result['key'] = value; result['__options_has_key'] = true;`
@@ -130,7 +130,7 @@ static_ChildComp = __Interop_CreateStaticComponent_Internal(
   - **@BuilderParam 属性**（在 `builderParamObjectCollection` 中）：通过 `transformBuilderParam` 处理
 - 返回箭头函数 `() => { ... return result; }`
 
-#### 5. transformBuilderParam（line 341-364）
+#### 5. transformBuilderParam
 ```typescript
 // 动态 builder 转换
 __Interop_transferCompatibleDynamicBuilder_N_Internal(
@@ -139,20 +139,20 @@ __Interop_transferCompatibleDynamicBuilder_N_Internal(
 // N = builderParamCount（0-10），通过 getBuilderParamCount 解析
 ```
 
-#### 6. transformLink（line 414-420）
+#### 6. transformLink
 ```typescript
 __Interop_createCompatibleStaticState_Internal(this.__count)
 // getStateVar: this.xxx → this.__xxx
 ```
 
-#### 7. generateBytecodePathFragement（line 68-90）
+#### 7. generateBytecodePathFragement
 - 从 `declgenV1` 输出路径提取类名和包名
 - 生成字节码路径：`L<targetPath>/<packageName$...>__Options_<className>$ObjectLiteral;`
 
-#### 8. insertGetOptionsAtTop（line 62-66）
+#### 8. insertGetOptionsAtTop
 - 在 SourceFile 顶部注入 `const __Options_ChildComp = (globalThis as any).Panda.getClass('...')` 语句
 
-#### 9. validateInteropProperty（line 526-579）
+#### 9. validateInteropProperty
 - V1 父 + V2 子：报错 10905501（`@ComponentV2 cannot be used in @Component`）
 - V2 父 + V1 子：报错 10905501（`@Component cannot be used in @ComponentV2`）
 

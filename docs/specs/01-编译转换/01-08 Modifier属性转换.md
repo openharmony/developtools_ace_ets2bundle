@@ -9,15 +9,15 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_build.ts:3092-3111`（通用 else 分支，modifier 检测）
-- `compiler/src/process_component_build.ts:3096-3099`（attributeModifier 特殊处理）
-- `compiler/src/process_component_build.ts:3872-3917`（`createFunction` 函数完整实现）
-- `compiler/src/process_component_build.ts:3898-3908`（`bind(this)` 生成逻辑）
-- `compiler/src/pre_define.ts:214`（`ATTRIBUTE_ATTRIBUTE_MODIFIER = 'attributeModifier'`）
-- `compiler/src/pre_define.ts:215`（`ATTRIBUTE_CONTENT_MODIFIER = 'contentModifier'`）
-- `compiler/src/pre_define.ts:216`（`ATTRIBUTE_MENUITEM_CONTENT_MODIFIER = 'menuItemContentModifier'`）
-- `compiler/src/pre_define.ts:347`（`BUILDER_ATTR_BIND = 'bind'`）
-- `compiler/src/pre_define.ts:641`（`GLOBAL_THIS = 'globalThis'`）
+- `compiler/src/process_component_build.ts`（通用 else 分支，modifier 检测）
+- `compiler/src/process_component_build.ts`（attributeModifier 特殊处理）
+- `compiler/src/process_component_build.ts`（`createFunction` 函数完整实现）
+- `compiler/src/process_component_build.ts`（`bind(this)` 生成逻辑）
+- `compiler/src/pre_define.ts`（`ATTRIBUTE_ATTRIBUTE_MODIFIER = 'attributeModifier'`）
+- `compiler/src/pre_define.ts`（`ATTRIBUTE_CONTENT_MODIFIER = 'contentModifier'`）
+- `compiler/src/pre_define.ts`（`ATTRIBUTE_MENUITEM_CONTENT_MODIFIER = 'menuItemContentModifier'`）
+- `compiler/src/pre_define.ts`（`BUILDER_ATTR_BIND = 'bind'`）
+- `compiler/src/pre_define.ts`（`GLOBAL_THIS = 'globalThis'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -50,7 +50,7 @@ Button.pop()
 ```
 
 ### 关键转换逻辑
-- 属性名检测（line 3095-3099）：
+- 属性名检测：
   ```typescript
   let isAttributeModifier: boolean = false;
   if ([ATTRIBUTE_ATTRIBUTE_MODIFIER, ATTRIBUTE_CONTENT_MODIFIER,
@@ -59,10 +59,10 @@ Button.pop()
   }
   ```
   在通用 `else` 分支中，用 `Array.includes(propName)` 检测是否为三种 modifier 属性之一。
-- 语句生成（line 3100-3101）：`createFunction(identifierNode, node, temp.arguments, isAttributeModifier)`，将 `isAttributeModifier` 作为第 4 参数传入。
-- immutable/update 分配（line 3103-3108）：modifier 属性在非 Recycle/Reuse 组件中进入 `updateStatements`；在 Recycle/Reuse 组件中，若 `filterRegularAttrNode` 为 true 则进入 `immutableStatements`。
-- `createFunction` 内部 bind(this) 生成（line 3897-3916）：
-  - `isAttributeModifier = true` 时（line 3898-3908）：
+- 语句生成：`createFunction(identifierNode, node, temp.arguments, isAttributeModifier)`，将 `isAttributeModifier` 作为第 4 参数传入。
+- immutable/update 分配：modifier 属性在非 Recycle/Reuse 组件中进入 `updateStatements`；在 Recycle/Reuse 组件中，若 `filterRegularAttrNode` 为 true 则进入 `immutableStatements`。
+- `createFunction` 内部 bind(this) 生成：
+  - `isAttributeModifier = true` 时：
     ```
     Component.attr.bind(this)(args)
     ```
@@ -81,13 +81,13 @@ Button.pop()
       argumentsArr                                                    // (args)
     )
     ```
-  - `isAttributeModifier = false` 时（line 3909-3913）：生成普通 `Component.attr(args)`，不追加 `bind(this)`。
-- `BUILDER_ATTR_BIND = 'bind'`（pre_define.ts:347）：常量名，与 Builder 属性的 bind 调用共用同一常量。
-- `globalThisArr` 排除（line 3876）：modifier 属性不走 `globalThis.xxx` 路径，因为 `isAttributeModifier` 分支不检查 `globalThisArr`。
+  - `isAttributeModifier = false` 时：生成普通 `Component.attr(args)`，不追加 `bind(this)`。
+- `BUILDER_ATTR_BIND = 'bind'`（pre_define.ts）：常量名，与 Builder 属性的 bind 调用共用同一常量。
+- `globalThisArr` 排除：modifier 属性不走 `globalThis.xxx` 路径，因为 `isAttributeModifier` 分支不检查 `globalThisArr`。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/regularProperty.ts:111`（`initializeStructWithCustomDialogControllerInit`，CustomDialogController 属性）
+- `arkui-plugins/ui-plugins/property-translators/regularProperty.ts`（`initializeStructWithCustomDialogControllerInit`，CustomDialogController 属性）
 
 ### 转换前的原始代码
 同动态工具链
@@ -134,7 +134,7 @@ class XxxModifier implements XxxAttribute, AttributeModifier<XxxAttribute> {
 | 调用方式 | `component.attributeModifier(new XxxModifier())` | `component.contentModifier(new XxxContentModifier())` |
 | 分发方法 | `applyNormalAttribute`/`applyPressedAttribute`/`applyFocusedAttribute` 等（多种状态） | 单一分发 |
 | 对应 JSON 字段 | `attributeModifier` | `contentModifier` |
-| 动态工具链常量 | `ATTRIBUTE_ATTRIBUTE_MODIFIER`（`pre_define.ts:214`） | `ATTRIBUTE_CONTENT_MODIFIER`（`pre_define.ts:215`） |
+| 动态工具链常量 | `ATTRIBUTE_ATTRIBUTE_MODIFIER`（`pre_define.ts`） | `ATTRIBUTE_CONTENT_MODIFIER`（`pre_define.ts`） |
 | 动态工具链处理 | `isAttributeModifier = true`（统一处理） | `isAttributeModifier = true`（统一处理） |
 
 ## 动静态差异说明

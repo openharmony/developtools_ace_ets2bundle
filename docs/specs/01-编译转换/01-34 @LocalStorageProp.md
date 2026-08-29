@@ -3,8 +3,8 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/pre_define.ts:48`（`COMPONENT_LOCAL_STORAGE_PROP_DECORATOR = '@LocalStorageProp'`）
-- `compiler/src/pre_define.ts:656`（`CREATE_LOCAL_STORAGE_PROP = 'createLocalStorageProp'`）
+- `compiler/src/pre_define.ts`（`COMPONENT_LOCAL_STORAGE_PROP_DECORATOR = '@LocalStorageProp'`）
+- `compiler/src/pre_define.ts`（`CREATE_LOCAL_STORAGE_PROP = 'createLocalStorageProp'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -30,10 +30,10 @@ get lreadonlyData(): number { return this.__lreadonlyData.get() }
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/localStoragePropRef.ts:49`（`initializeStructWithLocalStoragePropRefProperty`）
-- `arkui-plugins/common/predefines.ts:230`（`DecoratorNames.LOCAL_STORAGE_PROP_REF = 'LocalStoragePropRef'`）
-- `arkui-plugins/common/predefines.ts:287`（`StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED`）
-- `arkui-plugins/common/predefines.ts:313`（`StateManagementTypes.MAKE_LOCAL_STORAGE_PROP_REF = 'makeLocalStoragePropRef'`）
+- `arkui-plugins/ui-plugins/property-translators/localStoragePropRef.ts`（`initializeStructWithLocalStoragePropRefProperty`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.LOCAL_STORAGE_PROP_REF = 'LocalStoragePropRef'`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.MAKE_LOCAL_STORAGE_PROP_REF = 'makeLocalStoragePropRef'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -56,16 +56,16 @@ __initializeStruct(initializers, content): void {
 ```
 
 > 注意：`@LocalStorageProp` 已 deprecated，声明文件中使用 `@LocalStoragePropRef` 替代。
-- @LocalStorageProp 常量：`CREATE_LOCAL_STORAGE_PROP`（`pre_define.ts:656`）
+- @LocalStorageProp 常量：`CREATE_LOCAL_STORAGE_PROP`（`pre_define.ts`）
 - @LocalStorageProp 已 deprecated，由 @LocalStoragePropRef 替代
 - @LocalStorageProp 已 deprecated，由 @LocalStoragePropRef 替代
 - @LocalStorageProp 通过 `createLocalStorageProp` 实现单向只读同步
 - @LocalStorageProp 必须指定默认值
 - 属性类型映射为 `ObservedPropertyAbstract`/`ObservedPropertyAbstractPU`
 
-- 常量 `CREATE_LOCAL_STORAGE_PROP`（`pre_define.ts:656`）
+- 常量 `CREATE_LOCAL_STORAGE_PROP`（`pre_define.ts`）
 - @LocalStorageProp 已 deprecated
-- 常量 `CREATE_LOCAL_STORAGE_PROP`（`pre_define.ts:656`）
+- 常量 `CREATE_LOCAL_STORAGE_PROP`（`pre_define.ts`）
 - @LocalStorageProp 已 deprecated
 
 - @LocalStorageProp 已 deprecated，由 @LocalStoragePropRef 替代（`predefines.ts` 的 `DeprecatedDecoratorNames`）

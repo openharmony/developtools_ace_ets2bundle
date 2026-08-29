@@ -3,10 +3,10 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_member.ts:907-918`（`updateStoragePropAndLinkProperty`）
-- `compiler/src/pre_define.ts:40`（`COMPONENT_STORAGE_PROP_DECORATOR = '@StorageProp'`）
-- `compiler/src/pre_define.ts:158`（`APP_STORAGE_SET_AND_PROP = 'SetAndProp'`）
-- `compiler/src/pre_define.ts:654`（`CREATE_STORAGE_PROP = 'createStorageProp'`，Partial Update 模式）
+- `compiler/src/process_component_member.ts`（`updateStoragePropAndLinkProperty`）
+- `compiler/src/pre_define.ts`（`COMPONENT_STORAGE_PROP_DECORATOR = '@StorageProp'`）
+- `compiler/src/pre_define.ts`（`APP_STORAGE_SET_AND_PROP = 'SetAndProp'`）
+- `compiler/src/pre_define.ts`（`CREATE_STORAGE_PROP = 'createStorageProp'`，Partial Update 模式）
 
 ### 转换前的原始代码
 ```typescript
@@ -32,10 +32,10 @@ get data(): number { return this.__data.get() }
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/storagePropRef.ts:49`（`initializeStructWithStoragePropRefProperty`）
-- `arkui-plugins/common/predefines.ts:231`（`DecoratorNames.STORAGE_PROP_REF = 'StoragePropRef'`）
-- `arkui-plugins/common/predefines.ts:279`（`StateManagementTypes.STORAGE_PROP_REF_DECORATED`）
-- `arkui-plugins/common/predefines.ts:312`（`StateManagementTypes.MAKE_STORAGE_PROP_REF = 'makeStoragePropRef'`）
+- `arkui-plugins/ui-plugins/property-translators/storagePropRef.ts`（`initializeStructWithStoragePropRefProperty`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.STORAGE_PROP_REF = 'StoragePropRef'`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.STORAGE_PROP_REF_DECORATED`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.MAKE_STORAGE_PROP_REF = 'makeStoragePropRef'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -58,16 +58,16 @@ __initializeStruct(initializers, content): void {
 ```
 
 > 注意：`@StorageProp` 已 deprecated，声明文件中使用 `@StoragePropRef` 替代。
-- @StorageProp 常量：`APP_STORAGE_SET_AND_PROP = 'SetAndProp'`（`pre_define.ts:158`）
+- @StorageProp 常量：`APP_STORAGE_SET_AND_PROP = 'SetAndProp'`（`pre_define.ts`）
 - @StorageProp 已 deprecated，由 @StoragePropRef 替代
 - @StorageProp 已 deprecated，由 @StoragePropRef 替代
 - @StorageProp 通过 `AppStorage.SetAndProp` 实现单向同步
 - @StorageProp 必须指定默认值
 - 属性类型映射为 `ObservedPropertyAbstract`/`ObservedPropertyAbstractPU`
 
-- 常量 `APP_STORAGE_SET_AND_PROP`（`pre_define.ts:158`）
+- 常量 `APP_STORAGE_SET_AND_PROP`（`pre_define.ts`）
 - @StorageProp 已 deprecated，由 @StoragePropRef 替代
-- 常量 `APP_STORAGE_SET_AND_PROP`（`pre_define.ts:158`）
+- 常量 `APP_STORAGE_SET_AND_PROP`（`pre_define.ts`）
 - @StorageProp 已 deprecated，由 @StoragePropRef 替代
 
 ## 动静态差异说明

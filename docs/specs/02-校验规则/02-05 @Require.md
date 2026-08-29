@@ -2,9 +2,9 @@
 校验属性不可同时被 `private` 和 `@Require` 装饰器修饰。
 
 ## 源码参考位置
-- 动态：`compiler/src/validate_ui_syntax.ts:2699`（`checkRequire`，@Require 放宽默认值要求）
-- 动态：`compiler/src/validate_ui_syntax.ts:2610`（`validateAccessQualifier`，private + @Require 校验） 中的 `@Require` 装饰器校验逻辑
-- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-require-decorator-regular.ts:34`
+- 动态：`compiler/src/validate_ui_syntax.ts`（`checkRequire`，@Require 放宽默认值要求）
+- 动态：`compiler/src/validate_ui_syntax.ts`（`validateAccessQualifier`，private + @Require 校验） 中的 `@Require` 装饰器校验逻辑
+- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-require-decorator-regular.ts`（`checkRequireDecoratorRegular`）
 
 ## 适用对象
 - struct 成员属性（`@Require` 装饰的属性）
@@ -35,8 +35,8 @@
 5. **报告位置**：诊断报告锚定在 `requireDecorator` 节点（即 `@Require` 装饰器节点本身），便于 IDE 精确定位。
 
 ### 动态工具链实现
-`compiler/src/validate_ui_syntax.ts:2699`（`checkRequire`，@Require 放宽默认值要求）
-- 动态：`compiler/src/validate_ui_syntax.ts:2610`（`validateAccessQualifier`，private + @Require 校验） 中对 `@Require` 装饰器进行语法校验时，检测同一属性上的 `private` 修饰符，输出 WARN 级诊断。
+`compiler/src/validate_ui_syntax.ts`（`checkRequire`，@Require 放宽默认值要求）
+- 动态：`compiler/src/validate_ui_syntax.ts`（`validateAccessQualifier`，private + @Require 校验） 中对 `@Require` 装饰器进行语法校验时，检测同一属性上的 `private` 修饰符，输出 WARN 级诊断。
 
 ## 适用场景
 - `@Require` 装饰器用于在 V1 状态管理中标记必须由父组件传入的参数，配合 `@Prop` / `@State` 等使用
@@ -83,6 +83,6 @@ struct MyComp {
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts:2699`（`checkRequire`）+ `:2610`（`validateAccessQualifier`） | `check-require-decorator-regular.ts:23` |
+| 校验入口 | `validate_ui_syntax.ts`（`checkRequire`）+ `:2610`（`validateAccessQualifier`） | `check-require-decorator-regular.ts`（`checkRequireDecoratorRegular`） |
 | 报错级别 | WARN | WARN |
 | 检测内容 | private + @Require 不可同时使用 | 同动态 |

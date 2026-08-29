@@ -3,11 +3,11 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_member.ts:964-973`（`updateSynchedPropertyNesedObject`，Legacy）
-- `compiler/src/process_component_member.ts:1538-1552`（`updateSynchedPropertyNesedObjectPU`，Partial Update）
-- `compiler/src/pre_define.ts:44`（`COMPONENT_OBJECT_LINK_DECORATOR = '@ObjectLink'`）
-- `compiler/src/pre_define.ts:151`（`SYNCHED_PROPERTY_NESED_OBJECT`）
-- `compiler/src/pre_define.ts:648`（`SYNCHED_PROPERTY_NESED_OBJECT_Partial Update`）
+- `compiler/src/process_component_member.ts`（`updateSynchedPropertyNesedObject`，Legacy）
+- `compiler/src/process_component_member.ts`（`updateSynchedPropertyNesedObjectPU`，Partial Update）
+- `compiler/src/pre_define.ts`（`COMPONENT_OBJECT_LINK_DECORATOR = '@ObjectLink'`）
+- `compiler/src/pre_define.ts`（`SYNCHED_PROPERTY_NESED_OBJECT`）
+- `compiler/src/pre_define.ts`（`SYNCHED_PROPERTY_NESED_OBJECT_Partial Update`）
 
 ### 转换前的原始代码
 ```typescript
@@ -38,10 +38,10 @@ get data(): MyData { return this.__data.get() }
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/objectlink.ts:47`（`initializeStructWithObjectLinkProperty`）
-- `arkui-plugins/common/predefines.ts:213`（`DecoratorNames.OBJECT_LINK = 'ObjectLink'`）
-- `arkui-plugins/common/predefines.ts:284`（`StateManagementTypes.OBJECT_LINK_DECORATED`）
-- `arkui-plugins/common/predefines.ts:318`（`StateManagementTypes.MAKE_OBJECT_LINK = 'makeObjectLink'`）
+- `arkui-plugins/ui-plugins/property-translators/objectlink.ts`（`initializeStructWithObjectLinkProperty`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.OBJECT_LINK = 'ObjectLink'`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.OBJECT_LINK_DECORATED`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.MAKE_OBJECT_LINK = 'makeObjectLink'`）
 
 ### 转换前的原始代码
 ```typescript
