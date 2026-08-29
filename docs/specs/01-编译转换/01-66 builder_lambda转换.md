@@ -15,13 +15,13 @@ builder lambda 链式调用的深度转换逻辑，将 @ComponentBuilder 装饰�
 ## 静态
 
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts:1093-1158`（`transformBuilderLambda`，完整逻辑）
-- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts:994-1021`（`builderLambdaReplace`，callee 替换）
-- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts:1055-1088`（`updateAnimation`，animation 拆分）
-- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts:237-278`（`createInitLambdaBody`，lambda body 生成）
-- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts:178-235`（`createStyleLambdaBody`，链式调用重组）
-- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts:1274-1299`（`createBuilderParameterProxyCall`，参数代理生成）
-- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts:873-885`（`generateArgsInBuilderLambda`，参数路由）
+- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts`（`transformBuilderLambda`，完整逻辑）
+- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts`（`builderLambdaReplace`，callee 替换）
+- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts`（`updateAnimation`，animation 拆分）
+- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts`（`createInitLambdaBody`，lambda body 生成）
+- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts`（`createStyleLambdaBody`，链式调用重组）
+- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts`（`createBuilderParameterProxyCall`，参数代理生成）
+- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts`（`generateArgsInBuilderLambda`，参数路由）
 
 ### 转换前的原始代码
 ```typescript
@@ -60,7 +60,7 @@ Column
 
 ### 关键转换逻辑
 
-#### 1. transformBuilderLambda 完整逻辑（line 1093-1158）
+#### 1. transformBuilderLambda 完整逻辑
 
 ```typescript
 static transformBuilderLambda(node: arkts.CallExpression): arkts.Expression {
@@ -131,7 +131,7 @@ static transformBuilderLambda(node: arkts.CallExpression): arkts.Expression {
 
 #### 2. instanceCalls 数组构建和重组
 
-**收集阶段**（line 1096-1117）：
+**收集阶段**：
 
 遍历链式调用，区分两种调用形式：
 
@@ -142,7 +142,7 @@ static transformBuilderLambda(node: arkts.CallExpression): arkts.Expression {
 
 收集顺序是从外到内（最外层链式调用先入数组）。
 
-**重组阶段**（line 1135-1148）：
+**重组阶段**：
 
 ```typescript
 if (instanceCalls.length > 0 && !!lambdaBodyInfo.lambdaBody) {
@@ -164,7 +164,7 @@ if (instanceCalls.length > 0 && !!lambdaBodyInfo.lambdaBody) {
 - reuseId 提取：如果是复用组件，从 callInfo 中提取 reuseId
 - 跳过 reuseId 调用：非复用场景下跳过 `.reuseId(...)` 调用
 
-#### 3. updateAnimation 把 .animation() 拆分为 animationStart + animationStop（line 1055-1088）
+#### 3. updateAnimation 把 .animation() 拆分为 animationStart + animationStop
 
 ```typescript
 static updateAnimation(instanceCalls: InstanceCallInfo[]): void {
@@ -198,7 +198,7 @@ static updateAnimation(instanceCalls: InstanceCallInfo[]): void {
 - `animationStop` 替换原 `animation` 位置（`curIdx + 1`）
 - 参数 `clone()`：确保 aniStop 的参数是独立副本
 
-#### 4. createInitLambdaBody 的 lambda body 生成（line 237-278）
+#### 4. createInitLambdaBody 的 lambda body 生成
 
 ```typescript
 static createInitLambdaBody(
@@ -250,7 +250,7 @@ static createInitLambdaBody(
 - V1 `@Reusable`：`defaultReuseId = "structName"`（字符串字面量）
 - V2 `@ReusableV2`：`defaultReuseId = () => "structName"`（箭头函数）
 
-#### 5. builderLambdaReplace 的 callee 替换逻辑（line 994-1021）
+#### 5. builderLambdaReplace 的 callee 替换逻辑
 
 ```typescript
 static builderLambdaReplace(
@@ -284,7 +284,7 @@ static builderLambdaReplace(
 - 方法调用：替换为 `object.funcName` MemberExpression
 - `declInfo.superName`：如果存在 super 类，替换 object 为 superName
 
-#### 6. makeBuilderParameterProxy 调用生成（line 1274-1299）
+#### 6. makeBuilderParameterProxy 调用生成
 
 ```typescript
 static createBuilderParameterProxyCall(
@@ -314,7 +314,7 @@ static createBuilderParameterProxyCall(
 - `updateArg`：更新函数映射
 - `typeRef`：泛型类型参数
 
-#### 7. generateArgsInBuilderLambda 参数路由（line 873-885）
+#### 7. generateArgsInBuilderLambda 参数路由
 
 ```typescript
 static generateArgsInBuilderLambda(

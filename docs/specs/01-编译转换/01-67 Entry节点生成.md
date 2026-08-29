@@ -3,22 +3,22 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_ui_syntax.ts:1506-1535`（`createEntryNode`，入口判断主控）
-- `compiler/src/process_ui_syntax.ts:1537-1577`（`createEntryFunction`，Legacy vs Partial Update 分支）
-- `compiler/src/process_ui_syntax.ts:1579-1626`（`createLoadPageConditionalJudgMent`，路由/存储条件判断）
-- `compiler/src/process_ui_syntax.ts:1628-1676`（`generateLoadDocumentEntrance`，四种组合分支）
-- `compiler/src/process_ui_syntax.ts:1804-1825`（`createLoadDocumentWithRoute`）
-- `compiler/src/process_ui_syntax.ts:1827-1858`（`loadDocumentWithRoute`）
-- `compiler/src/process_ui_syntax.ts:1860-1894`（`createRegisterNamedRoute`）
-- `compiler/src/process_ui_syntax.ts:1916-1935`（`createLoadDocument`）
-- `compiler/src/process_ui_syntax.ts:2264-2273`（`createSharedStorageWithRoute`）
-- `compiler/src/process_ui_syntax.ts:1896-1914`（`createStartGetAccessRecording`）
-- `compiler/src/process_ui_syntax.ts:1937-1948`（`createStopGetAccessRecording`）
-- `compiler/src/process_ui_syntax.ts:1950-1971`（`addStorageParam`）
-- `compiler/src/process_ui_syntax.ts:2223-2230`（`addCardStringliteral`）
-- `compiler/src/pre_define.ts:161`（`PAGE_ENTRY_FUNCTION_NAME = 'loadDocument'`）
-- `compiler/src/pre_define.ts:667`（`CARD_ENTRY_FUNCTION_NAME = 'loadEtsCard'`）
-- `compiler/src/pre_define.ts:696`（`REGISTER_NAMED_ROUTE = 'registerNamedRoute'`）
+- `compiler/src/process_ui_syntax.ts`（`createEntryNode`，入口判断主控）
+- `compiler/src/process_ui_syntax.ts`（`createEntryFunction`，Legacy vs Partial Update 分支）
+- `compiler/src/process_ui_syntax.ts`（`createLoadPageConditionalJudgMent`，路由/存储条件判断）
+- `compiler/src/process_ui_syntax.ts`（`generateLoadDocumentEntrance`，四种组合分支）
+- `compiler/src/process_ui_syntax.ts`（`createLoadDocumentWithRoute`）
+- `compiler/src/process_ui_syntax.ts`（`loadDocumentWithRoute`）
+- `compiler/src/process_ui_syntax.ts`（`createRegisterNamedRoute`）
+- `compiler/src/process_ui_syntax.ts`（`createLoadDocument`）
+- `compiler/src/process_ui_syntax.ts`（`createSharedStorageWithRoute`）
+- `compiler/src/process_ui_syntax.ts`（`createStartGetAccessRecording`）
+- `compiler/src/process_ui_syntax.ts`（`createStopGetAccessRecording`）
+- `compiler/src/process_ui_syntax.ts`（`addStorageParam`）
+- `compiler/src/process_ui_syntax.ts`（`addCardStringliteral`）
+- `compiler/src/pre_define.ts`（`PAGE_ENTRY_FUNCTION_NAME = 'loadDocument'`）
+- `compiler/src/pre_define.ts`（`CARD_ENTRY_FUNCTION_NAME = 'loadEtsCard'`）
+- `compiler/src/pre_define.ts`（`REGISTER_NAMED_ROUTE = 'registerNamedRoute'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -104,7 +104,7 @@ loadDocumentWithRoute(..., newArray, ...);
 
 ### 关键转换逻辑
 
-#### 1. createEntryNode（line 1506-1535）主控流程
+#### 1. createEntryNode主控流程
 ```
 if (previewComponent.length > 0 && isPreview)
   → createPreviewComponentFunction（见 01-69 @Preview 文档）
@@ -117,7 +117,7 @@ else
   → 返回原节点不变
 ```
 
-#### 2. createEntryFunction（line 1537-1577）
+#### 2. createEntryFunction
 - 构造 `newArray = [id.toString(), undefined, {}]`（Legacy）或 `[undefined, {}]`（Partial Update）
 - `addStorageParam` 读取 LocalStorage 名称/节点
 - 若有 `localStorageName && entryNodeKey`：追加 entryNodeKey
@@ -126,7 +126,7 @@ else
 - Partial Update + 卡片：返回 `[StartGetAccessRecording, loadDocument, StopGetAccessRecording]`
 - Partial Update + 非卡片：返回 `createLoadPageConditionalJudgMent(...)`
 
-#### 3. generateLoadDocumentEntrance（line 1628-1676）四分支
+#### 3. generateLoadDocumentEntrance四分支
 | routeName | storage | 分支 |
 |---|---|---|
 | 有 | 无 | `createLoadDocumentWithRoute(..., hasRouteName=true)` |
@@ -136,7 +136,7 @@ else
 
 每个分支根据 `isComponentPreview` 决定是返回数组还是 `ts.factory.createBlock`。
 
-#### 4. createRegisterNamedRoute（line 1860-1894）
+#### 4. createRegisterNamedRoute
 ```typescript
 registerNamedRoute(
   () => new MyPage(undefined, {}),  // 箭头函数包装
@@ -152,7 +152,7 @@ registerNamedRoute(
 )
 ```
 
-#### 5. createSharedStorageWithRoute（line 2264-2273）
+#### 5. createSharedStorageWithRoute
 当 `useSharedStorage: true` 时：
 - `createGetSharedForVariable(entryOptionNode, false)` 获取 SharedStorage
 - 追加到 newArray：`[undefined, {}, getSharedForVariable]`

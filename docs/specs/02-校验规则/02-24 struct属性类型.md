@@ -4,9 +4,9 @@
 ## 源码参考位置
 - 动态：`compiler/src/validate_ui_syntax.ts` 中的属性类型校验逻辑
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-property-type.ts:47`（property-type 规则）
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-decorated-property-type.ts:74`（decorated-property-type 规则）
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-v1-decorator-function.ts:46`（v1-decorator-function 规则）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-property-type.ts`（property-type 规则）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-decorated-property-type.ts`（decorated-property-type 规则）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-v1-decorator-function.ts`（v1-decorator-function 规则）
 
 ## 适用对象
 - struct 成员属性
@@ -95,13 +95,13 @@ struct MyComp {
 @State、@PropRef、@Link、@Provide、@Consume、@ObjectLink、@BuilderParam、@StoragePropRef、@StorageLink、@LocalStorageLink 装饰的属性不可为上述类型。
 
 ### 源码位置
-`compiler/src/component_map.ts:95`
+`compiler/src/component_map.ts`（`forbiddenUseStateType`）
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-property-type.ts:23`
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-decorated-property-type.ts:24`
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-v1-decorator-function.ts:46`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-property-type.ts`（`checkPropertyType`）
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-decorated-property-type.ts`（`checkDecoratedPropertyType`）
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-struct-v1-decorator-function.ts`（`checkStructV1DecoratorFunction`）
 ### 静态工具链处理
 静态工具链通过 3 个独立规则文件校验属性类型：@ObjectLink 必须为 @Observed 类（check-property-type）、特定装饰器属性不可为特定控制器类型（check-decorated-property-type）、V1 装饰器不可装饰 Function 类型（check-struct-v1-decorator-function）。
 
@@ -109,6 +109,6 @@ struct MyComp {
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| @ObjectLink 类型 | `validate_ui_syntax.ts` 中校验 | `check-property-type.ts:23`（独立规则） |
-| V1+Function | `validate_ui_syntax.ts:2552`（`validateNonFunctionTypeWithDecorator`） | `check-struct-v1-decorator-function.ts:46`（独立规则） |
-| 控制器类型 | `component_map.ts:95`（`forbiddenUseStateType` 23 种） | `check-decorated-property-type.ts:24`（独立规则） |
+| @ObjectLink 类型 | `validate_ui_syntax.ts` 中校验 | `check-property-type.ts`（独立规则） |
+| V1+Function | `validate_ui_syntax.ts`（`validateNonFunctionTypeWithDecorator`） | `check-struct-v1-decorator-function.ts`（独立规则） |
+| 控制器类型 | `component_map.ts`（`forbiddenUseStateType` 23 种） | `check-decorated-property-type.ts`（独立规则） |

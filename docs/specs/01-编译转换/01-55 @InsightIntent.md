@@ -3,14 +3,14 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/pre_define.ts:84-90`（7 个 InsightIntent 装饰器常量）
-- `compiler/src/process_ui_syntax.ts:333`（struct 节点检测 `detectInsightIntent`）
-- `compiler/src/process_ui_syntax.ts:445`（class 节点检测 `detectInsightIntent`）
-- `compiler/src/userIntents_parser/parseUserIntents.ts:127-158`（`detectInsightIntent` 主入口）
-- `compiler/src/userIntents_parser/parseUserIntents.ts:191`（`handleIntent`）
-- `compiler/src/userIntents_parser/parseUserIntents.ts:160-189`（`initInsightIntent`）
+- `compiler/src/pre_define.ts`（7 个 InsightIntent 装饰器常量）
+- `compiler/src/process_ui_syntax.ts`（struct 节点检测 `detectInsightIntent`）
+- `compiler/src/process_ui_syntax.ts`（class 节点检测 `detectInsightIntent`）
+- `compiler/src/userIntents_parser/parseUserIntents.ts`（`detectInsightIntent` 主入口）
+- `compiler/src/userIntents_parser/parseUserIntents.ts`（`handleIntent`）
+- `compiler/src/userIntents_parser/parseUserIntents.ts`（`initInsightIntent`）
 - `compiler/src/userIntents_parser/intentType.ts`（意图数据类型定义）
-- `compiler/src/fast_build/ets_ui/rollup-plugin-ets-typescript.ts:254-256`（写入 `module.json`）
+- `compiler/src/fast_build/ets_ui/rollup-plugin-ets-typescript.ts`（写入 `module.json`）
 
 ### 装饰器列表
 
@@ -80,7 +80,7 @@ class MyEntity implements InsightIntent.IntentEntity { ... }
 
 ### 关键转换逻辑
 
-#### 1. detectInsightIntent（line 127-158）
+#### 1. detectInsightIntent
 | 步骤 | 说明 |
 |---|---|
 | `initInsightIntent` | 初始化缓存路径、文件路径映射、增量编译标志 |
@@ -106,7 +106,7 @@ class MyEntity implements InsightIntent.IntentEntity { ... }
 
 #### 3. 输出
 - 意图数据收集到 `this.intentData` 数组。
-- `writeUserIntentJsonFile`（rollup-plugin-ets-typescript.ts:256）：将意图数据写入 `module.json` 的 `extractInsightIntents` 字段。
+- `writeUserIntentJsonFile`（rollup-plugin-ets-typescript.ts）：将意图数据写入 `module.json` 的 `extractInsightIntents` 字段。
 - 支持缓存和增量编译（`insight_compile_cache.json`）。
 - 支持 HAR 意图合并（`harIntentDataObj`）。
 

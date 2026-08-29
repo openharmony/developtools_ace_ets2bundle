@@ -3,10 +3,10 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/validate_ui_syntax.ts:2750`（`checkCustomEnvDecoratorInterop`）
-  - `compiler/src/validate_ui_syntax.ts:2899`（`validateCustomEnvArgType`，类型一致性校验）
-  - `compiler/src/validate_ui_syntax.ts:2912`（`validateInvalidCustomEnvCreation`，key 校验）
-- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-custom-env-decorator.ts:37`
+  - `compiler/src/validate_ui_syntax.ts`（`checkCustomEnvDecoratorInterop`）
+  - `compiler/src/validate_ui_syntax.ts`（`validateCustomEnvArgType`，类型一致性校验）
+  - `compiler/src/validate_ui_syntax.ts`（`validateInvalidCustomEnvCreation`，key 校验）
+- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-custom-env-decorator.ts`（`checkCustomEnvDecorator`）
 
 ## 适用对象
 - struct 的静态方法 `__resolveDecoratorSymbols`（编译器生成的方法，其中包含 `@CustomEnv` key 的变量声明）
@@ -101,12 +101,12 @@ struct MyComp {
 - 此规则仅静态工具链实现，动态工具链无对应校验
 - @CustomEnv 是 V2 装饰器，仅在静态工具链（arkui-plugins）中变换处理
 
-- `arkui-plugins/common/predefines.ts:240`（`DecoratorNames.CUSTOM_ENV = 'CustomEnv'`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.CUSTOM_ENV = 'CustomEnv'`）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts:2750`（`checkCustomEnvDecoratorInterop`） | `check-custom-env-decorator.ts:22`（Copyright 2026 新规则） |
+| 校验入口 | `validate_ui_syntax.ts`（`checkCustomEnvDecoratorInterop`） | `check-custom-env-decorator.ts`（Copyright 2026 新规则） |
 | key 校验 | `:2912`（`validateInvalidCustomEnvCreation`） | 在 `__resolveDecoratorSymbols` 方法中检测 |
 | 类型一致性 | `:2899`（`validateCustomEnvArgType`） | 同动态 |

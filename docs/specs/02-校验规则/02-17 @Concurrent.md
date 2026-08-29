@@ -3,9 +3,9 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/validate_ui_syntax.ts:499-519`（`checkConcurrentDecorator` 函数）
-  - `compiler/src/validate_ui_syntax.ts:572-577`（`visitAllNode` 中调用入口）
-  - `compiler/src/pre_define.ts:126`（`COMPONENT_CONCURRENT_DECORATOR` 常量）
+  - `compiler/src/validate_ui_syntax.ts`（`checkConcurrentDecorator` 函数）
+  - `compiler/src/validate_ui_syntax.ts`（`visitAllNode` 中调用入口）
+  - `compiler/src/pre_define.ts`（`COMPONENT_CONCURRENT_DECORATOR` 常量）
 - 静态：
   - 无（@Concurrent 仅在动态类型工具链 compiler 中校验，arkui-plugins 无对应规则）
 
@@ -80,20 +80,20 @@ struct MyComp {
 模式检查、方法声明检查、generator 检查三项独立执行、不互斥，可能同时触发多条报错。
 
 ### 源码位置
-`compiler/src/validate_ui_syntax.ts:499`（`checkConcurrentDecorator`）
+`compiler/src/validate_ui_syntax.ts`（`checkConcurrentDecorator`）
 
 ## 静态
 ### 源码参考位置
-静态侧无对应独立规则文件。@Concurrent 的校验仅在动态工具链（compiler）的 `validate_ui_syntax.ts:499`（`checkConcurrentDecorator`）中实现。
+静态侧无对应独立规则文件。@Concurrent 的校验仅在动态工具链（compiler）的 `validate_ui_syntax.ts`（`checkConcurrentDecorator`）中实现。
 ### 静态工具链处理
 静态工具链（arkui-plugins）当前无 @Concurrent 装饰器的独立校验规则，该装饰器的校验完全由动态工具链处理。
 
-- `compiler/src/pre_define.ts:28`（`COMPONENT_DECORATOR_COMPONENT_V2`）
+- `compiler/src/pre_define.ts`（`COMPONENT_DECORATOR_COMPONENT_V2`）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts:499`（`checkConcurrentDecorator`） | 静态侧无对应规则 |
+| 校验入口 | `validate_ui_syntax.ts`（`checkConcurrentDecorator`） | 静态侧无对应规则 |
 | 模式限制 | 仅 ESMODULE 模式可用 | 不适用 |
 | 错误码 | 10905122/10905123 | 无 |

@@ -3,9 +3,9 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/process_ui_syntax.ts:1950-1979`（`addStorageParam` 函数，检查 `hasStorage()` 和 `localStorageNum`）
+  - `compiler/src/process_ui_syntax.ts`（`addStorageParam` 函数，检查 `hasStorage()` 和 `localStorageNum`）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-entry-localstorage.ts:32`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-entry-localstorage.ts`（`checkEntryLocalStorage`）
 
 ## 适用对象
 `@Entry` 装饰的 struct 中使用 `@LocalStorageLink` 装饰的成员属性
@@ -76,19 +76,19 @@ struct MyComp {
 静态侧报错时定位到 `@Entry` 注解节点本身（`metadata.structInfo?.annotations?.[StructDecoratorNames.ENTRY]`），而非属性节点。
 
 ### 源码位置
-`arkui-plugins/collectors/ui-collectors/validators/rules/check-entry-localstorage.ts:22`
+`arkui-plugins/collectors/ui-collectors/validators/rules/check-entry-localstorage.ts`（`checkEntryLocalStorage`）
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-entry-localstorage.ts:22`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-entry-localstorage.ts`（`checkEntryLocalStorage`）
 ### 静态工具链处理
 静态工具链通过 `check-entry-localstorage.ts` 校验当 struct 中使用了 @LocalStorageLink 时 @Entry 必须传入 storage 参数。报错级别为 WARN。
-- `compiler/src/pre_define.ts:655`（`CREATE_LOCAL_STORAGE_LINK`）
+- `compiler/src/pre_define.ts`（`CREATE_LOCAL_STORAGE_LINK`）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `process_ui_syntax.ts:1950`（`addStorageParam`） | `check-entry-localstorage.ts:22` |
+| 校验入口 | `process_ui_syntax.ts`（`addStorageParam`） | `check-entry-localstorage.ts`（`checkEntryLocalStorage`） |
 | 报错级别 | WARN | WARN |
 | 检测条件 | 检查 `hasStorage()` 和 `localStorageNum` | 检查 struct 中 @LocalStorageLink 属性存在性 |

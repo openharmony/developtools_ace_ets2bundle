@@ -3,8 +3,8 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_struct_componentV2.ts:535`（`parseMethodDeclaration` 中 `@SyncMonitor` 分支）
-- `compiler/src/pre_define.ts:99`（`COMPONENTV2_SYNC_MONITOR_DECORATOR`）
+- `compiler/src/process_struct_componentV2.ts`（`parseMethodDeclaration` 中 `@SyncMonitor` 分支）
+- `compiler/src/pre_define.ts`（`COMPONENTV2_SYNC_MONITOR_DECORATOR`）
 
 ### 转换前的原始代码
 ```typescript
@@ -38,15 +38,15 @@ class MyComponent extends ViewV2 {
 ```
 
 ### 关键转换逻辑
-- `parseMethodDeclaration`（line 535）：检测 `@SyncMonitor` 装饰器，将方法名加入 `structInfo.syncMonitorDecoratorSet`（line 535），设置 `hasSyncMonitor = true`。
+- `parseMethodDeclaration`：检测 `@SyncMonitor` 装饰器，将方法名加入 `structInfo.syncMonitorDecoratorSet`，设置 `hasSyncMonitor = true`。
 - `hasRequire && hasSyncMonitor` 时调用 `checkRequireDecoratorV2` 校验 `@Require` 不能与 `@SyncMonitor` 同时使用。
 - 保留为普通方法，同步监听逻辑由运行时框架处理。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/syncMonitor.ts:30`（`fieldWithSyncMonitorMethod`）
-- `arkui-plugins/ui-plugins/property-translators/syncMonitor.ts:49`（`syncMonitorInfo`）
-- `arkui-plugins/ui-plugins/property-translators/factory.ts:1140`（`generateSyncMonitorAssignment`）
+- `arkui-plugins/ui-plugins/property-translators/syncMonitor.ts`（`fieldWithSyncMonitorMethod`）
+- `arkui-plugins/ui-plugins/property-translators/syncMonitor.ts`（`syncMonitorInfo`）
+- `arkui-plugins/ui-plugins/property-translators/factory.ts`（`generateSyncMonitorAssignment`）
 - `arkui-plugins/common/annotation-utils.ts`（`findPathArrayFromSyncMonitorAnnotation`）
 
 ### 转换前的原始代码

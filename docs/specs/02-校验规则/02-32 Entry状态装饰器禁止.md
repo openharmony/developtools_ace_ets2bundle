@@ -3,11 +3,11 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/process_component_member.ts:522-528`（`checkDecoratorIsIllegalInEntry`）
-  - `compiler/src/process_component_member.ts:1442-1450`（`validateHasIllegalDecoratorInEntry`）
-  - `compiler/src/process_component_member.ts:164-165`（`mandatoryToInitViaParamDecorators` 包含 @Prop、@Link、@ObjectLink）
+  - `compiler/src/process_component_member.ts`（`checkDecoratorIsIllegalInEntry`）
+  - `compiler/src/process_component_member.ts`（`validateHasIllegalDecoratorInEntry`）
+  - `compiler/src/process_component_member.ts`（`mandatoryToInitViaParamDecorators` 包含 @Prop、@Link、@ObjectLink）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-no-prop-link-objectlink-in-entry.ts:36`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-no-prop-link-objectlink-in-entry.ts`（`checkNoPropLinkObjectlinkInEntry`）
 
 ## 适用对象
 `@Entry` 装饰的 struct 中的成员属性
@@ -79,11 +79,11 @@ The '@Entry' component '${componentName}' cannot have the '@${decoratorName}' pr
 - `arkui-plugins/collectors/ui-collectors/validators/rules/check-no-prop-link-objectlink-in-entry.ts`
 ### 静态工具链处理
 静态工具链通过 `check-no-prop-link-objectlink-in-entry.ts` 校验 @Entry 组件不可使用 @PropRef/@Link/@ObjectLink 装饰器（这些装饰器需要从父组件传入值，而 @Entry 是根组件无父组件）。支持 `FixSuggestion`（建议移除组件调用）。
-- `compiler/src/validate_ui_syntax.ts:470`（`validateStruct`）
+- `compiler/src/validate_ui_syntax.ts`（`validateStruct`）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts:470`（`validateStruct`） | `check-no-prop-link-objectlink-in-entry.ts` |
+| 校验入口 | `validate_ui_syntax.ts`（`validateStruct`） | `check-no-prop-link-objectlink-in-entry.ts` |
 | 检测原理 | @Entry 是根组件无父组件，不可使用需父传入的装饰器 | 同动态 |

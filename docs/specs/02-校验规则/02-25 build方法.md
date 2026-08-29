@@ -2,12 +2,12 @@
 校验 struct 必须有且仅有一个无参数的 `build` 方法。
 
 ## 补充说明
-- `compiler/src/pre_define.ts:206`（`COMPONENT_IF = 'If'`，build 方法相关常量）
-- `compiler/src/validate_ui_syntax.ts:3467`（`validateStmgmtKeywords`）
-- `compiler/src/validate_ui_syntax.ts:3415`（`validateStaticBlock`）
+- `compiler/src/pre_define.ts`（`COMPONENT_IF = 'If'`，build 方法相关常量）
+- `compiler/src/validate_ui_syntax.ts`（`validateStmgmtKeywords`）
+- `compiler/src/validate_ui_syntax.ts`（`validateStaticBlock`）
 ## 源码参考位置
-- 动态：`compiler/src/validate_ui_syntax.ts:3394-3413`（`validateStateVariable` 中涉及方法校验）
-- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-validate-build-in-struct.ts:25`
+- 动态：`compiler/src/validate_ui_syntax.ts`（`validateStateVariable` 中涉及方法校验）
+- 静态：`arkui-plugins/collectors/ui-collectors/validators/rules/check-validate-build-in-struct.ts`（`checkValidateBuildInStruct`）
 
 ## 适用对象
 struct 声明（`@Component` / `@ComponentV2` 装饰的 struct）
@@ -143,6 +143,6 @@ struct MyComp {
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts:3394`（`validateStateVariable`） | `check-validate-build-in-struct.ts:25` |
+| 校验入口 | `validate_ui_syntax.ts`（`validateStateVariable`） | `check-validate-build-in-struct.ts`（`checkValidateBuildInStruct`） |
 | 报错条数 | 分散 | 2 条（不可有参数 + 必须有且仅有一个） |
 | 自动修复 | 无 | 有（建议移除参数 / 添加 build 方法） |

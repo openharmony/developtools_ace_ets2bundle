@@ -3,9 +3,9 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_struct_componentV2.ts:662`（`parseEventDecorator`）
-- `compiler/src/process_struct_componentV2.ts:320`（`getDefaultValueForEvent`）
-- `compiler/src/pre_define.ts:99`（`COMPONENTV2_EVENT_DECORATOR = '@Event'`）
+- `compiler/src/process_struct_componentV2.ts`（`parseEventDecorator`）
+- `compiler/src/process_struct_componentV2.ts`（`getDefaultValueForEvent`）
+- `compiler/src/pre_define.ts`（`COMPONENTV2_EVENT_DECORATOR = '@Event'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -37,14 +37,14 @@ class MyComponent extends ViewV2 {
 ```
 
 ### 关键转换逻辑
-- `parseEventDecorator`（line 662）：将属性和类型存入 `structInfo.eventDecoratorMap`。
-- `getDefaultValueForEvent`（line 320-328）：根据函数类型节点的参数生成空箭头函数作为默认值；`resetStateVarsOnReuse` 时保留参数签名。
+- `parseEventDecorator`：将属性和类型存入 `structInfo.eventDecoratorMap`。
+- `getDefaultValueForEvent`：根据函数类型节点的参数生成空箭头函数作为默认值；`resetStateVarsOnReuse` 时保留参数签名。
 - Event 属性在 `needInitFromParams` 列表中，通过 `createPropertyAssignNode` 从 params 初始化或使用默认空函数。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/event.ts:52`（`EventTranslator`）
-- `arkui-plugins/ui-plugins/property-translators/event.ts:108`（`EventCachedTranslator`）
+- `arkui-plugins/ui-plugins/property-translators/event.ts`（`EventTranslator`）
+- `arkui-plugins/ui-plugins/property-translators/event.ts`（`EventCachedTranslator`）
 - `arkui-plugins/common/predefines.ts`（`DecoratorNames.EVENT = 'Event'`）
 
 ### 转换前的原始代码

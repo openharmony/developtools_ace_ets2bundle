@@ -3,9 +3,9 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/process_component_member.ts:1472-1490`（`validateWatchDecorator` 函数，检查装饰器数量为 1 或仅含 @Require）
+  - `compiler/src/process_component_member.ts`（`validateWatchDecorator` 函数，检查装饰器数量为 1 或仅含 @Require）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-regular.ts:33`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-regular.ts`（`checkWatchDecoratorRegular`）
 
 ## 适用对象
 `@Watch` 装饰的 struct 成员属性（ClassProperty）
@@ -72,20 +72,20 @@ struct MyComp {
 静态侧报错时定位到 `@Watch` 注解节点本身（`metadata.annotations?.[DecoratorNames.WATCH]`），而非属性节点，便于 IDE 高亮具体的装饰器。
 
 ### 源码位置
-`arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-regular.ts:22`
+`arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-regular.ts`（`checkWatchDecoratorRegular`）
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-regular.ts:22`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-watch-decorator-regular.ts`（`checkWatchDecoratorRegular`）
 ### 静态工具链处理
 静态工具链通过 `check-watch-decorator-regular.ts` 校验 @Watch 不可单独使用（当注解数量为 1 时报错），必须与其他状态管理装饰器配合。
 
-- `compiler/src/pre_define.ts:45`（`COMPONENT_WATCH_DECORATOR = '@Watch'`）
+- `compiler/src/pre_define.ts`（`COMPONENT_WATCH_DECORATOR = '@Watch'`）
 
 ## 动静态差异说明
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `process_component_member.ts:1472`（`validateWatchDecorator`） | `check-watch-decorator-regular.ts:22` |
+| 校验入口 | `process_component_member.ts`（`validateWatchDecorator`） | `check-watch-decorator-regular.ts`（`checkWatchDecoratorRegular`） |
 | 检测逻辑 | 检查装饰器数量为 1 或仅含 @Require | 检查注解数量 === 1 时报错 |
 | 自动修复 | 无 | 无 |

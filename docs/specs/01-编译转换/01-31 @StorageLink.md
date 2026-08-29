@@ -3,10 +3,10 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_member.ts:907-918`（`updateStoragePropAndLinkProperty`）
-- `compiler/src/pre_define.ts:41`（`COMPONENT_STORAGE_LINK_DECORATOR = '@StorageLink'`）
-- `compiler/src/pre_define.ts:159`（`APP_STORAGE_SET_AND_LINK = 'SetAndLink'`）
-- `compiler/src/pre_define.ts:653`（`CREATE_STORAGE_LINK = 'createStorageLink'`，Partial Update 模式）
+- `compiler/src/process_component_member.ts`（`updateStoragePropAndLinkProperty`）
+- `compiler/src/pre_define.ts`（`COMPONENT_STORAGE_LINK_DECORATOR = '@StorageLink'`）
+- `compiler/src/pre_define.ts`（`APP_STORAGE_SET_AND_LINK = 'SetAndLink'`）
+- `compiler/src/pre_define.ts`（`CREATE_STORAGE_LINK = 'createStorageLink'`，Partial Update 模式）
 
 ### 转换前的原始代码
 ```typescript
@@ -32,10 +32,10 @@ set data(newValue: number) { this.__data.set(newValue) }
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/storagelink.ts:43`（`initializeStructWithStorageLinkProperty`）
-- `arkui-plugins/common/predefines.ts:209`（`DecoratorNames.STORAGE_LINK = 'StorageLink'`）
-- `arkui-plugins/common/predefines.ts:278`（`StateManagementTypes.STORAGE_LINK_DECORATED`）
-- `arkui-plugins/common/predefines.ts:314`（`StateManagementTypes.MAKE_STORAGE_LINK = 'makeStorageLink'`）
+- `arkui-plugins/ui-plugins/property-translators/storagelink.ts`（`initializeStructWithStorageLinkProperty`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.STORAGE_LINK = 'StorageLink'`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.STORAGE_LINK_DECORATED`）
+- `arkui-plugins/common/predefines.ts`（`StateManagementTypes.MAKE_STORAGE_LINK = 'makeStorageLink'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -58,16 +58,16 @@ __initializeStruct(initializers, content): void {
 ```
 
 > 声明文件参考：`@StorageLink(property: string)`。
-- @StorageLink 常量：`APP_STORAGE_SET_AND_LINK = 'SetAndLink'`（`pre_define.ts:159`）
+- @StorageLink 常量：`APP_STORAGE_SET_AND_LINK = 'SetAndLink'`（`pre_define.ts`）
 - @StorageLink 的 key 参数为 AppStorage 中的键名
 - @StorageLink 通过 `AppStorage.SetAndLink` 实现双向同步
 - @StorageLink 必须指定默认值（作为 AppStorage 不存在时的回退值）
 - @StorageLink 的 key 参数为 AppStorage 中的键名
 - 与 @StorageProp 的区别：@StorageLink 双向同步，@StorageProp 单向只读
 
-- 常量 `APP_STORAGE_SET_AND_LINK`（`pre_define.ts:159`）
+- 常量 `APP_STORAGE_SET_AND_LINK`（`pre_define.ts`）
 - @StorageLink 必须指定默认值
-- 常量 `APP_STORAGE_SET_AND_LINK`（`pre_define.ts:159`）
+- 常量 `APP_STORAGE_SET_AND_LINK`（`pre_define.ts`）
 - @StorageLink 必须指定默认值
 
 ## 接口声明交叉验证
@@ -94,7 +94,7 @@ export enum APIVersions {
 }
 ```
 
-使用方式（`factory.ts:1031-1038`）：
+使用方式（`factory.ts`）：
 ```typescript
 withAPIVersion(
     { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
@@ -107,7 +107,7 @@ withAPIVersion(
 
 | 文件 | 内容 | 工具链引用 |
 |---|---|---|
-| `stateManagement/storage/localStorage.static.d.ets` | `LocalStorage` 类声明 | `ARKUI_LOCAL_STORAGE_SOURCE_NAME`（`predefines.ts:64`） |
+| `stateManagement/storage/localStorage.static.d.ets` | `LocalStorage` 类声明 | `ARKUI_LOCAL_STORAGE_SOURCE_NAME`（`predefines.ts`） |
 | `stateManagement/storage/persistentStorage.static.d.ets` | `PersistentStorage` 类声明 | 运行时 API |
 | `stateManagement/storage/environment.static.d.ets` | `Environment` 类声明 | 运行时 API |
 

@@ -3,14 +3,14 @@ Import 转换处理 ArkTS 源码中的导入声明，包括：路径展开（`im
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_import.ts:104-161`（`processImport`，通用导入处理）
-- `compiler/src/process_import.ts:176`（`visitAllNode`，遍历导入文件 AST 收集信息）
-- `compiler/src/process_lazy_import.ts:60-80`（`transformLazyImport`，lazy import 变换）
-- `compiler/src/process_lazy_import.ts:98-170`（`updateImportDecl`，单条导入声明更新）
-- `compiler/src/process_kit_import.ts:78-100`（`processKitImport`，Kit 导入变换）
-- `compiler/src/import_path_expand.ts:41-66`（`expandAllImportPaths`，路径展开 transformer）
-- `compiler/src/import_path_expand.ts:68-80`（`transformImportDecl`，单条导入拆解）
-- `compiler/src/process_ui_syntax.ts:321-330`（ESMODULE 模式下 `processImportModule` 调用）
+- `compiler/src/process_import.ts`（`processImport`，通用导入处理）
+- `compiler/src/process_import.ts`（`visitAllNode`，遍历导入文件 AST 收集信息）
+- `compiler/src/process_lazy_import.ts`（`transformLazyImport`，lazy import 变换）
+- `compiler/src/process_lazy_import.ts`（`updateImportDecl`，单条导入声明更新）
+- `compiler/src/process_kit_import.ts`（`processKitImport`，Kit 导入变换）
+- `compiler/src/import_path_expand.ts`（`expandAllImportPaths`，路径展开 transformer）
+- `compiler/src/import_path_expand.ts`（`transformImportDecl`，单条导入拆解）
+- `compiler/src/process_ui_syntax.ts`（ESMODULE 模式下 `processImportModule` 调用）
 
 ### 转换前的原始代码
 ```typescript
@@ -64,7 +64,7 @@ import { CompB } from '@ohos.myPackage/CompB';
 
 ### 关键转换逻辑
 
-#### 1. processImport（通用导入处理，line 104-161）
+#### 1. processImport（通用导入处理）
 - **适用模式**：非 ESMODULE 或非 rollup 模式
 - **职责**：
   - 解析 `ImportDeclaration`/`ImportEqualsDeclaration`/`ExportDeclaration`
@@ -73,11 +73,11 @@ import { CompB } from '@ohos.myPackage/CompB';
   - 递归访问导入文件 AST，收集 `@Entry`/`@Component`/`@Reusable`/`@ReusableV2`/`@Builder` 信息
   - 收集 struct/class 装饰器信息到 `componentCollection`/`linkCollection` 等
 
-#### 2. processImportModule（ESMODULE 模式，line 321-325）
+#### 2. processImportModule（ESMODULE 模式）
 - **适用模式**：`compileMode === 'esmodule'` 且 `compileTool === 'rollup'`
 - **职责**：ESMODULE 模式下路径解析由 Rollup 处理，`processImportModule` 仅收集信息
 
-#### 3. transformLazyImport（Lazy Import，line 60-80）
+#### 3. transformLazyImport（Lazy Import）
 - **适用场景**：`autoLazyImport` 开启时
 - **支持的变换**：
   - `import { x } from '...'` → `import lazy { x } from '...'`
@@ -93,14 +93,14 @@ import { CompB } from '@ohos.myPackage/CompB';
   - `import { type t, x } from '...'` → `import lazy { x } from '...'; import { type t } from '...'`
   - 通过 `splitImportBindings` 分离类型和值绑定
 
-#### 4. lazyImportReExportCheck（再导出检查，line 204-223）
+#### 4. lazyImportReExportCheck（再导出检查）
 - **模式**：
   - `noCheck`：不检查
   - `strict`：报错（ERROR）
   - `compatible`：警告（WARN）
 - 收集 lazy import 符号，检查是否被再导出（`export default`/`export { x }`）
 
-#### 5. processKitImport（Kit 导入变换，line 78-100）
+#### 5. processKitImport（Kit 导入变换）
 - **检测**：`moduleRequest.startsWith('@kit.')`
 - **处理**：
   - 从 SDK 配置文件读取 Kit 定义
@@ -108,7 +108,7 @@ import { CompB } from '@ohos.myPackage/CompB';
   - 生成对应的 `@ohos.*` import 声明列表
 - **示例**：`@kit.AbilityKit` → `@ohos.ability.ability` + `@ohos.ability.errorCode`
 
-#### 6. expandAllImportPaths（路径展开，line 41-66）
+#### 6. expandAllImportPaths（路径展开）
 - **条件**：`projectConfig.expandImportPath.enable === true`
 - **排除**：
   - 相对路径（`./` 开头）

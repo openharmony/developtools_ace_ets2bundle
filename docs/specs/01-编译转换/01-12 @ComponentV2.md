@@ -3,11 +3,11 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_struct_componentV2.ts:135`（`processStructComponentV2`）
-- `compiler/src/process_struct_componentV2.ts:202`（`processStructMembersV2`）
-- `compiler/src/process_struct_componentV2.ts:747`（`processStructConstructorV2`）
-- `compiler/src/constant_define.ts:62`（`STRUCT_PARENT = 'ViewV2'`）
-- `compiler/src/pre_define.ts:28`（`COMPONENT_V2_DECORATOR = '@ComponentV2'`）
+- `compiler/src/process_struct_componentV2.ts`（`processStructComponentV2`）
+- `compiler/src/process_struct_componentV2.ts`（`processStructMembersV2`）
+- `compiler/src/process_struct_componentV2.ts`（`processStructConstructorV2`）
+- `compiler/src/constant_define.ts`（`STRUCT_PARENT = 'ViewV2'`）
+- `compiler/src/pre_define.ts`（`COMPONENT_V2_DECORATOR = '@ComponentV2'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -44,17 +44,17 @@ class MyV2Component extends ViewV2 {
 
 ### 关键转换逻辑
 - V2 装饰器不生成 ObservedProperty 包装类，保持普通属性，通过 `initParam`/`updateParam`/`resetParam` 方法管理
-- `processStructMembersV2`（line 202-251）：遍历成员，属性交 `processComponentProperty`，方法交 `processComponentMethod`
-- `processStructConstructorV2`（line 747-759）：构造函数参数固定为 `parent, params, __localStorage, elmtId, paramsLambda, extraInfo`
-- `createInitOrUpdateParam`（line 830-850）：生成 `this.initParam('prop', ('prop' in params) ? params.prop : default)` 或 `this.resetParam(...)`
-- `updateParamNode`（line 852-865）：生成 `if ('prop' in params) { this.updateParam('prop', params.prop) }`
+- `processStructMembersV2`：遍历成员，属性交 `processComponentProperty`，方法交 `processComponentMethod`
+- `processStructConstructorV2`：构造函数参数固定为 `parent, params, __localStorage, elmtId, paramsLambda, extraInfo`
+- `createInitOrUpdateParam`：生成 `this.initParam('prop', ('prop' in params) ? params.prop : default)` 或 `this.resetParam(...)`
+- `updateParamNode`：生成 `if ('prop' in params) { this.updateParam('prop', params.prop) }`
 - 若是 `@ReusableV2`，注入 `@__ReusableV2_Inner_Decorator__` 装饰器
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/common/predefines.ts:122`（`StructDecoratorNames.COMPONENT_V2 = 'ComponentV2'`）
-- `arkui-plugins/common/predefines.ts:584`（`COMPONENT_V2_CLASS_NAME = 'CustomComponentV2'`）
-- `arkui-plugins/ui-plugins/component-transformer.ts:691`（`getComponentExtendsName`，选择 `CustomComponentV2`）
+- `arkui-plugins/common/predefines.ts`（`StructDecoratorNames.COMPONENT_V2 = 'ComponentV2'`）
+- `arkui-plugins/common/predefines.ts`（`COMPONENT_V2_CLASS_NAME = 'CustomComponentV2'`）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`getComponentExtendsName`，选择 `CustomComponentV2`）
 
 ### 转换后的代码
 ```typescript
@@ -66,17 +66,17 @@ class MyV2Component extends CustomComponentV2<MyV2Component, __Options_MyV2Compo
 }
 ```
 
-- `processStructMembersV2`（`process_struct_componentV2.ts:202`）：遍历成员，属性交 `processComponentProperty`，方法交 `processComponentMethod`
-- `processStructConstructorV2`（`:747`）：构造函数参数固定为 `parent, params, __localStorage, elmtId, paramsLambda, extraInfo`
-- `createInitOrUpdateParam`（`:830`）：生成 `this.initParam('prop', ('prop' in params) ? params.prop : default)`
-- `updateParamNode`（`:852`）：生成 `if ('prop' in params) { this.updateParam('prop', params.prop) }`
-- `createResetStateVarsOnReuse`（`:780`）：生成复用时重置方法，含 `resetMonitorsOnReuse`
+- `processStructMembersV2`（`process_struct_componentV2.ts`）：遍历成员，属性交 `processComponentProperty`，方法交 `processComponentMethod`
+- `processStructConstructorV2`：构造函数参数固定为 `parent, params, __localStorage, elmtId, paramsLambda, extraInfo`
+- `createInitOrUpdateParam`：生成 `this.initParam('prop', ('prop' in params) ? params.prop : default)`
+- `updateParamNode`：生成 `if ('prop' in params) { this.updateParam('prop', params.prop) }`
+- `createResetStateVarsOnReuse`：生成复用时重置方法，含 `resetMonitorsOnReuse`
 
 - V2 装饰器不生成 ObservedProperty 包装类，保持普通属性
 - 通过 `initParam`/`updateParam`/`resetParam` 方法管理状态
-- `createInitOrUpdateParam`（`:830`）：生成 `this.initParam('prop', ...)`
-- `updateParamNode`（`:852`）：生成 `if ('prop' in params) { this.updateParam('prop', params.prop) }`
-- `createResetStateVarsOnReuse`（`:780`）：生成复用时重置方法
+- `createInitOrUpdateParam`：生成 `this.initParam('prop', ...)`
+- `updateParamNode`：生成 `if ('prop' in params) { this.updateParam('prop', params.prop) }`
+- `createResetStateVarsOnReuse`：生成复用时重置方法
 
 ### 转换后的代码（Partial Update）
 ```typescript

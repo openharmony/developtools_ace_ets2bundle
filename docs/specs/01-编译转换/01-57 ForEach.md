@@ -3,14 +3,14 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_build.ts:1703`（`processForEachComponent`，Legacy）
-- `compiler/src/process_component_build.ts:1759`（`processForEachComponentNew`，Partial Update）
-- `compiler/src/process_component_build.ts:1812`（`createItemGenFunctionStatement`）
-- `compiler/src/process_component_build.ts:1890`（`createItemIdFuncStatement`）
-- `compiler/src/process_component_build.ts:1910`（`createUpdateFunctionStatement`）
-- `compiler/src/pre_define.ts:198`（`COMPONENT_FOREACH = 'ForEach'`）
-- `compiler/src/pre_define.ts:624`（`FOREACHITEMGENFUNCTION = 'forEachItemGenFunction'`）
-- `compiler/src/pre_define.ts:628`（`FOREACHUPDATEFUNCTION = 'forEachUpdateFunction'`）
+- `compiler/src/process_component_build.ts`（`processForEachComponent`，Legacy）
+- `compiler/src/process_component_build.ts`（`processForEachComponentNew`，Partial Update）
+- `compiler/src/process_component_build.ts`（`createItemGenFunctionStatement`）
+- `compiler/src/process_component_build.ts`（`createItemIdFuncStatement`）
+- `compiler/src/process_component_build.ts`（`createUpdateFunctionStatement`）
+- `compiler/src/pre_define.ts`（`COMPONENT_FOREACH = 'ForEach'`）
+- `compiler/src/pre_define.ts`（`FOREACHITEMGENFUNCTION = 'forEachItemGenFunction'`）
+- `compiler/src/pre_define.ts`（`FOREACHUPDATEFUNCTION = 'forEachUpdateFunction'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -48,19 +48,19 @@ this.observeComponentCreation2((elmtId, isInitialRender) => {
 ```
 
 ### 关键转换逻辑
-- `processForEachComponentNew`（line 1759-1805）：
-  - `collectForEachAttribute`（line 1734）：分离属性链和核心调用
-  - `createItemGenFunctionStatement`（line 1812-1844）：生成 `forEachItemGenFunction` 变量
-  - `createItemIdFuncStatement`（line 1890）：生成 key 函数变量
-  - `createUpdateFunctionStatement`（line 1910）：生成 `forEachUpdateFunction` 调用
-- 数据源包装：`ObservedObject.GetRawObject(arr)`（line 1716-1721），仅 V1 非 V2 兼容时（`isNeedGetRawObject`）
+- `processForEachComponentNew`：
+  - `collectForEachAttribute`：分离属性链和核心调用
+  - `createItemGenFunctionStatement`：生成 `forEachItemGenFunction` 变量
+  - `createItemIdFuncStatement`：生成 key 函数变量
+  - `createUpdateFunctionStatement`：生成 `forEachUpdateFunction` 调用
+- 数据源包装：`ObservedObject.GetRawObject(arr)`，仅 V1 非 V2 兼容时（`isNeedGetRawObject`）
 - 结构：`[propertyNode, ...attributeList, itemGenFunctionStatement, updateFunctionStatement]`
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/common/predefines.ts:179`（`InnerComponentNames.FOR_EACH = 'ForEach'`）
-- `arkui-plugins/collectors/ui-collectors/records/inner-component-function.ts:170`（`isForEach`）
-- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts:890`（`processModifiedArg`）
+- `arkui-plugins/common/predefines.ts`（`InnerComponentNames.FOR_EACH = 'ForEach'`）
+- `arkui-plugins/collectors/ui-collectors/records/inner-component-function.ts`（`isForEach`）
+- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts`（`processModifiedArg`）
 
 ### 转换前的原始代码
 同动态工具链
@@ -69,9 +69,9 @@ this.observeComponentCreation2((elmtId, isInitialRender) => {
 ForEach 作为 `@ComponentBuilder` 装饰的函数调用保留在 builder lambda 体中，第一个参数（数组）被包成 `() => arr` 箭头函数（用于 memoable 推断和延迟计算）。
 
 ### 关键转换逻辑
-- `isForEach`（line 170-173）：判定 `name === 'ForEach' && externalSourceName === 'arkui.component.forEach'`
-- 参数预处理（line 207-219）：ForEach 第一个参数被改写为 lambda 类型
-- `processModifiedArg`（factory.ts:896-908）：将第一参数包成 `() => modifiedArg` 箭头函数
+- `isForEach`：判定 `name === 'ForEach' && externalSourceName === 'arkui.component.forEach'`
+- 参数预处理：ForEach 第一个参数被改写为 lambda 类型
+- `processModifiedArg`（factory.ts）：将第一参数包成 `() => modifiedArg` 箭头函数
 
 ## 接口声明交叉验证
 

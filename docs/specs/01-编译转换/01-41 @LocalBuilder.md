@@ -3,13 +3,13 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/pre_define.ts:122`（`COMPONENT_LOCAL_BUILDER_DECORATOR = '@LocalBuilder'`）
-- `compiler/src/process_component_class.ts:997-1017`（`isBuilderOrLocalBuilder`）
-- `compiler/src/process_component_class.ts:890-957`（`processComponentMethod` 中 localBuilder 分支）
-- `compiler/src/process_component_class.ts:1019-1028`（`localBuilderNode`）
-- `compiler/src/process_ui_syntax.ts:272`（`hasLocalBuilderInFile`）
-- `compiler/src/process_ui_syntax.ts:516-555`（`globalBuilderParamAssignment`）
-- `compiler/src/pre_define.ts:129-130`（`STRUCT_CONTEXT_METHOD_DECORATORS` 包含 `@LocalBuilder`）
+- `compiler/src/pre_define.ts`（`COMPONENT_LOCAL_BUILDER_DECORATOR = '@LocalBuilder'`）
+- `compiler/src/process_component_class.ts`（`isBuilderOrLocalBuilder`）
+- `compiler/src/process_component_class.ts`（`processComponentMethod` 中 localBuilder 分支）
+- `compiler/src/process_component_class.ts`（`localBuilderNode`）
+- `compiler/src/process_ui_syntax.ts`（`hasLocalBuilderInFile`）
+- `compiler/src/process_ui_syntax.ts`（`globalBuilderParamAssignment`）
+- `compiler/src/pre_define.ts`（`STRUCT_CONTEXT_METHOD_DECORATORS` 包含 `@LocalBuilder`）
 
 ### 转换前的原始代码
 ```typescript
@@ -59,12 +59,12 @@ class MyComp extends ViewPU {
 ```
 
 ### 关键转换逻辑
-1. **识别装饰器**（`isBuilderOrLocalBuilder:997-1017`）：遍历装饰器，通过 `getText().replace(/\(.*\)$/, '')` 去除参数后匹配 `@LocalBuilder`。匹配时设置 `builderCondition.isLocalBuilder = true`。
-2. **不追加 parent 参数**（line 934）：`if (!builderCondition.isLocalBuilder) { parameters.push(createParentParameter()); }` — `@LocalBuilder` 跳过追加 parent，通过 `this` 访问。
-3. **追加 myIds 参数**（line 937-938）：当 `projectConfig.optLazyForEach` 启用时，追加 `myIds` 参数。
-4. **globalBuilderParamAssignment 注入**（line 942-944）：`partialUpdateConfig.partialUpdateMode && builderCondition.isLocalBuilder && node.body.statements.length` 时，在 componentBlock 首部插入 `globalBuilderParamAssignment()`。
-5. **方法 -> 箭头函数属性**（`localBuilderNode:1019-1028`）：通过 `ts.factory.createPropertyDeclaration` 创建属性，值为 `ts.factory.createArrowFunction`，保留原参数和 body。
-6. **文件级注入**（`process_ui_syntax.ts:272-274`）：当 `storedFileInfo.hasLocalBuilderInFile` 为 true 且 Partial Update 模式时，在文件首部注入 `checkContextStack()`。
+1. **识别装饰器**（`isBuilderOrLocalBuilder`）：遍历装饰器，通过 `getText().replace(/\(.*\)$/, '')` 去除参数后匹配 `@LocalBuilder`。匹配时设置 `builderCondition.isLocalBuilder = true`。
+2. **不追加 parent 参数**：`if (!builderCondition.isLocalBuilder) { parameters.push(createParentParameter()); }` — `@LocalBuilder` 跳过追加 parent，通过 `this` 访问。
+3. **追加 myIds 参数**：当 `projectConfig.optLazyForEach` 启用时，追加 `myIds` 参数。
+4. **globalBuilderParamAssignment 注入**：`partialUpdateConfig.partialUpdateMode && builderCondition.isLocalBuilder && node.body.statements.length` 时，在 componentBlock 首部插入 `globalBuilderParamAssignment()`。
+5. **方法 -> 箭头函数属性**（`localBuilderNode`）：通过 `ts.factory.createPropertyDeclaration` 创建属性，值为 `ts.factory.createArrowFunction`，保留原参数和 body。
+6. **文件级注入**（`process_ui_syntax.ts`）：当 `storedFileInfo.hasLocalBuilderInFile` 为 true 且 Partial Update 模式时，在文件首部注入 `checkContextStack()`。
 
 ### @LocalBuilder vs @Builder 对比
 

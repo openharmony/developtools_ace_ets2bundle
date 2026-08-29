@@ -3,11 +3,11 @@ Worker 转换将 `new Worker(scriptPath)` 的脚本路径从 `.ts` 后缀替换�
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_ui_syntax.ts:1143-1147`（`isWorker`，检测 Worker 实例化）
-- `compiler/src/process_ui_syntax.ts:1149-1160`（`processWorker`，路径替换）
-- `compiler/src/process_ui_syntax.ts:421-422`（visitor 中调用 `processWorker`）
-- `compiler/src/pre_define.ts:336`（`WORKER_OBJECT = 'Worker'`）
-- `compiler/src/pre_define.ts:335`（`WORKERS_DIR = 'workers'`）
+- `compiler/src/process_ui_syntax.ts`（`isWorker`，检测 Worker 实例化）
+- `compiler/src/process_ui_syntax.ts`（`processWorker`，路径替换）
+- `compiler/src/process_ui_syntax.ts`（visitor 中调用 `processWorker`）
+- `compiler/src/pre_define.ts`（`WORKER_OBJECT = 'Worker'`）
+- `compiler/src/pre_define.ts`（`WORKERS_DIR = 'workers'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -38,7 +38,7 @@ const myWorker2 = new worker.Worker('workers/myWorker2.js');
 
 ### 关键转换逻辑
 
-#### 1. isWorker 检测（line 1143-1147）
+#### 1. isWorker 检测
 ```typescript
 function isWorker(node: ts.Node): boolean {
   return ts.isNewExpression(node) &&
@@ -52,7 +52,7 @@ function isWorker(node: ts.Node): boolean {
 
 > 注意：常量 `WORKER_OBJECT = 'Worker'`，但实际 `ThreadWorker` 也会被匹配，因为 `escapedText.toString() === 'Worker'` 只匹配 `Worker`。`ThreadWorker` 的检测通过 `isWorker` 中对 `node.expression.name.escapedText.toString() === WORKER_OBJECT` 的判断实现。
 
-#### 2. processWorker 转换（line 1149-1160）
+#### 2. processWorker 转换
 ```typescript
 function processWorker(node: ts.NewExpression): ts.Node {
   if (node.arguments.length && ts.isStringLiteral(node.arguments[0])) {
@@ -70,7 +70,7 @@ function processWorker(node: ts.NewExpression): ts.Node {
 - 使用正则 `/\.ts$/` 替换为 `.js`
 - 通过 `ts.factory.updateNewExpression` 重建节点
 
-#### 3. visitor 调用（line 421-422）
+#### 3. visitor 调用
 在 `processAllNodes` 的 visitor 中：
 ```typescript
 } else if (isWorker(node)) {

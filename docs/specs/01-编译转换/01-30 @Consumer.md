@@ -4,7 +4,7 @@
 ## 动态
 ### 源码参考位置
 - `compiler/src/process_struct_componentV2.ts`（V2 属性处理逻辑，`parseConsumerDecorator`）
-- `compiler/src/pre_define.ts:99`（`COMPONENTV2_CONSUMER_DECORATOR = '@Consumer'`）
+- `compiler/src/pre_define.ts`（`COMPONENTV2_CONSUMER_DECORATOR = '@Consumer'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -33,14 +33,14 @@ class ChildComponent extends ViewV2 {
 ```
 
 ### 关键转换逻辑
-- `parseConsumerDecorator`（line 705-708）：将属性名加入 `structInfo.consumerDecoratorSet`。
+- `parseConsumerDecorator`：将属性名加入 `structInfo.consumerDecoratorSet`。
 - 移除 `@Consumer` 装饰器，保留为普通属性。
 - 别名（alias）用于匹配 `@Provider` 的 key。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/property-translators/consumer.ts:47`（`initializeStructWithConsumerProperty`）
-- `arkui-plugins/ui-plugins/property-translators/consumer.ts:92`（`ConsumerTranslator`）
+- `arkui-plugins/ui-plugins/property-translators/consumer.ts`（`initializeStructWithConsumerProperty`）
+- `arkui-plugins/ui-plugins/property-translators/consumer.ts`（`ConsumerTranslator`）
 - `arkui-plugins/common/predefines.ts`（`DecoratorNames.CONSUMER = 'Consumer'`）
 
 ### 转换前的原始代码
@@ -70,8 +70,8 @@ class ChildComponent extends CustomComponentV2 {
 - 工厂参数：属性名、别名（alias，从注解中提取或默认为属性名）、初始值。
 - 与 `@Provider` 结构对称，通过 alias 匹配建立跨层连接。
 - 声明文件：`@Consumer(alias: string = "")`，`IConsumerDecoratedVariable<T>`。
-- `arkui-plugins/common/predefines.ts:235`（`DecoratorNames.CONSUMER = 'Consumer'`）
-- `arkui-plugins/interop-plugins/emit_transformer.ts:175`（`processProvide`，interop emit 阶段）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.CONSUMER = 'Consumer'`）
+- `arkui-plugins/interop-plugins/emit_transformer.ts`（`processProvide`，interop emit 阶段）
 
 ## 动静态差异说明
 

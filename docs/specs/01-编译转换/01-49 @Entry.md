@@ -3,7 +3,7 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/pre_define.ts:26`（`COMPONENT_DECORATOR_ENTRY = '@Entry'`）
+- `compiler/src/pre_define.ts`（`COMPONENT_DECORATOR_ENTRY = '@Entry'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -33,9 +33,9 @@ class MyPage extends ViewPU {
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/entry-translators/entry-transformer.ts:22`（`EntryTransformer`）
-- `arkui-plugins/ui-plugins/entry-translators/factory.ts:208`（`generateEntryWrapper`）
-- `arkui-plugins/common/predefines.ts:122`（`StructDecoratorNames.ENTRY = 'Entry'`）
+- `arkui-plugins/ui-plugins/entry-translators/entry-transformer.ts`（`EntryTransformer`）
+- `arkui-plugins/ui-plugins/entry-translators/factory.ts`（`generateEntryWrapper`）
+- `arkui-plugins/common/predefines.ts`（`StructDecoratorNames.ENTRY = 'Entry'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -55,20 +55,20 @@ class __EntryWrapper implements EntryPoint {
   // RegisterNamedRouter 调用
 }
 ```
-- @Entry 的 `createEntryNode`（`process_ui_syntax.ts:1506`）生成入口节点
+- @Entry 的 `createEntryNode`（`process_ui_syntax.ts`）生成入口节点
 - @Entry 的 `routeName` 参数用于命名路由注册（`createRegisterNamedRoute`）
-- `compiler/src/process_ui_syntax.ts:1506`（`createEntryNode`）
+- `compiler/src/process_ui_syntax.ts`（`createEntryNode`）
 - @Entry 的可选参数 `{ storage, useSharedStorage, routeName }`
 - `storage` 参数用于绑定 LocalStorage（`@Entry({ storage: '__get_local_storage__' })`）
 - `routeName` 用于命名路由注册（`createRegisterNamedRoute`）
 - @Entry struct 不可导出（WARN）
 
-- `createEntryNode`（`process_ui_syntax.ts:1506`）生成入口节点
+- `createEntryNode`（`process_ui_syntax.ts`）生成入口节点
 - `routeName` 参数用于命名路由注册
-- `createEntryNode`（`process_ui_syntax.ts:1506`）生成入口节点
+- `createEntryNode`（`process_ui_syntax.ts`）生成入口节点
 - `routeName` 参数用于命名路由注册
 
-- @Entry 的 `useSharedStorage` 参数：`process_ui_syntax.ts:1628`（`generateLoadDocumentEntrance`）
+- @Entry 的 `useSharedStorage` 参数：`process_ui_syntax.ts`（`generateLoadDocumentEntrance`）
 
 ## 动静态差异说明
 

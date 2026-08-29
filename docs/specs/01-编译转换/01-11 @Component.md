@@ -3,10 +3,10 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_class.ts:175`（`processComponentClass`）
-- `compiler/src/pre_define.ts:24`（`COMPONENT_DECORATOR = '@Component'`）
-- `compiler/src/pre_define.ts:186`（`BASE_COMPONENT_NAME = 'View'`）
-- `compiler/src/pre_define.ts:639`（`BASE_COMPONENT_NAME_Partial Update = 'ViewPU'`）
+- `compiler/src/process_component_class.ts`（`processComponentClass`）
+- `compiler/src/pre_define.ts`（`COMPONENT_DECORATOR = '@Component'`）
+- `compiler/src/pre_define.ts`（`BASE_COMPONENT_NAME = 'View'`）
+- `compiler/src/pre_define.ts`（`BASE_COMPONENT_NAME_Partial Update = 'ViewPU'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -48,10 +48,10 @@ class MyComponent extends ViewPU {
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/common/predefines.ts:121`（`StructDecoratorNames.COMPONENT = 'Component'`）
-- `arkui-plugins/ui-plugins/component-transformer.ts:356`（`processComponent`）
-- `arkui-plugins/ui-plugins/component-transformer.ts:691`（`getComponentExtendsName`，基类选择）
-- `arkui-plugins/common/predefines.ts:583`（`COMPONENT_CLASS_NAME = 'CustomComponent'`）
+- `arkui-plugins/common/predefines.ts`（`StructDecoratorNames.COMPONENT = 'Component'`）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`processComponent`）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`getComponentExtendsName`，基类选择）
+- `arkui-plugins/common/predefines.ts`（`COMPONENT_CLASS_NAME = 'CustomComponent'`）
 
 ### 转换后的代码
 ```typescript
@@ -64,9 +64,9 @@ class MyComponent extends CustomComponent<MyComponent, __Options_MyComponent> {
   static _buildCompatibleNode(options: __Options_MyComponent): void { }
 }
 ```
-- @Component 的可选参数：`{ reusePool?: number, poolAccepts?: string[] }`（`process_component_class.ts:330` 的 `processComponentReusePool`）
+- @Component 的可选参数：`{ reusePool?: number, poolAccepts?: string[] }`（`process_component_class.ts` 的 `processComponentReusePool`）
 - Partial Update 模式特有的 `freezeWhenInactive` 和 `memoryOptimizationStrategy` 参数注入
-- `finalizeConstruction` 在 Partial Update 模式下通过 `Reflect.defineProperty` 注入（`process_component_class.ts:1524`）
+- `finalizeConstruction` 在 Partial Update 模式下通过 `Reflect.defineProperty` 注入（`process_component_class.ts`）
 
 ## 动静态差异说明
 

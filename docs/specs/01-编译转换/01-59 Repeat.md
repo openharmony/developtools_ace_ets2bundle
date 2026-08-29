@@ -3,12 +3,12 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_build.ts:1082`（`processRepeatComponent`）
-- `compiler/src/process_component_build.ts:1100`（`recurseRepeatExpression`，链式递归变换）
-- `compiler/src/process_component_build.ts:1120`（`processRepeatPropWithChild`，each/template 箭头函数处理）
-- `compiler/src/pre_define.ts:200`（`COMPONENT_REPEAT = 'Repeat'`）
-- `compiler/src/pre_define.ts:201`（`REPEAT_EACH = 'each'`）
-- `compiler/src/pre_define.ts:202`（`REPEAT_TEMPLATE = 'template'`）
+- `compiler/src/process_component_build.ts`（`processRepeatComponent`）
+- `compiler/src/process_component_build.ts`（`recurseRepeatExpression`，链式递归变换）
+- `compiler/src/process_component_build.ts`（`processRepeatPropWithChild`，each/template 箭头函数处理）
+- `compiler/src/pre_define.ts`（`COMPONENT_REPEAT = 'Repeat'`）
+- `compiler/src/pre_define.ts`（`REPEAT_EACH = 'each'`）
+- `compiler/src/pre_define.ts`（`REPEAT_TEMPLATE = 'template'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -44,18 +44,18 @@ Repeat(this.arr, this)                              // 注入 this 参数
 ```
 
 ### 关键转换逻辑
-- `processRepeatComponent`（line 1082）：入口
-- `recurseRepeatExpression`（line 1100）：递归处理 Repeat 的链式调用 `Repeat(arr).each(...).template(...).key(...)`，逐层 update
-- `this` 注入（line 1105）：在最内层 `Repeat(arr)` 调用追加 `this` 参数
-- `processRepeatPropWithChild`（line 1120）：
+- `processRepeatComponent`：入口
+- `recurseRepeatExpression`：递归处理 Repeat 的链式调用 `Repeat(arr).each(...).template(...).key(...)`，逐层 update
+- `this` 注入：在最内层 `Repeat(arr)` 调用追加 `this` 参数
+- `processRepeatPropWithChild`：
   - 对 `each` 和 `template` 属性的箭头函数体调用 `processComponentBlock` 递归变换子组件
-  - **关键**：`template` 分支调用时第 6 个参数传 `true`（`isInRepeatTemplate=true`，line 1140），此上下文内不允许 `@ReusableV2` 组件
-- 最终包装：整个链式调用包成 `Repeat(...).render(isInitialRender)` 形式（line 1089-1097）
-- 状态追踪：`storedFileInfo.processRepeat` 在变换期间置 true（line 1111），变换后置 false（line 1113）
+  - **关键**：`template` 分支调用时第 6 个参数传 `true`（`isInRepeatTemplate=true`），此上下文内不允许 `@ReusableV2` 组件
+- 最终包装：整个链式调用包成 `Repeat(...).render(isInitialRender)` 形式
+- 状态追踪：`storedFileInfo.processRepeat` 在变换期间置 true，变换后置 false
 
 ## 静态
 ### 源码参考位置
-静态工具链中 Repeat 不在 `InnerComponentNames` 枚举中，按通用 builder lambda 链路处理，通过 `transformBuilderLambda`（`arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts:1093`）的链式调用展开逻辑处理。
+静态工具链中 Repeat 不在 `InnerComponentNames` 枚举中，按通用 builder lambda 链路处理，通过 `transformBuilderLambda`（`arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts`）的链式调用展开逻辑处理。
 
 ## 动静态差异说明
 
@@ -69,14 +69,14 @@ Repeat(this.arr, this)                              // 注入 this 参数
 ## 深度转换逻辑
 
 ### 源码参考位置
-- `compiler/src/process_component_build.ts:1082-1098`（`processRepeatComponent`，入口和 render 包装）
-- `compiler/src/process_component_build.ts:1100-1118`（`recurseRepeatExpression`，链式递归变换）
-- `compiler/src/process_component_build.ts:1120-1145`（`processRepeatPropWithChild`，each vs template 差异化处理）
-- `compiler/src/process_component_build.ts:1147-1155`（`processRepeatCallBackBlock`，箭头函数体提取）
-- `compiler/src/pre_define.ts:200`（`COMPONENT_REPEAT = 'Repeat'`）
-- `compiler/src/pre_define.ts:201`（`REPEAT_EACH = 'each'`）
-- `compiler/src/pre_define.ts:202`（`REPEAT_TEMPLATE = 'template'`）
-- `compiler/src/pre_define.ts:116`（`COMPONENT_RENDER_FUNCTION = 'render'`）
+- `compiler/src/process_component_build.ts`（`processRepeatComponent`，入口和 render 包装）
+- `compiler/src/process_component_build.ts`（`recurseRepeatExpression`，链式递归变换）
+- `compiler/src/process_component_build.ts`（`processRepeatPropWithChild`，each vs template 差异化处理）
+- `compiler/src/process_component_build.ts`（`processRepeatCallBackBlock`，箭头函数体提取）
+- `compiler/src/pre_define.ts`（`COMPONENT_REPEAT = 'Repeat'`）
+- `compiler/src/pre_define.ts`（`REPEAT_EACH = 'each'`）
+- `compiler/src/pre_define.ts`（`REPEAT_TEMPLATE = 'template'`）
+- `compiler/src/pre_define.ts`（`COMPONENT_RENDER_FUNCTION = 'render'`）
 
 ### 转换前代码
 ```typescript
@@ -116,7 +116,7 @@ Repeat(this.arr, this)                                      // this 注入
 
 ### 关键转换逻辑
 
-#### 1. processRepeatComponent 入口和 render 包装（line 1082-1098）
+#### 1. processRepeatComponent 入口和 render 包装
 
 ```typescript
 function processRepeatComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
@@ -137,7 +137,7 @@ function processRepeatComponent(node: ts.ExpressionStatement, newStatements: ts.
 - 整个链式调用最终被包装成 `Repeat(arr, this).each(...).template(...).key(...).render(isInitialRender)` 形式
 - `render(isInitialRender)` 在链的最末尾调用
 
-#### 2. recurseRepeatExpression 递归处理链式调用（line 1100-1118）
+#### 2. recurseRepeatExpression 递归处理链式调用
 
 ```typescript
 function recurseRepeatExpression(node: ts.CallExpression | ts.PropertyAccessExpression,
@@ -188,7 +188,7 @@ function recurseRepeatExpression(node: ts.CallExpression | ts.PropertyAccessExpr
    - 递归处理 `node.expression`（即 `Repeat(arr).each`）
    - 变换完成后设置 `storedFileInfo.processRepeat = false`
 
-#### 3. processRepeatPropWithChild 中 each vs template 的差异化处理（line 1120-1145）
+#### 3. processRepeatPropWithChild 中 each vs template 的差异化处理
 
 ```typescript
 function processRepeatPropWithChild(node: ts.CallExpression, repeatPropArgs: ts.ArrowFunction[],
@@ -227,8 +227,8 @@ function processRepeatPropWithChild(node: ts.CallExpression, repeatPropArgs: ts.
 | `isInRepeatTemplate` | 传入原值 | **强制 `true`** |
 | 用途 | 默认渲染模板 | 命名模板（配合 templateId） |
 
-- **`each` 分支**（line 1123-1132）：将第 0 个参数（each 的箭头函数）的 body 通过 `processComponentBlock` 递归变换，`isInRepeatTemplate` 传入原值
-- **`template` 分支**（line 1133-1142）：将第 1 个参数（template 的箭头函数）的 body 变换，**`isInRepeatTemplate` 强制传 `true`**（line 1140）
+- **`each` 分支**：将第 0 个参数（each 的箭头函数）的 body 通过 `processComponentBlock` 递归变换，`isInRepeatTemplate` 传入原值
+- **`template` 分支**：将第 1 个参数（template 的箭头函数）的 body 变换，**`isInRepeatTemplate` 强制传 `true`**
 
 #### 4. isInRepeatTemplate=true 上下文的影响
 
@@ -236,7 +236,7 @@ function processRepeatPropWithChild(node: ts.CallExpression, repeatPropArgs: ts.
 
 这是因为 Repeat template 的生命周期管理与 @ReusableV2 的复用机制存在冲突，在 template 上下文中使用 @ReusableV2 组件会导致复用逻辑错误。
 
-#### 5. processRepeatCallBackBlock 箭头函数体提取（line 1147-1155）
+#### 5. processRepeatCallBackBlock 箭头函数体提取
 
 ```typescript
 function processRepeatCallBackBlock(repeatPropArg: ts.ArrowFunction): ts.Block {
@@ -255,7 +255,7 @@ function processRepeatCallBackBlock(repeatPropArg: ts.ArrowFunction): ts.Block {
 
 #### 6. render(isInitialRender) 生成逻辑
 
-在 `processRepeatComponent`（line 1089-1097）中，整个链式调用的最外层被包装为：
+在 `processRepeatComponent`中，整个链式调用的最外层被包装为：
 
 ```typescript
 ts.factory.createCallExpression(
@@ -272,23 +272,23 @@ ts.factory.createCallExpression(
 
 #### 7. 状态追踪
 
-- `storedFileInfo.processRepeat = true`（line 1111）：在变换期间置 true，标记当前正在处理 Repeat
-- `storedFileInfo.processRepeat = false`（line 1113）：变换完成后复位
+- `storedFileInfo.processRepeat = true`：在变换期间置 true，标记当前正在处理 Repeat
+- `storedFileInfo.processRepeat = false`：变换完成后复位
 
 ### 静态变换逻辑
 
 静态工具链中 Repeat 不在 `InnerComponentNames` 枚举中，按通用 builder lambda 链路处理。
 
 #### 源码参考位置
-- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts:1093-1158`（`transformBuilderLambda`，链式调用展开）
+- `arkui-plugins/ui-plugins/builder-lambda-translators/factory.ts`（`transformBuilderLambda`，链式调用展开）
 
 静态工具链通过 `transformBuilderLambda` 的 `instanceCalls` 数组收集链式调用，然后逆序重组：
 
-1. **收集 instanceCalls**（line 1096-1117）：遍历链式调用，区分 `isStyleChainedCall` 和 `isStyleWithReceiverCall`
-2. **逆序处理**（line 1136）：`instanceCalls = instanceCalls.reverse()`
-3. **updateAnimation**（line 1137）：处理 `.animation()` 拆分
-4. **createStyleLambdaBody**（line 1146）：逐个重建链式调用
-5. **generateArgsInBuilderLambda**（line 1151）：生成最终参数
+1. **收集 instanceCalls**：遍历链式调用，区分 `isStyleChainedCall` 和 `isStyleWithReceiverCall`
+2. **逆序处理**：`instanceCalls = instanceCalls.reverse()`
+3. **updateAnimation**：处理 `.animation()` 拆分
+4. **createStyleLambdaBody**：逐个重建链式调用
+5. **generateArgsInBuilderLambda**：生成最终参数
 
 ### 动静态差异说明
 

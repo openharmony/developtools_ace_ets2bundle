@@ -3,12 +3,12 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/validate_ui_syntax.ts:332`（`validateStructSpec`）
-  - `compiler/src/validate_ui_syntax.ts:462-497`（`validateComponentDecorator`/`validateStruct`）
-  - `compiler/src/validate_ui_syntax.ts:455-460`（`validateInvalidStructDecorator`）
+  - `compiler/src/validate_ui_syntax.ts`（`validateStructSpec`）
+  - `compiler/src/validate_ui_syntax.ts`（`validateComponentDecorator`/`validateStruct`）
+  - `compiler/src/validate_ui_syntax.ts`（`validateInvalidStructDecorator`）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-validate-decorator-target.ts:46`
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-componentV2-mix.ts:22`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-validate-decorator-target.ts`（`checkValidateDecoratorTarget`）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-componentV2-mix.ts`（`checkComponentV2Mix`）
 
 ## 适用对象
 struct 声明
@@ -64,8 +64,8 @@ struct MyV2Component {
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-validate-decorator-target.ts:46`
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-componentV2-mix.ts:22`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-validate-decorator-target.ts`（`checkValidateDecoratorTarget`）
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-componentV2-mix.ts`（`checkComponentV2Mix`）
 ### 静态工具链处理
 静态工具链在 parsed 阶段检测 struct 是否包含 @Component/@ComponentV2/@CustomDialog 装饰器，并通过 `check-componentV2-mix.ts` 校验 @ComponentV2 不可与 @Component/@Reusable/@CustomDialog 混用。报错通过 `this.report({ node, level, message })` 输出，无数字错误码，支持 `FixSuggestion`。
 - 错误码 10905233：struct 缺少组件装饰器
@@ -77,7 +77,7 @@ struct MyV2Component {
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | validate_ui_syntax.ts:324（validateStructSpec） | check-validate-decorator-target.ts:46 + check-componentV2-mix.ts:22 |
+| 校验入口 | validate_ui_syntax.ts（validateStructSpec） | check-validate-decorator-target.ts（checkValidateDecoratorTarget）+ check-componentV2-mix.ts（checkComponentV2Mix） |
 | 报错机制 | addLog(LogType.ERROR) + 错误码 | this.report({ level, message }) |
 | 错误码 | 10905229/10905232/10905233/10905234 | 无数字错误码 |
 | 自动修复 | 无 | 有 FixSuggestion |

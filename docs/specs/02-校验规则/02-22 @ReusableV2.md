@@ -3,12 +3,12 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/validate_ui_syntax.ts:479-480`（`@ReusableV2` 仅用于 `@ComponentV2`，错误码 10905242）
-  - `compiler/src/validate_ui_syntax.ts:483-486`（`@Reusable` 与 `@ReusableV2` 不可同时使用，错误码 10905241）
-  - `compiler/src/pre_define.ts:75`（`COMPONENT_DECORATOR_REUSABLE_V2 = '@ReusableV2'`）
-  - `compiler/src/pre_define.ts:76`（`DECORATOR_REUSABLE_V2 = 'ReusableV2'`）
+  - `compiler/src/validate_ui_syntax.ts`（`@ReusableV2` 仅用于 `@ComponentV2`，错误码 10905242）
+  - `compiler/src/validate_ui_syntax.ts`（`@Reusable` 与 `@ReusableV2` 不可同时使用，错误码 10905241）
+  - `compiler/src/pre_define.ts`（`COMPONENT_DECORATOR_REUSABLE_V2 = '@ReusableV2'`）
+  - `compiler/src/pre_define.ts`（`DECORATOR_REUSABLE_V2 = 'ReusableV2'`）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-reusableV2-decorator.ts:34`（`_checkReusableV2Decorator`，两条规则合一实现）
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-reusableV2-decorator.ts`（`_checkReusableV2Decorator`，两条规则合一实现）
 
 ## 适用对象
 struct 声明（被 `@ReusableV2` 装饰的 struct）
@@ -62,12 +62,12 @@ struct MyComp {
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-reusableV2-decorator.ts:22`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-reusableV2-decorator.ts`（`checkReusableV2Decorator`）
 ### 静态工具链处理
 静态工具链通过 `check-reusableV2-decorator.ts` 校验 @ReusableV2：不可与 @Reusable 同时使用、仅用于 @ComponentV2 装饰的组件。通过 `metadata.annotationInfo` 的 `hasReusableV2`/`hasComponentV2`/`hasReusable` 标志判断。
 - 错误码 10905241：@Reusable 与 @ReusableV2 同时使用
 - 错误码 10905242：@ReusableV2 不用于 @ComponentV2
-- 静态规则文件：`check-reusableV2-decorator.ts:22`（`_checkReusableV2Decorator`）
+- 静态规则文件：`check-reusableV2-decorator.ts`（`_checkReusableV2Decorator`）
 - 通过 `metadata.annotationInfo` 的 `hasReusableV2`/`hasComponentV2`/`hasReusable` 标志判断
 
 - 错误码 10905241：@Reusable 与 @ReusableV2 同时使用
@@ -77,6 +77,6 @@ struct MyComp {
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | validate_ui_syntax.ts:479-486 | check-reusableV2-decorator.ts:22 |
+| 校验入口 | validate_ui_syntax.ts（validateStruct） | check-reusableV2-decorator.ts（checkReusableV2Decorator） |
 | 错误码 | 10905241/10905242 | 无数字错误码 |
 | 自动修复 | 无 | 无 |

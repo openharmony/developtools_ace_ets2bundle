@@ -11,15 +11,15 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_ui_syntax.ts:778-782`（`isResource`，识别 `$rawfile` 调用）
-- `compiler/src/process_ui_syntax.ts:791-828`（`processResourceData`，资源数据处理入口）
-- `compiler/src/process_ui_syntax.ts:801-811`（`$rawfile` 分支处理）
-- `compiler/src/process_ui_syntax.ts:869-898`（`isResourcefile`，rawfile 校验和 HSP 收集）
-- `compiler/src/process_ui_syntax.ts:900-913`（`checkHspRawfileParam`，HSP 跨模块资源校验）
-- `compiler/src/process_ui_syntax.ts:915-926`（`checkHspRawfileSource`，HSP 模块名校验）
-- `compiler/src/process_ui_syntax.ts:1029-1066`（`createResourceParam`，资源对象构造）
-- `compiler/src/pre_define.ts:303`（`RESOURCE_RAWFILE = '$rawfile'`）
-- `compiler/src/pre_define.ts:323`（`RESOURCE_TYPE.rawfile = 30000`）
+- `compiler/src/process_ui_syntax.ts`（`isResource`，识别 `$rawfile` 调用）
+- `compiler/src/process_ui_syntax.ts`（`processResourceData`，资源数据处理入口）
+- `compiler/src/process_ui_syntax.ts`（`$rawfile` 分支处理）
+- `compiler/src/process_ui_syntax.ts`（`isResourcefile`，rawfile 校验和 HSP 收集）
+- `compiler/src/process_ui_syntax.ts`（`checkHspRawfileParam`，HSP 跨模块资源校验）
+- `compiler/src/process_ui_syntax.ts`（`checkHspRawfileSource`，HSP 模块名校验）
+- `compiler/src/process_ui_syntax.ts`（`createResourceParam`，资源对象构造）
+- `compiler/src/pre_define.ts`（`RESOURCE_RAWFILE = '$rawfile'`）
+- `compiler/src/pre_define.ts`（`RESOURCE_TYPE.rawfile = 30000`）
 
 ### 转换前的原始代码
 ```typescript
@@ -39,26 +39,26 @@ Image({ id: -1, type: 30000, params: ['icon.png'],
 ```
 
 ### 关键转换逻辑
-- **`isResource`**（line 778-782）：识别 `$rawfile` 和 `$r` 调用。
+- **`isResource`**：识别 `$rawfile` 和 `$r` 调用。
   ```typescript
   return ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
     (node.expression.escapedText.toString() === RESOURCE ||
      node.expression.escapedText.toString() === RESOURCE_RAWFILE) && node.arguments.length > 0;
   ```
 
-- **`processResourceData`**（line 791-828）：资源数据处理入口。
-  - 参数类型检查（line 795-798）：支持 `StringLiteral` 和 `NoSubstitutionTemplateLiteral`（模板字符串）。
-  - `resourceData` 解析（line 799）：`node.arguments[0].text.trim().split('.')` 按点分割。
-  - `isResourceModule` 判定（line 800）：`/^\[.*\]$/g.test(resourceData[0])` 检测是否为 `[moduleName]` 格式的跨模块引用。
-  - **`$rawfile` 分支**（line 801-811）：
+- **`processResourceData`**：资源数据处理入口。
+  - 参数类型检查：支持 `StringLiteral` 和 `NoSubstitutionTemplateLiteral`（模板字符串）。
+  - `resourceData` 解析：`node.arguments[0].text.trim().split('.')` 按点分割。
+  - `isResourceModule` 判定：`/^\[.*\]$/g.test(resourceData[0])` 检测是否为 `[moduleName]` 格式的跨模块引用。
+  - **`$rawfile` 分支**：
     - 调用 `isResourcefile` 进行校验和 HSP 资源收集。
     - 若 `isCorrectResources.booleanValue` 为 true（模板字符串场景），调用 `createResourceParamWithVariable` 返回变量形式。
-    - **HSP 跨模块引用**（line 807-808）：`isResourceModule` 为 true 时，`createResourceParam(-1, RESOURCE_TYPE.rawfile, [node.arguments[0]], resourceData[0], true)`，`resourceData[0]` 即 `[moduleName]` 作为 `resourceModuleName`。
-    - **模块内引用**（line 809-810）：`createResourceParam(0, RESOURCE_TYPE.rawfile, [node.arguments[0]], '', false)`，`resourceModuleName` 为空字符串。
+    - **HSP 跨模块引用**：`isResourceModule` 为 true 时，`createResourceParam(-1, RESOURCE_TYPE.rawfile, [node.arguments[0]], resourceData[0], true)`，`resourceData[0]` 即 `[moduleName]` 作为 `resourceModuleName`。
+    - **模块内引用**：`createResourceParam(0, RESOURCE_TYPE.rawfile, [node.arguments[0]], '', false)`，`resourceModuleName` 为空字符串。
 
-- **`isResourcefile`**（line 869-898）：rawfile 校验和 HSP 资源收集。
-  - 模块内资源检查（line 875-888）：`storedFileInfo.resourcesArr` 中不存在时报错 `'No such '${resourceText}' resource in current module.'`（code `10904333`）。存在时收集到 `resourcesForFiles`。
-  - **HSP 跨模块校验**（line 890-897）：
+- **`isResourcefile`**：rawfile 校验和 HSP 资源收集。
+  - 模块内资源检查：`storedFileInfo.resourcesArr` 中不存在时报错 `'No such '${resourceText}' resource in current module.'`（code `10904333`）。存在时收集到 `resourcesForFiles`。
+  - **HSP 跨模块校验**：
     ```typescript
     if (isResourceModule && projectConfig.hspResourcesMap && rawfileResources.keys() &&
       !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
@@ -70,7 +70,7 @@ Image({ id: -1, type: 30000, params: ['icon.png'],
     ```
     条件：HSP 模式 + `hspResourcesMap` 存在 + `rawfileResources` 非空 + 非 AcceleratePreview + moduleJson 编译模式。
 
-- **`checkHspRawfileSource`**（line 915-926）：校验 HSP 模块名是否存在。
+- **`checkHspRawfileSource`**：校验 HSP 模块名是否存在。
   ```typescript
   const collectedHspNames: string[] = Array.from(rawfileResources.keys());
   if (!collectedHspNames.length || !collectedHspNames.includes(resourceDataFirst)) {
@@ -84,7 +84,7 @@ Image({ id: -1, type: 30000, params: ['icon.png'],
   ```
   从 `rawfileResources` Map 的 keys 中检查模块名是否存在。不存在时报 WARN `'Unknown resource source'`。
 
-- **`checkHspRawfileParam`**（line 900-913）：校验 HSP 跨模块 rawfile 资源是否存在。
+- **`checkHspRawfileParam`**：校验 HSP 跨模块 rawfile 资源是否存在。
   ```typescript
   if (!rawfileResources.has(resourceDataFirst)) {
     return;  // 模块不存在则跳过（已由 checkHspRawfileSource 报错）
@@ -99,17 +99,17 @@ Image({ id: -1, type: 30000, params: ['icon.png'],
   ```
   从 `rawfileResources` Map 获取目标模块的资源列表，检查目标资源文件是否在列表中。不存在时报 WARN。
 
-- **`createResourceParam`**（line 1029-1066）：构造资源对象字面量。
-  - `resourceType === RESOURCE_TYPE.rawfile`（line 1043）：使用 `id: -1` 键值对（`resourceIdKeyValue`）。
-  - `addBundleAndModuleParam`（line 1061）：追加 `bundleName` 和 `moduleName` 属性。
+- **`createResourceParam`**：构造资源对象字面量。
+  - `resourceType === RESOURCE_TYPE.rawfile`：使用 `id: -1` 键值对（`resourceIdKeyValue`）。
+  - `addBundleAndModuleParam`：追加 `bundleName` 和 `moduleName` 属性。
   - 最终生成 `{ id: -1, type: 30000, params: [...args], bundleName: '...', moduleName: '...' }` 对象。
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/struct-translators/factory.ts:1008`（`transformResource`）
-- `arkui-plugins/ui-plugins/struct-translators/factory.ts:1186`（`generateTransformedResourceCall`）
-- `arkui-plugins/common/predefines.ts:110`（`Dollars.DOLLAR_RAWFILE = '$rawfile'`）
-- `arkui-plugins/common/predefines.ts:111`（`Dollars.TRANSFORM_DOLLAR_RAWFILE = '_rawfile'`）
+- `arkui-plugins/ui-plugins/struct-translators/factory.ts`（`transformResource`）
+- `arkui-plugins/ui-plugins/struct-translators/factory.ts`（`generateTransformedResourceCall`）
+- `arkui-plugins/common/predefines.ts`（`Dollars.DOLLAR_RAWFILE = '$rawfile'`）
+- `arkui-plugins/common/predefines.ts`（`Dollars.TRANSFORM_DOLLAR_RAWFILE = '_rawfile'`）
 
 ### 转换前的原始代码
 ```typescript

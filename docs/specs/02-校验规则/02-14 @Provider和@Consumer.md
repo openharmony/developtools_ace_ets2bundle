@@ -3,11 +3,11 @@
 
 ## 源码参考位置
 - 动态：
-  - `compiler/src/validate_ui_syntax.ts:734`（V2 装饰器集合包含 Provider/Consumer）
-  - `compiler/src/process_struct_componentV2.ts:607-608,700-705`（parseProviderDecorator/parseConsumerDecorator）
-  - `compiler/src/process_custom_component.ts:516-518`（COMPONENTV2_CONSUMER_DECORATOR/COMPONENTV2_PROVIDER_DECORATOR）
+  - `compiler/src/validate_ui_syntax.ts`（V2 装饰器集合包含 Provider/Consumer）
+  - `compiler/src/process_struct_componentV2.ts`（parseProviderDecorator/parseConsumerDecorator）
+  - `compiler/src/process_custom_component.ts`（COMPONENTV2_CONSUMER_DECORATOR/COMPONENTV2_PROVIDER_DECORATOR）
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-consumer-provider-decorator.ts:47`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-consumer-provider-decorator.ts`（`checkConsumerProviderDecorator`）
 
 ## 适用对象
 `@ComponentV2` 装饰的 struct 成员属性（@Provider/@Consumer 装饰的属性）
@@ -98,11 +98,11 @@ The '@${decorator}' property '${key}' in the custom component '${component}' can
 - `CALL_EXPRESSION` -> `checkConsumerProviderDecoratorInStructCall`（检查父组件构造时初始化）
 
 ### 源码位置
-`arkui-plugins/collectors/ui-collectors/validators/rules/check-consumer-provider-decorator.ts:34`
+`arkui-plugins/collectors/ui-collectors/validators/rules/check-consumer-provider-decorator.ts`（`checkConsumerProviderDecorator`）
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/collectors/ui-collectors/validators/rules/check-consumer-provider-decorator.ts:34`
+- `arkui-plugins/collectors/ui-collectors/validators/rules/check-consumer-provider-decorator.ts`（`checkConsumerProviderDecorator`）
 ### 静态工具链处理
 静态工具链通过 `check-consumer-provider-decorator.ts` 校验 @Provider/@Consumer：仅用于成员属性、不可与其他内置装饰器同时使用、不可在父组件构造时初始化。支持 `FixSuggestion`（建议移除注解或移除属性）。
 
@@ -110,6 +110,6 @@ The '@${decorator}' property '${key}' in the custom component '${component}' can
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts`（分散校验） | `check-consumer-provider-decorator.ts:34` |
+| 校验入口 | `validate_ui_syntax.ts`（分散校验） | `check-consumer-provider-decorator.ts`（`checkConsumerProviderDecorator`） |
 | 报错条数 | 分散 | 4 条（仅属性、不可多装饰器、不可外部初始化） |
 | 自动修复 | 无 | 有（建议移除注解、移除属性） |

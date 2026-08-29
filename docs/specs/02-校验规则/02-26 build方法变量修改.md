@@ -2,14 +2,14 @@
 校验 build 方法和 @Builder 方法/函数内不可修改状态变量（no-variables-change-in-build）。
 
 ## 补充说明
-- `compiler/src/process_component_build.ts:469`（`processComponentChild`）
-- `compiler/src/process_component_class.ts:890`（`processComponentMethod`）
-- `compiler/src/process_component_member.ts:634`（`processWatch`）
-- `compiler/src/validate_ui_syntax.ts:3514`（`handleLifecycleDecorator`）
+- `compiler/src/process_component_build.ts`（`processComponentChild`）
+- `compiler/src/process_component_class.ts`（`processComponentMethod`）
+- `compiler/src/process_component_member.ts`（`processWatch`）
+- `compiler/src/validate_ui_syntax.ts`（`handleLifecycleDecorator`）
 ## 源码参考位置
 - 动态：`compiler/src/validate_ui_syntax.ts`（build 内变量修改检测分散在多个函数中） 中的 build 方法变量修改检查逻辑
 - 静态：
-  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-no-variables-change-in-build.ts:32`
+  - `arkui-plugins/collectors/ui-collectors/validators/rules/check-no-variables-change-in-build.ts`（`checkNoVariablesChangeInBuild`）
 
 ## 适用对象
 - struct 的 `build()` 方法内的语句
@@ -112,6 +112,6 @@ struct MyComp {
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 校验入口 | `validate_ui_syntax.ts`（分散校验） | `check-no-variables-change-in-build.ts:32` |
+| 校验入口 | `validate_ui_syntax.ts`（分散校验） | `check-no-variables-change-in-build.ts`（`checkNoVariablesChangeInBuild`） |
 | 检测范围 | build 方法 + @Builder 方法/函数 | 同动态 |
 | 箭头函数豁免 | 箭头函数内修改不报错 | 同动态 |

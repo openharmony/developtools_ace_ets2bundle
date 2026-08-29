@@ -12,13 +12,13 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_class.ts:175`（`processComponentClass`）
-- `compiler/src/process_component_class.ts:214`（`processMembers`）
-- `compiler/src/process_component_class.ts:1409`（`createHeritageClause`）
-- `compiler/src/process_component_constructor.ts:87`（`initConstructorParams`）
-- `compiler/src/process_component_constructor.ts:158`（`addConstructor`）
-- `compiler/src/pre_define.ts:186`（`BASE_COMPONENT_NAME = 'View'`）
-- `compiler/src/pre_define.ts:639`（`BASE_COMPONENT_NAME_Partial Update = 'ViewPU'`）
+- `compiler/src/process_component_class.ts`（`processComponentClass`）
+- `compiler/src/process_component_class.ts`（`processMembers`）
+- `compiler/src/process_component_class.ts`（`createHeritageClause`）
+- `compiler/src/process_component_constructor.ts`（`initConstructorParams`）
+- `compiler/src/process_component_constructor.ts`（`addConstructor`）
+- `compiler/src/pre_define.ts`（`BASE_COMPONENT_NAME = 'View'`）
+- `compiler/src/pre_define.ts`（`BASE_COMPONENT_NAME_Partial Update = 'ViewPU'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -101,11 +101,11 @@ class MyComponent extends ViewPU {
 
 ## 静态
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/component-transformer.ts:96`（`ComponentTransformer` 类）
-- `arkui-plugins/ui-plugins/component-transformer.ts:356`（`processComponent`）
-- `arkui-plugins/ui-plugins/component-transformer.ts:671`（`createNewDefinition`）
-- `arkui-plugins/ui-plugins/component-transformer.ts:726`（`generateComponentInnerClass`，生成 `__Options_<Name>` 接口类）
-- `arkui-plugins/interop-plugins/decl_transformer.ts:27`（interop 路径：struct -> class）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`ComponentTransformer` 类）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`processComponent`）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`createNewDefinition`）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`generateComponentInnerClass`，生成 `__Options_<Name>` 接口类）
+- `arkui-plugins/interop-plugins/decl_transformer.ts`（interop 路径：struct -> class）
 
 ### 转换前的原始代码
 ```typescript
@@ -161,13 +161,13 @@ interface __Options_MyComponent {
 ## 深度转换逻辑
 
 ### 源码参考位置
-- `arkui-plugins/ui-plugins/component-transformer.ts:356-424`（`processComponent`，完整逻辑）
-- `arkui-plugins/ui-plugins/component-transformer.ts:726-752`（`generateComponentInnerClass`，`__Options_<Name>` 接口类生成）
-- `arkui-plugins/ui-plugins/component-transformer.ts:754-782`（`createInterfaceInnerMember`，成员结构生成）
-- `arkui-plugins/ui-plugins/component-transformer.ts:318-354`（`createStaticMethod`，`_buildCompatibleNode` 静态方法）
-- `arkui-plugins/ui-plugins/struct-translators/factory.ts:2018-2061`（`createInvokeMethod`，`_invokeImpl` 静态方法）
-- `arkui-plugins/ui-plugins/component-transformer.ts:671-724`（`createNewDefinition`，新类定义生成）
-- `arkui-plugins/ui-plugins/component-transformer.ts:632-669`（`generateResolveDecoratorSymbolsMethod`，@Env/@CustomEnv 类型检查）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`processComponent`，完整逻辑）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`generateComponentInnerClass`，`__Options_<Name>` 接口类生成）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`createInterfaceInnerMember`，成员结构生成）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`createStaticMethod`，`_buildCompatibleNode` 静态方法）
+- `arkui-plugins/ui-plugins/struct-translators/factory.ts`（`createInvokeMethod`，`_invokeImpl` 静态方法）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`createNewDefinition`，新类定义生成）
+- `arkui-plugins/ui-plugins/component-transformer.ts`（`generateResolveDecoratorSymbolsMethod`，@Env/@CustomEnv 类型检查）
 
 ### 转换前代码
 ```typescript
@@ -217,7 +217,7 @@ class __MyComponent__ {
 
 ### 关键转换逻辑
 
-#### 1. processComponent 完整逻辑（line 356-424）
+#### 1. processComponent 完整逻辑
 
 ```typescript
 processComponent(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration):
@@ -279,7 +279,7 @@ processComponent(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration):
 6. 处理 @Entry 注解（路由名等）
 7. 生成新类定义（含泛型继承）
 
-#### 2. generateComponentInnerClass 生成的 __Options_<Name> 接口类（line 726-752）
+#### 2. generateComponentInnerClass 生成的 __Options_<Name> 接口类
 
 ```typescript
 generateComponentInnerClass(name: string, modifiers: arkts.Es2pandaModifierFlags,
@@ -303,7 +303,7 @@ generateComponentInnerClass(name: string, modifiers: arkts.Es2pandaModifierFlags
 - 修饰符：CLASS_DECL | DECLARATION | ID_REQUIRED
 - 携带原始 struct 的注解
 
-#### 3. createInterfaceInnerMember 生成的成员结构（line 754-782）
+#### 3. createInterfaceInnerMember 生成的成员结构
 
 ```typescript
 createInterfaceInnerMember(
@@ -347,7 +347,7 @@ createInterfaceInnerMember(
 | `newMember`（backing field） | `__<originalName>` | 有类型注解装饰器时 |
 | `optionsHasMember` | `has<Name>` 布尔标记 | 总是生成 |
 
-#### 4. createNewDefinition 生成的新类定义（line 671-724）
+#### 4. createNewDefinition 生成的新类定义
 
 ```typescript
 createNewDefinition(node, className, definition, structPropAnnoMap): arkts.ClassDefinition {
@@ -406,7 +406,7 @@ createNewDefinition(node, className, definition, structPropAnnoMap): arkts.Class
 5. `__resolveDecoratorSymbols` 静态方法（有 @Env/@CustomEnv 时）
 6. `FINAL` 修饰符
 
-#### 5. _invokeImpl 静态方法生成（struct-translators/factory.ts:2018-2061）
+#### 5. _invokeImpl 静态方法生成（struct-translators/factory.ts）
 
 ```typescript
 static createInvokeMethod(structName: string, isDecl: boolean, isFromLegacy?: boolean): arkts.MethodDefinition {
@@ -449,7 +449,7 @@ static createInvokeMethod(structName: string, isDecl: boolean, isFromLegacy?: bo
 - 声明模式：`undefined`（无 body）
 - 实现模式：`throw new Error('Declare interface')`
 
-#### 6. _buildCompatibleNode 静态方法生成（line 318-354）
+#### 6. _buildCompatibleNode 静态方法生成
 
 ```typescript
 createStaticMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition {
@@ -479,7 +479,7 @@ createStaticMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition {
 - body：声明模式 `undefined`，实现模式 `return;`
 - 修饰符：PUBLIC | STATIC（声明模式加 DECLARE）
 
-#### 7. __resolveDecoratorSymbols 方法生成（line 632-669）
+#### 7. __resolveDecoratorSymbols 方法生成
 
 ```typescript
 generateResolveDecoratorSymbolsMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition | undefined {
@@ -498,12 +498,12 @@ generateResolveDecoratorSymbolsMethod(definition: arkts.ClassDefinition): arkts.
 }
 ```
 
-**@Env 类型检查**（line 506-578）：
+**@Env 类型检查**：
 - 识别 `@Env('WritableEnvKey.xxx')` 或 `@Env('ReadonlyEnvKey.xxx')` 格式
 - 生成 `const __env_<prop>: <SystemEnvKeyType> = WritableEnvKey.xxx;`
 - 收集 `WritableEnvKey`/`ReadonlyEnvKey` 和 `WritableSystemEnvKey`/`ReadonlySystemEnvKey` 的 import
 
-**@CustomEnv 类型检查**（line 581-630）：
+**@CustomEnv 类型检查**：
 - 识别 `@CustomEnv('customKeyId')` 格式
 - 生成 `const __customEnv_<prop>: CustomEnvKey<Type> = customKeyId;`
 - 收集 `CustomEnvKey` 的 import

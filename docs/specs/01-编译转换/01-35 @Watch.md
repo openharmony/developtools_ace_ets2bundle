@@ -3,9 +3,9 @@
 
 ## 动态
 ### 源码参考位置
-- `compiler/src/process_component_member.ts:634-668`（`processWatch`）
-- `compiler/src/pre_define.ts:45`（`COMPONENT_WATCH_DECORATOR = '@Watch'`）
-- `compiler/src/pre_define.ts:272`（`COMPONENT_WATCH_FUNCTION = 'declareWatch'`）
+- `compiler/src/process_component_member.ts`（`processWatch`）
+- `compiler/src/pre_define.ts`（`COMPONENT_WATCH_DECORATOR = '@Watch'`）
+- `compiler/src/pre_define.ts`（`COMPONENT_WATCH_FUNCTION = 'declareWatch'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -35,7 +35,7 @@ this.__count = new ObservedPropertySimplePU(0, this, 'count')
 ### 源码参考位置
 - 通过 `watchCb?` 参数传递给 `makeState`/`makeLink` 等工厂方法
 - `arkui-plugins/ui-plugins/property-translators/base.ts`（`initializeOptions.isWatched`）
-- `arkui-plugins/common/predefines.ts:216`（`DecoratorNames.WATCH = 'Watch'`）
+- `arkui-plugins/common/predefines.ts`（`DecoratorNames.WATCH = 'Watch'`）
 
 ### 转换前的原始代码
 ```typescript
@@ -57,17 +57,17 @@ __initializeStruct(initializers, content): void {
 ```
 - @Watch 注册到 `watchMap`，在 `addConstructor` 中生成 `this.declareWatch('name', this.onDataChange)`
 - @Watch 支持三种参数形式：字符串字面量方法名、标识符（WARN）、属性访问表达式
-- @Watch 不可单独使用，必须配合其他状态管理装饰器（`process_component_member.ts:1472`）
+- @Watch 不可单独使用，必须配合其他状态管理装饰器（`process_component_member.ts`）
 - @Watch 参数必须指向 struct 中已存在的方法名
 
-- `processWatch`（`process_component_member.ts:634`）：注册到 `watchMap`，最终在 `addConstructor` 中生成 `this.declareWatch('name', this.onDataChange)`
-- `COMPONENT_WATCH_FUNCTION = 'declareWatch'`（`pre_define.ts:272`）
+- `processWatch`（`process_component_member.ts`）：注册到 `watchMap`，最终在 `addConstructor` 中生成 `this.declareWatch('name', this.onDataChange)`
+- `COMPONENT_WATCH_FUNCTION = 'declareWatch'`（`pre_define.ts`）
 - @Watch 支持三种参数形式：字符串字面量方法名、标识符（WARN）、属性访问表达式
 
-- @Watch 注册到 `watchMap`，最终在 `addConstructor`（`process_component_constructor.ts:158`）中生成 `this.declareWatch('name', this.onDataChange)`
+- @Watch 注册到 `watchMap`，最终在 `addConstructor`（`process_component_constructor.ts`）中生成 `this.declareWatch('name', this.onDataChange)`
 - @Watch 支持三种参数形式：字符串字面量方法名、标识符（WARN）、属性访问表达式
 
-- `compiler/src/process_component_constructor.ts:158`（`addConstructor`，在构造函数中生成 `this.declareWatch(name, callback)`）
+- `compiler/src/process_component_constructor.ts`（`addConstructor`，在构造函数中生成 `this.declareWatch(name, callback)`）
 
 - @Watch 注册到 `watchMap`，在 `addConstructor` 中生成 `this.declareWatch('count', this.onDataChange)`
 - @Watch 不可单独使用，必须配合其他状态管理装饰器
