@@ -23,10 +23,9 @@ import {
 } from '../../../utils';
 import createAstNodeUtils from '../../../create_ast_node_utils';
 import {
-  ArkTSInternalErrorDescription,
+  ArkTSErrorDescription,
   ErrorCode
 } from '../error_code';
-import { LogDataFactory } from '../logger';
 import { logger } from '../../../compile_info';
 import { FileManager } from './interop_manager';
 import { StaticInteropSymbol } from './type';
@@ -135,6 +134,10 @@ type StaticInteropConcurrentUsage = {
 
 function processStaticInteropImportStatement(sourceFileName: string, containingFile: string,
   statement: ts.Statement, context: ts.TransformationContext): StaticInteropImportProcessResult {
+  if (ts.isExportDeclaration(statement)) {
+    processStaticInteropReExportStatement(sourceFileName, containingFile, statement);
+    return { statements: [statement], replaced: false };
+  }
   const staticImportPath: string | undefined = getStaticImport(statement, containingFile);
   if (!staticImportPath || !ts.isImportDeclaration(statement)) {
     return { statements: [statement], replaced: false };
@@ -455,19 +458,49 @@ function bindStaticInteropSymbols(symbols: Record<string, StaticInteropSymbol>,
   return boundSymbols;
 }
 
+/**
+ * Intercepts re-exports (`export { x } from "..."` / `export * from "..."`) whose module specifier
+ * resolves to an ArkTS 1.2 static file. Re-exporting static interop symbols has no runtime
+ * replacement, so the re-export is reported as an error instead of being transformed.
+ */
+function processStaticInteropReExportStatement(sourceFileName: string, containingFile: string,
+  statement: ts.ExportDeclaration): void {
+  const moduleSpecifier: ts.Expression | undefined = statement.moduleSpecifier;
+  if (!moduleSpecifier || !ts.isStringLiteral(moduleSpecifier)) {
+    return;
+  }
+  const staticReExportPath: string | undefined = getStaticImportPath(moduleSpecifier.text, containingFile);
+  if (!staticReExportPath) {
+    return;
+  }
+  recordStaticInteropReExportError(sourceFileName, staticReExportPath,
+    statement.pos >= 0 ? statement.pos : 0);
+}
+
+function recordStaticInteropReExportError(sourceFileName: string, targetFilePath: string,
+  errorPos: number = 0): void {
+  const moduleName: string = FileManager.getInstance().getLanguageVersionByFilePath(sourceFileName)?.pkgName || 'unknown';
+  staticInteropTransformLog.errors.push({
+    type: LogType.ERROR,
+    message: `Re-exporting from static interop file '${normalizeFilePath(targetFilePath)}' is not supported. ` +
+      `Current module is '${moduleName}'. Please import the symbol directly from the static module.`,
+    code: ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
+    description: ArkTSErrorDescription,
+    pos: errorPos
+  });
+}
+
 function recordMissingStaticInteropSymbolError(sourceFileName: string, targetFilePath: string,
   errorPos: number = 0, importedName?: string): void {
   const symbolInfo: string = importedName ? ` for symbol '${importedName}'` : '';
   const moduleName: string = FileManager.getInstance().getLanguageVersionByFilePath(sourceFileName)?.pkgName || 'unknown';
-  const errInfo = LogDataFactory.newInstance(
-    ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
-    ArkTSInternalErrorDescription,
-    `Missing static interop metadata${symbolInfo} when processing static import '${normalizeFilePath(targetFilePath)}'. ` +
-    `Current module is '${moduleName}'. Please check interop-config.json5 in the current file module.`
-  );
   staticInteropTransformLog.errors.push({
     type: LogType.ERROR,
-    message: errInfo.toString(),
+    message: `Missing static interop metadata${symbolInfo} when processing static import ` +
+      `'${normalizeFilePath(targetFilePath)}'. Current module is '${moduleName}'. ` +
+      `Please check interop-config.json5 in the current file module.`,
+    code: ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
+    description: ArkTSErrorDescription,
     pos: errorPos
   });
 }

@@ -245,4 +245,53 @@ mocha.describe('process static interop imports tests', function() {
     expect(result).to.include('import { __staticInteropConcurrent_custom as custom } from "./index";');
     expect(result).to.include('export const __staticInteropConcurrent_custom');
   });
+
+  mocha.it('reports an error for a re-export from a static target', function() {
+    const { staticInteropTransformLog, resetStaticInteropTransformLog } = require(
+      '../../../lib/fast_build/ark_compiler/interop/process_static_interop_imports');
+    resetStaticInteropTransformLog();
+    const code: string = 'export { test } from "./teststatic";\n';
+    const result: string = transform(code);
+    expect(result).to.equal(code);
+    expect(staticInteropTransformLog.errors).to.have.lengthOf(1);
+    expect(staticInteropTransformLog.errors[0].type).to.equal('ERROR');
+    expect(staticInteropTransformLog.errors[0].code).to.equal('10310026');
+    expect(staticInteropTransformLog.errors[0].description).to.equal('ArkTS: ERROR');
+    expect(staticInteropTransformLog.errors[0].message).to.include('Re-exporting from static interop file');
+    expect(staticInteropTransformLog.errors[0].message).to.include('teststatic.ets');
+    expect(staticInteropTransformLog.errors[0].pos).to.equal(0);
+    resetStaticInteropTransformLog();
+  });
+
+  mocha.it('reports an error for a star re-export from a static target', function() {
+    const { staticInteropTransformLog, resetStaticInteropTransformLog } = require(
+      '../../../lib/fast_build/ark_compiler/interop/process_static_interop_imports');
+    resetStaticInteropTransformLog();
+    const code: string = 'export * from "@static/test";\n';
+    const result: string = transform(code);
+    expect(result).to.equal(code);
+    expect(staticInteropTransformLog.errors).to.have.lengthOf(1);
+    expect(staticInteropTransformLog.errors[0].code).to.equal('10310026');
+    expect(staticInteropTransformLog.errors[0].description).to.equal('ArkTS: ERROR');
+    expect(staticInteropTransformLog.errors[0].message).to.include('Re-exporting from static interop file');
+    resetStaticInteropTransformLog();
+  });
+
+  mocha.it('does not report an error for a re-export from a non-static target', function() {
+    const { staticInteropTransformLog, resetStaticInteropTransformLog } = require(
+      '../../../lib/fast_build/ark_compiler/interop/process_static_interop_imports');
+    resetStaticInteropTransformLog();
+    expect(transform('export { test } from "./other";\n')).to.equal('export { test } from "./other";\n');
+    expect(staticInteropTransformLog.errors).to.be.empty;
+  });
+
+  mocha.it('does not report an error for a local re-export without a module specifier', function() {
+    const { staticInteropTransformLog, resetStaticInteropTransformLog } = require(
+      '../../../lib/fast_build/ark_compiler/interop/process_static_interop_imports');
+    resetStaticInteropTransformLog();
+    const code: string = 'import { test } from "./teststatic";\nexport { test };\n';
+    const result: string = transform(code);
+    expect(result).to.include('export { test };');
+    expect(staticInteropTransformLog.errors).to.be.empty;
+  });
 });
