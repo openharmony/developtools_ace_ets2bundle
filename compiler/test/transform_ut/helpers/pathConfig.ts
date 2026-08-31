@@ -497,7 +497,13 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/structNamingErrors2',
   'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/v2SpecificErrors2',
   'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/envDecoratorErrors2',
-  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/v1V2Incompatibility2'
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/v1V2Incompatibility2',
+  // Generated 0831 supplementary validation cases
+  'Decorators/supplementary_validation/generated_0831/env_validation/env_generated_validation',
+  'Decorators/supplementary_validation/generated_0831/dfx_validation_one/dfx_generated_observability',
+  'Decorators/supplementary_validation/generated_0831/dfx_validation_two/dfx_generated_report_panels',
+  'Decorators/supplementary_validation/generated_0831/breakpoint_debug_validation/breakpoint_debug_generated_validation',
+  'Decorators/supplementary_validation/generated_0831/trusted_weex_validation/trusted_weex_generated_validation'
 ]
 
 export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [
