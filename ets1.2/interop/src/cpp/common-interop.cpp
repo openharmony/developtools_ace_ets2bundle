@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <atomic>
+#include <cinttypes>
 
 #ifdef KOALA_INTEROP_MODULE
 #undef KOALA_INTEROP_MODULE
@@ -400,16 +401,15 @@ constexpr uint64_t KOALA_MALLOC_MAX = 2ULL * 1024 * 1024 * 1024;  // 2 GiB
 KNativePointer impl_Malloc(KLong length)
 {
     if (length <= 0) {
-        INTEROP_FATAL("Zero allocation size. Memory allocation failed!")
+        LOGE("Malloc: invalid size %" PRId64, length);
+        return nullptr;
     }
     if (static_cast<uint64_t>(length) >= KOALA_MALLOC_MAX) {
-        INTEROP_FATAL("Requested allocation chunk is too large. Memory allocation failed!")
+        LOGE("Malloc: requested size %" PRIu64 " exceeds max %" PRIu64, static_cast<uint64_t>(length),
+            KOALA_MALLOC_MAX);
+        return nullptr;
     }
-    const auto ptr = static_cast<char*>(malloc(length));
-    if (ptr == nullptr) {
-        INTEROP_FATAL("Memory allocation failed!")
-    }
-    return ptr;
+    return malloc(length);
 }
 KOALA_INTEROP_DIRECT_1(Malloc, KNativePointer, KLong)
 
