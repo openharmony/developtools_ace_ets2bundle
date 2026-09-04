@@ -110,6 +110,7 @@ import {
 import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin';
 import processStructComponentV2 from '../../process_struct_componentV2';
 import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/utils';
+import { SubsystemCode } from '../ark_compiler/error_code';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
@@ -450,6 +451,7 @@ async function transform(code: string, id: string) {
   MemoryMonitor.stopRecordStage(recordInfo);
   const logger = this.share.getLogger('etsTransform');
   const hvigorLogger = this.share.getHvigorConsoleLogger?.(ARKUI_SUBSYSTEM_CODE);
+  const ets2bundleHvigorLogger = this.share.getHvigorConsoleLogger?.(SubsystemCode.ETS2BUNDLE);
 
   if (projectConfig.compileMode !== 'esmodule') {
     const eventEtsTransformForJsbundle = createAndStartEvent(hookEventFactory, 'transform for jsbundle');
@@ -610,7 +612,7 @@ async function transform(code: string, id: string) {
     (staticInteropTransformLog && staticInteropTransformLog.errors.length)) &&
     !projectConfig.ignoreWarning) {
     emitLogInfo(logger, getTransformLog(interopTransformLog), true, id);
-    emitLogInfo(logger, getTransformLog(staticInteropTransformLog), true, id);
+    emitLogInfo(logger, getTransformLog(staticInteropTransformLog), true, id, ets2bundleHvigorLogger);
     emitLogInfo(logger, getTransformLog(kitTransformLog), true, id);
     emitLogInfo(logger, getTransformLog(transformLog), true, id, hvigorLogger);
     resetInteropTransformLog();
