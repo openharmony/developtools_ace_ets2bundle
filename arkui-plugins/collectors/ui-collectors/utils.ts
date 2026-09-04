@@ -149,10 +149,10 @@ export function getArkUIAnnotationNames(
     const whiteList: string[] = getBuiltInAnnotationWhiteList();
     let filteredList: string[] = [];
     Object.keys(annotations).forEach((name, idx) => {
-        if (whiteList.includes(name) || !keys.at(idx)) {
+        if (whiteList.includes(name) || !keys[idx]) {
             return;
         }
-        filteredList.push(keys.at(idx)!);
+        filteredList.push(keys[idx]!);
     });
     return filteredList;
 }
@@ -295,7 +295,8 @@ export function checkIsBuilderLambdaMethodDeclFromInfo(metadata: StructMethodInf
     const isStructMethod = checkIsStructMethodFromInfo(metadata);
     let isBuilderLambda: boolean = !!metadata.annotationInfo?.hasComponentBuilder;
     if (isStructMethod) {
-        isBuilderLambda &&=
+        isBuilderLambda =
+            isBuilderLambda &&
             checkIsCustomComponentDeclaredClassFromInfo(metadata.structInfo) &&
             metadata.name === BuilderLambdaNames.ORIGIN_METHOD_NAME;
     }
@@ -313,7 +314,7 @@ export function checkIsBuilderLambdaFunctionCallFromInfo(info: StructMethodInfo)
 }
 
 export function checkIsStructMethodFromInfo(info: RecordInfo): info is StructMethodInfo {
-    return Object.hasOwn(info, 'structInfo');
+    return Object.prototype.hasOwnProperty.call(info, 'structInfo');
 }
 
 export function getGetterSetterTypeFromInfo(metadata: NormalClassMethodInfo): GetSetTypes | undefined {
@@ -344,23 +345,25 @@ export function checkIsCustomComponentClassFromInfo(info: CustomComponentInfo): 
 
 export function checkIsGlobalFunctionFromInfo(info: FunctionInfo): boolean {
     return (
-        !Object.hasOwn(info, 'classInfo') && !Object.hasOwn(info, 'structInfo') && !Object.hasOwn(info, 'interfaceInfo')
+        !Object.prototype.hasOwnProperty.call(info, 'classInfo') &&
+        !Object.prototype.hasOwnProperty.call(info, 'structInfo') &&
+        !Object.prototype.hasOwnProperty.call(info, 'interfaceInfo')
     );
 }
 
 export function checkIsNormalClassMethodFromInfo(info: NormalClassMethodInfo): boolean {
-    return Object.hasOwn(info, 'classInfo');
+    return Object.prototype.hasOwnProperty.call(info, 'classInfo');
 }
 
 export function checkIsStructInnerClassPropertyFromInfo(info: CustomComponentInnerClassPropertyInfo): boolean {
-    if (!Object.hasOwn(info, 'innerClassInfo')) {
+    if (!Object.prototype.hasOwnProperty.call(info, 'innerClassInfo')) {
         return false;
     }
     return checkIsCustomComponentFromInfo(info.innerClassInfo);
 }
 
 export function checkIsNormalInterfacePropertyFromInfo(info: NormalInterfacePropertyInfo): boolean {
-    return Object.hasOwn(info, 'interfaceInfo');
+    return Object.prototype.hasOwnProperty.call(info, 'interfaceInfo');
 }
 
 export function checkIsResourceFromInfo(metadata: CallInfo): boolean {
@@ -372,11 +375,11 @@ export function checkIsBindableCallFromInfo(metadata: CallInfo): boolean {
 }
 
 export function checkIsStructPropertyFromInfo(info: StructPropertyInfo): boolean {
-    return Object.hasOwn(info, 'structInfo');
+    return Object.prototype.hasOwnProperty.call(info, 'structInfo');
 }
 
 export function checkIsNormalClassPropertyFromInfo(info: NormalClassPropertyInfo): boolean {
-    return Object.hasOwn(info, 'classInfo');
+    return Object.prototype.hasOwnProperty.call(info, 'classInfo');
 }
 
 export function checkIsBuilderLambdaFromInfo(metadata: CallInfo): boolean {
@@ -390,7 +393,7 @@ export function checkIsBuilderLambdaFromInfo(metadata: CallInfo): boolean {
 export function checkIsFunctionMethodDeclFromInfo(metadata: StructMethodInfo | FunctionInfo): metadata is FunctionInfo {
     return (
         !!metadata.isDecl &&
-        Object.hasOwn(metadata, 'innerComponentInfo') &&
+        Object.prototype.hasOwnProperty.call(metadata, 'innerComponentInfo') &&
         !!(metadata as FunctionInfo).innerComponentInfo
     );
 }

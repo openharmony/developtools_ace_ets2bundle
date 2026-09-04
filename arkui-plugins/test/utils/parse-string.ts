@@ -31,13 +31,13 @@ function parseDumpSrc(str: string): string {
 
 function organizeImports(str: string): string {
     let imports: string[] = [];
-    str = str.replaceAll(/^\s*import.*from.*$/gm, (importLine) => { imports.push(importLine.trim()); return "" });
+    str = str.replace(/^\s*import.*from.*$/gm, (importLine) => { imports.push(importLine.trim()); return "" });
     imports.sort()
     return [...imports, "", str.trimStart()].join("\n")
 }
 
 function filterSource(text: string): string {
-    const filtered: string = text.replaceAll(/%/g, '_').replaceAll(/#/g, '_').replaceAll('<cctor>', '_cctor_');
+    const filtered: string = text.replace(/%/g, '_').replace(/#/g, '_').replace(/<cctor>/g, '_cctor_');
 
     return filtered;
 }

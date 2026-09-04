@@ -66,7 +66,8 @@ export class GlobalClassCollector extends AbstractVisitor {
         if (this.canCollectMethodFromInfo(methodInfo)) {
             NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
         }
-        this.shouldCollectGlobalClass ||= this.canCollectGlobalClassFromMethodInfo(methodInfo);
+        this.shouldCollectGlobalClass =
+            this.shouldCollectGlobalClass || this.canCollectGlobalClassFromMethodInfo(methodInfo);
     }
 
     private collectProperty(node: arkts.ClassProperty): void {
@@ -95,7 +96,7 @@ export class GlobalClassCollector extends AbstractVisitor {
             }
         });
         if (!!this.externalSourceName && this.externalSourceName === ARKUI_BUILDER_SOURCE_NAME) {
-            this.shouldCollectGlobalClass ||= true;
+            this.shouldCollectGlobalClass = this.shouldCollectGlobalClass || true;
         }
         return node;
     }

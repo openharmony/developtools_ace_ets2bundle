@@ -148,7 +148,7 @@ export class BuilderFactory {
         if (args.length !== 1) {
             return _node;
         }
-        const arg = args.at(0)!;
+        const arg = args[0]!;
         if (!arkts.isTSAsExpression(arg) && !arkts.isObjectExpression(arg)) {
             return _node;
         }

@@ -114,15 +114,16 @@ export function checkIsTrailingLambdaType(
     while (queue.length > 0 && otherTypeLength === 0 && !(hasTrailingLambdaType && hasBuilderAnnotation)) {
         const node = queue.shift()!;
         if (arkts.isETSFunctionType(node)) {
-            hasTrailingLambdaType ||=
-                node.params.length === 0 && !!node.returnType && node.returnType.dumpSrc() === 'void';
-            hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
+            hasTrailingLambdaType =
+                hasTrailingLambdaType ||
+                (node.params.length === 0 && !!node.returnType && node.returnType.dumpSrc() === 'void');
+            hasBuilderAnnotation = hasBuilderAnnotation || findBuilderName(node, ignoreDecl);
             if (!hasTrailingLambdaType && !hasBuilderAnnotation) {
                 otherTypeLength++;
             }
         } else if (arkts.isETSUnionType(node)) {
             queue.push(...node.types);
-            hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
+            hasBuilderAnnotation = hasBuilderAnnotation || findBuilderName(node, ignoreDecl);
         } else if (arkts.isETSTypeReference(node)) {
             const name = expectNameInTypeReference(node);
             if (!name) {
@@ -138,7 +139,7 @@ export function checkIsTrailingLambdaType(
                 continue;
             }
             queue.push(type);
-            hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
+            hasBuilderAnnotation = hasBuilderAnnotation || findBuilderName(node, ignoreDecl);
         } else if (!arkts.isETSUndefinedType(node)) {
             otherTypeLength++;
         }
@@ -156,7 +157,7 @@ export function checkIsTrailingLambdaInLastParam(
     if (params.length === 0) {
         return false;
     }
-    const lastParam = params.at(params.length - 1)! as arkts.ETSParameterExpression;
+    const lastParam = params[params.length - 1]! as arkts.ETSParameterExpression;
     const hasBuilder = findBuilderName(lastParam, ignoreDecl);
     return checkIsTrailingLambdaType(lastParam.typeAnnotation, ignoreDecl, hasBuilder);
 }

@@ -82,12 +82,12 @@ export function debugDumpAstNode(
         return;
     }
     const currentDirectory = process.cwd();
-    const modifiedFileName = programFileName.replaceAll('.', '_');
+    const modifiedFileName = programFileName.replace(/\./g, '_');
     let outputDir: string = cachePath
         ? path.resolve(currentDirectory, cachePath, modifiedFileName)
         : path.resolve(currentDirectory, 'dist', 'cache', modifiedFileName);
-    outputDir = outputDir.replaceAll('<', '_').replaceAll('>', '_');
-    const filePath: string = path.resolve(outputDir, fileName.replaceAll('\/', '_'));
+    outputDir = outputDir.replace(/</g, '_').replace(/>/g, '_');
+    const filePath: string = path.resolve(outputDir, fileName.replace(/\//g, '_'));
     if (!fs.existsSync(outputDir)) {
         mkDir(outputDir);
     }

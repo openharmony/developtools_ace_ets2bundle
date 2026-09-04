@@ -199,12 +199,12 @@ export function hasMemoableAnnotation<T extends MemoAstNode>(node: T): MemoableA
     let hasMemoIntrinsic: boolean = false;
     let hasMemoEntry: boolean = false;
     node.annotations.forEach((it) => {
-        hasBuilder ||= isDecoratorAnnotation(it, DecoratorNames.BUILDER);
-        hasBuilderParam ||= isDecoratorAnnotation(it, DecoratorNames.BUILDER_PARAM);
-        hasMemo ||= isMemoAnnotation(it, MemoNames.MEMO) || isMemoAnnotation(it, MemoNames.MEMO_UI);
-        hasMemoSkip ||= isMemoAnnotation(it, MemoNames.MEMO_SKIP);
-        hasMemoIntrinsic ||= isMemoAnnotation(it, MemoNames.MEMO_INTRINSIC);
-        hasMemoEntry ||= isMemoAnnotation(it, MemoNames.MEMO_ENTRY);
+        hasBuilder = hasBuilder || isDecoratorAnnotation(it, DecoratorNames.BUILDER);
+        hasBuilderParam = hasBuilderParam || isDecoratorAnnotation(it, DecoratorNames.BUILDER_PARAM);
+        hasMemo = hasMemo || isMemoAnnotation(it, MemoNames.MEMO) || isMemoAnnotation(it, MemoNames.MEMO_UI);
+        hasMemoSkip = hasMemoSkip || isMemoAnnotation(it, MemoNames.MEMO_SKIP);
+        hasMemoIntrinsic = hasMemoIntrinsic || isMemoAnnotation(it, MemoNames.MEMO_INTRINSIC);
+        hasMemoEntry = hasMemoEntry || isMemoAnnotation(it, MemoNames.MEMO_ENTRY);
     });
     return {
         ...(hasMemo ? { hasMemo } : {}),
@@ -577,9 +577,9 @@ export function collectMemoableInfoInScriptFunction(node: arkts.AstNode, info?: 
     let info: MemoableInfo = {};
     if (isSetter && node.function!.params.length > 0) {
         if (hasReceiver && node.function!.params.length === 2) {
-            info = collectMemoableInfoInParameter(node.function!.params.at(1)!, undefined, isDeclaration);
+            info = collectMemoableInfoInParameter(node.function!.params[1]!, undefined, isDeclaration);
         } else {
-            info = collectMemoableInfoInParameter(node.function!.params.at(0)!, undefined, isDeclaration);
+            info = collectMemoableInfoInParameter(node.function!.params[0]!, undefined, isDeclaration);
         }
     } else if (isGetter) {
         info = collectMemoableInfoInFunctionReturnType(node.function!);
@@ -736,7 +736,7 @@ function collectMemoableInfoInFunctionParam(
         !!node.body &&
         arkts.isBlockStatement(node.body)
     ) {
-        const declaration = node.body.statements.at(gensymCount);
+        const declaration = node.body.statements[gensymCount];
         if (!!declaration && arkts.isVariableDeclaration(declaration) && declaration.declarators.length > 0) {
             const declarator = declaration.declarators[0];
             collectGensymDeclarator(declarator, memoableInfo);

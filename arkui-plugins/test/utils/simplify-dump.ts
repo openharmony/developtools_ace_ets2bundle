@@ -69,7 +69,7 @@ function dumpAnnotation(annotationName: string, properties: Record<string, unkno
 }
 
 function ignoreNewLines(dumpStr: string): string {
-    return dumpStr.replaceAll(/\n[\s]+/g, '');
+    return dumpStr.replace(/\n[\s]+/g, '');
 }
 
 function dumpConstructor(): string {

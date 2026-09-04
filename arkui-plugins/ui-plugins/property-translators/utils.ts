@@ -110,7 +110,7 @@ export function findStateManagementFactoryGenericTypeFromProperty(
         if (kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
             type = decl.function.returnTypeAnnotation;
         } else if (kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
-            const firstArg = decl.function.params.at(0);
+            const firstArg = decl.function.params[0];
             if (!!firstArg && arkts.isETSParameterExpression(firstArg)) {
                 type = firstArg.typeAnnotation;
             }
@@ -168,7 +168,7 @@ export function getGetterReturnType(method: arkts.MethodDefinition): arkts.TypeN
     if (typeArray.length <= 0) {
         returnType = undefined;
     } else if (typeArray.length === 1) {
-        returnType = typeArray.at(0);
+        returnType = typeArray[0];
     } else {
         returnType = arkts.factory.createETSUnionType(typeArray);
     }
@@ -493,7 +493,7 @@ export function getAnnotationValue(anno: arkts.AnnotationUsage, decoratorName: D
     const isSuitableAnnotation: boolean =
         !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
     if (isSuitableAnnotation && anno.properties.length === 1) {
-        return getValueStr(anno.properties.at(0)!);
+        return getValueStr(anno.properties[0]!);
     }
     return undefined;
 }

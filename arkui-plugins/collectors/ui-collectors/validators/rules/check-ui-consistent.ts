@@ -60,8 +60,8 @@ function _checkUIConsistent(this: BaseValidator<arkts.CallExpression, CallInfo>,
     }
     const consistentResourceMap = MetaDataCollector.getInstance().consistentResourceMap;
     for (let idx = 0; idx < chainingDataSource.chainingCalls.length; idx++) {
-        const chainCall = chainingDataSource.chainingCalls.at(idx);
-        const chainingCallInfo = chainingDataSource.chainingCallInfos.at(idx);
+        const chainCall = chainingDataSource.chainingCalls[idx];
+        const chainingCallInfo = chainingDataSource.chainingCallInfos[idx];
         if (!chainCall || !chainingCallInfo) {
             return;
         }

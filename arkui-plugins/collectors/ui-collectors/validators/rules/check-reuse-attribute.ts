@@ -67,7 +67,7 @@ function _checkReuseAttribute(this: BaseValidator<arkts.CallExpression, CallInfo
     if (reuseChainIdx < 0) {
         return;
     }
-    const reuseChainCall = chainingDataSource.chainingCalls.at(reuseChainIdx);
+    const reuseChainCall = chainingDataSource.chainingCalls[reuseChainIdx];
     if (!reuseChainCall) {
         return;
     }

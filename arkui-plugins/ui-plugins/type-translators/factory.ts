@@ -184,7 +184,7 @@ export class factory {
         }
         const names = name.map((n) => arkts.factory.createIdentifier(n));
         if (names.length === 1) {
-            return names.at(0)!;
+            return names[0]!;
         }
         const leftName = names.shift();
         const rightName = names.shift();

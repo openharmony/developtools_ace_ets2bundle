@@ -60,7 +60,7 @@ export class InnerComponentInfoCache {
     }
 
     private collectHasLastTrailingLambda(name: string, hasLastTrailingLambda: boolean): void {
-        this._hasLastTrailingLambda[name] ||= hasLastTrailingLambda;
+        this._hasLastTrailingLambda[name] = this._hasLastTrailingLambda[name] || hasLastTrailingLambda;
     }
 
     reset(): void {

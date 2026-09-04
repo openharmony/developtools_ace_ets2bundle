@@ -45,7 +45,7 @@ class NoDuplicateEntryRule extends AbstractUISyntaxRule {
             return;
         }
         if (this.entryDecoratorUsageIndex === MAX_ENTRY_DECORATOR_COUNT) {
-            const entryDecoratorUsage = this.entryDecoratorUsages.at(0)!;
+            const entryDecoratorUsage = this.entryDecoratorUsages[0]!;
             if (!entryDecoratorUsage) {
                 return;
             }
@@ -63,7 +63,7 @@ class NoDuplicateEntryRule extends AbstractUISyntaxRule {
                 },
             });
         }
-        entryDecoratorUsage = this.entryDecoratorUsages.at(this.entryDecoratorUsageIndex)!;
+        entryDecoratorUsage = this.entryDecoratorUsages[this.entryDecoratorUsageIndex]!;
         if (!entryDecoratorUsage) {
             return;
         }

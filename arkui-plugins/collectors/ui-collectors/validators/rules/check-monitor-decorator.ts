@@ -139,7 +139,7 @@ function checkMonitorObservableVariableInPath<T extends arkts.AstNode = arkts.Cl
         }
         return;
     }
-    const lastResult = path.at(path.length - 1);
+    const lastResult = path[path.length - 1];
     if (
         MonitorPathValidationCache.getInstance().getLogType(propertyValue) === undefined &&
         !!lastResult &&
@@ -263,7 +263,7 @@ function checkMonitorDecoratorInMethodDefinition<T extends arkts.AstNode = arkts
     if (!monitorUsage) {
         return;
     }
-    const firstProperty = monitorUsage.properties.at(0);
+    const firstProperty = monitorUsage.properties[0];
     const pathStringPairs: [arkts.AstNode, string][] | undefined = firstProperty 
         ? findPathArrayFromMonitorAnnoProperty(firstProperty) 
         : undefined;
@@ -273,10 +273,10 @@ function checkMonitorDecoratorInMethodDefinition<T extends arkts.AstNode = arkts
 
     let isUsedInValidContext: boolean = true;
     if (checkIsStructMethodFromInfo(metadata)) {
-        isUsedInValidContext &&= checkMonitorInComponentV2Struct.bind(this)(monitorUsage);
+        isUsedInValidContext = isUsedInValidContext && checkMonitorInComponentV2Struct.bind(this)(monitorUsage);
     }
     if (checkIsNormalClassMethodFromInfo(metadata)) {
-        isUsedInValidContext &&= checkMonitorInObservedV2Class.bind(this)(monitorUsage);
+        isUsedInValidContext = isUsedInValidContext && checkMonitorInObservedV2Class.bind(this)(monitorUsage);
     }
     if (isUsedInValidContext) {
         MonitorPathStringCache.getInstance().collect(monitorUsage, pathStringPairs);
