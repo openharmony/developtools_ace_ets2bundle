@@ -173,7 +173,7 @@ export class CacheFactory {
     ): arkts.MethodDefinition[] {
         const methods: arkts.MethodDefinition[] = [];
         componentNames.forEach((name: string) => {
-            const info = cache.getComponentRecord(name)?.at(0);
+            const info = cache.getComponentRecord(name)?.[0];
             const hasLastTrailingLambda = cache.getHasLastTrailingLambda(name);
             const attributeName = cache.getAttributeName(name);
             const attributeTypeParams = cache.getAttributeTypeParams(name);
@@ -248,8 +248,8 @@ export class CacheFactory {
                 while (animateStartStack.length > 0) {
                     instanceCalls.push(animateStartStack.pop()!);
                 }
-                instanceCalls.push(updateInfo.instanceCalls.at(0)!);
-                animateStartStack.push(updateInfo.instanceCalls.at(1)!);
+                instanceCalls.push(updateInfo.instanceCalls[0]!);
+                animateStartStack.push(updateInfo.instanceCalls[1]!);
             } else {
                 instanceCalls.push(...updateInfo.instanceCalls);
             }
@@ -704,7 +704,7 @@ export class CacheFactory {
             return arg;
         }
         const properties = (expr.properties as arkts.Property[]).map((p, idx) => {
-            return this.updatePropertiesInOptions(p, declInfo, structPropertyInfos?.at(idx));
+            return this.updatePropertiesInOptions(p, declInfo, structPropertyInfos?.[idx]);
         });
         const updatedExpr: arkts.ObjectExpression = arkts.ObjectExpression.updateObjectExpression(
             expr,

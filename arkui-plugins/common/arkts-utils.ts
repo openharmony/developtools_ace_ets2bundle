@@ -272,14 +272,14 @@ export function forEachArgWithParam(
     const maxLen = hasRestParam ? argLen : paramLen;
     let index: number = 0;
     while (index < maxLen - 1) {
-        const param = params.at(index) ?? params.at(paramLen - 1)!;
-        const argument = isTrailingCall && index >= argLen - 1 ? undefined : args.at(index);
+        const param = params[index] ?? params[paramLen - 1]!;
+        const argument = isTrailingCall && index >= argLen - 1 ? undefined : args[index];
         callbackFn(argument, param, index);
         index++;
     }
-    const lastParam = params.at(paramLen - 1)!;
+    const lastParam = params[paramLen - 1]!;
     const lastIndex = isTrailingCall ? argLen - 1 : maxLen - 1;
-    const lastArg = args.at(lastIndex);
+    const lastArg = args[lastIndex];
     callbackFn(lastArg, lastParam, maxLen - 1);
 }
 

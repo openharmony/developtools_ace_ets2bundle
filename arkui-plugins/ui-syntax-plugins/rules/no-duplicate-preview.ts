@@ -52,7 +52,7 @@ class NoDuplicatePreviewRule extends AbstractUISyntaxRule {
                 this.reportError(previewDecoratorUsage);
             });
         } else {
-            let previewDecoratorUsage = this.previewDecoratorUsages.at(this.previewDecoratorUsageIndex);
+            let previewDecoratorUsage = this.previewDecoratorUsages[this.previewDecoratorUsageIndex];
             if (!previewDecoratorUsage) {
                 return;
             }

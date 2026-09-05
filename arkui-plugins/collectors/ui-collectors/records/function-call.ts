@@ -179,7 +179,7 @@ export class CallRecord extends BaseRecord<arkts.CallExpression, CallInfo> {
         if (!this.isStructCall || !!this._structPropertyRecords) {
             return;
         }
-        const optionsArg = call.arguments.at(0); // __Options_ initializer is the first argument of a custom component call (i.e. $_invoke).
+        const optionsArg = call.arguments[0]; // __Options_ initializer is the first argument of a custom component call (i.e. $_invoke).
         if (!optionsArg || !arkts.isObjectExpression(optionsArg)) {
             return;
         }

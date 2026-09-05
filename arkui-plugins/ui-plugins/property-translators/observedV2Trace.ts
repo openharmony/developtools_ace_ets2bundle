@@ -341,7 +341,7 @@ export class ObservedV2TraceCachedTranslator
         this.isDecl = !!MetaDataCollector.getInstance().isDeclaration;
         if (!!this.propertyInfo.modifiers) {
             this.isStatic = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
-            this.isDecl ||= (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+            this.isDecl = this.isDecl || (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         }
         if (this.isStatic) {
             this.propertyModifier = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;

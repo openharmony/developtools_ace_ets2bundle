@@ -344,9 +344,9 @@ export function isMemoThisAttribute(node: arkts.Identifier, value: arkts.ArrowFu
         return false;
     }
     if (arkts.isClassProperty(decl)) {
-        isMemo ||= isMemoClassProperty(decl);
+        isMemo = isMemo || isMemoClassProperty(decl);
     } else if (arkts.isMethodDefinition(decl)) {
-        isMemo ||= isMemoDeclaredMethod(decl);
+        isMemo = isMemo || isMemoDeclaredMethod(decl);
     }
     return isMemo;
 }
@@ -354,11 +354,12 @@ export function isMemoThisAttribute(node: arkts.Identifier, value: arkts.ArrowFu
 export function isMemoClassProperty(node: arkts.ClassProperty): boolean {
     let isMemo = findMemoFromTypeAnnotation(node.typeAnnotation);
     if (node.value) {
-        isMemo ||=
-            arkts.isArrowFunctionExpression(node.value) &&
-            (hasMemoAnnotation(node.value) || hasMemoIntrinsicAnnotation(node.value));
+        isMemo =
+            isMemo ||
+            (arkts.isArrowFunctionExpression(node.value) &&
+                (hasMemoAnnotation(node.value) || hasMemoIntrinsicAnnotation(node.value)));
     }
-    isMemo ||= hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node);
+    isMemo = isMemo || hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node);
     return isMemo;
 }
 
@@ -376,7 +377,7 @@ export function isMemoArrowFunction(node: arkts.ArrowFunctionExpression): boolea
 
 export function isMemoTSTypeAliasDeclaration(node: arkts.TSTypeAliasDeclaration): boolean {
     let isMemo = findMemoFromTypeAnnotation(node.typeAnnotation);
-    isMemo ||= hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node);
+    isMemo = isMemo || hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node);
     return isMemo;
 }
 
@@ -386,7 +387,7 @@ export function isMemoETSParameterExpression(param: arkts.ETSParameterExpression
         return false;
     }
     let isMemo: boolean = hasMemoAnnotation(param) || hasMemoIntrinsicAnnotation(param);
-    isMemo ||= findMemoFromTypeAnnotation(type);
+    isMemo = isMemo || findMemoFromTypeAnnotation(type);
     let decl: arkts.AstNode | undefined;
     if (
         arkts.isETSTypeReference(type) &&
@@ -395,8 +396,8 @@ export function isMemoETSParameterExpression(param: arkts.ETSParameterExpression
         !!(decl = getDeclResolveAlias(type.part.name))
     ) {
         if (arkts.isTSTypeAliasDeclaration(decl)) {
-            isMemo ||= hasMemoAnnotation(decl) || hasMemoIntrinsicAnnotation(decl);
-            isMemo ||= findMemoFromTypeAnnotation(decl.typeAnnotation);
+            isMemo = isMemo || hasMemoAnnotation(decl) || hasMemoIntrinsicAnnotation(decl);
+            isMemo = isMemo || findMemoFromTypeAnnotation(decl.typeAnnotation);
             return isMemo;
         }
     }
@@ -410,13 +411,13 @@ export function isMemoVariableDeclaration(node: arkts.VariableDeclaration): bool
 export function isMemoVariableDeclarator(node: arkts.VariableDeclarator): boolean {
     let isMemo: boolean = false;
     if (!!(node.id as arkts.Identifier).typeAnnotation) {
-        isMemo ||= findMemoFromTypeAnnotation((node.id as arkts.Identifier).typeAnnotation);
+        isMemo = isMemo || findMemoFromTypeAnnotation((node.id as arkts.Identifier).typeAnnotation);
     }
     if (!!node.init && arkts.isArrowFunctionExpression(node.init)) {
-        isMemo ||= isMemoArrowFunction(node.init);
+        isMemo = isMemo || isMemoArrowFunction(node.init);
     }
     if (!!node.parent && arkts.isVariableDeclaration(node.parent)) {
-        isMemo ||= isMemoVariableDeclaration(node.parent);
+        isMemo = isMemo || isMemoVariableDeclaration(node.parent);
     }
     return isMemo;
 }
@@ -431,7 +432,7 @@ export function isMemoProperty(node: arkts.Property, value: arkts.ArrowFunctionE
         return false;
     }
     if (arkts.isMethodDefinition(decl)) {
-        isMemo ||= isMemoDeclaredMethod(decl);
+        isMemo = isMemo || isMemoDeclaredMethod(decl);
     }
     return isMemo;
 }
@@ -589,8 +590,8 @@ export function isMemoIdParamAdded(param: arkts.Expression): boolean {
 export function isUnmemoizedInFunctionParams(params?: readonly arkts.Expression[], hasReceiver?: boolean): boolean {
     const _params = params ?? [];
     const startIndex = hasReceiver ? 1 : 0;
-    const isContextAdded = !!_params.at(startIndex) && isMemoContextParamAdded(_params.at(startIndex)!);
-    const isIdAdded = !!_params.at(startIndex + 1) && isMemoIdParamAdded(_params.at(startIndex + 1)!);
+    const isContextAdded = !!_params[startIndex] && isMemoContextParamAdded(_params[startIndex]!);
+    const isIdAdded = !!_params[startIndex + 1] && isMemoIdParamAdded(_params[startIndex + 1]!);
     return isContextAdded && isIdAdded;
 }
 
@@ -601,7 +602,7 @@ export function getFunctionParamsBeforeUnmemoized(
     const _params = params ?? [];
     if (isUnmemoizedInFunctionParams(_params, hasReceiver)) {
         if (!!hasReceiver) {
-            return [_params.at(0)!, ..._params.slice(3)];
+            return [_params[0]!, ..._params.slice(3)];
         }
         return _params.slice(2);
     }
@@ -613,11 +614,11 @@ export function findUnmemoizedScopeInFunctionBody(body: arkts.BlockStatement, ge
     if (body.statements.length < startIndex + 1) {
         return false;
     }
-    const statement = body.statements.at(startIndex)!;
+    const statement = body.statements[startIndex]!;
     if (!arkts.isVariableDeclaration(statement)) {
         return false;
     }
-    const declarator = statement.declarators.at(0)!;
+    const declarator = statement.declarators[0]!;
     return arkts.isIdentifier(declarator.id) && declarator.id.name === RuntimeNames.SCOPE;
 }
 

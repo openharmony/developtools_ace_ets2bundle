@@ -387,7 +387,7 @@ export class factory {
             return node;
         }
         const nodeBody = node.body.body;
-        const firstGetter = nodeBody.at(0);
+        const firstGetter = nodeBody[0];
         if (!firstGetter || !arkts.isMethodDefinition(firstGetter)) {
             return node;
         }
@@ -1284,7 +1284,7 @@ export class factory {
         let shouldUpdate: boolean = false;
         const newBody = propertyTranslators.map((translator) => {
             const newProperty = translator.translateProperty();
-            shouldUpdate ||= translator.modified;
+            shouldUpdate = shouldUpdate || translator.modified;
             return newProperty;
         });
 
@@ -1741,10 +1741,10 @@ export class factory {
             : ((optionArg as arkts.TSAsExpression).expr as arkts.ObjectExpression);
         const properties = options.properties as arkts.Property[];
         const builderIndex: number = findBuilderIndexInControllerOptions(properties);
-        if (builderIndex < 0 || !properties.at(builderIndex)!.value) {
+        if (builderIndex < 0 || !properties[builderIndex]!.value) {
             return node;
         }
-        const builder: arkts.Property = properties.at(builderIndex)!;
+        const builder: arkts.Property = properties[builderIndex]!;
         const gensymName: string = GenSymGenerator.getInstance().id();
         const newBuilderValue = this.createDialogBuilderArrow(builder.value!, gensymName);
         builder.setValue(newBuilderValue);

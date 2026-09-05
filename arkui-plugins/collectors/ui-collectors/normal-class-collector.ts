@@ -237,7 +237,8 @@ export class NormalClassCollector extends AbstractVisitor {
             if (arkts.isClassProperty(st)) {
                 this.collectProperty(st, (_node, info) => {
                     this.collectClassFromTrackProperty(node, info);
-                    _hasTrackInObservedClass ||= this.findTrackPropertyInObservedClass(info);
+                    _hasTrackInObservedClass =
+                        _hasTrackInObservedClass || this.findTrackPropertyInObservedClass(info);
                 });
             } else if (arkts.isMethodDefinition(st)) {
                 this.collectMethod(st);

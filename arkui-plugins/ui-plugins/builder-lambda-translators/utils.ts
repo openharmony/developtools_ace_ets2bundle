@@ -141,15 +141,18 @@ export function getStructCalleeInfoFromCallee(
     }
     const info: StructCalleeInfo = {};
     for (const anno of decl.annotations) {
-        info.isFromReuse ||= isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE, shouldIgnoreDecl);
-        info.isFromReuseV2 ||= isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE_V2, shouldIgnoreDecl);
-        info.isFromCustomDialog ||= isCustomComponentAnnotation(
+        info.isFromReuse =
+            info.isFromReuse || isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE, shouldIgnoreDecl);
+        info.isFromReuseV2 =
+            info.isFromReuseV2 || isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE_V2, shouldIgnoreDecl);
+        info.isFromCustomDialog = info.isFromCustomDialog || isCustomComponentAnnotation(
             anno,
             StructDecoratorNames.CUSTOMDIALOG,
             shouldIgnoreDecl
         );
-        info.isFromEntry ||= isCustomComponentAnnotation(anno, StructDecoratorNames.ENTRY, shouldIgnoreDecl);
-        info.structEntryStroage ||= getValueInObjectAnnotation(
+        info.isFromEntry =
+            info.isFromEntry || isCustomComponentAnnotation(anno, StructDecoratorNames.ENTRY, shouldIgnoreDecl);
+        info.structEntryStroage = info.structEntryStroage || getValueInObjectAnnotation(
             anno,
             StructDecoratorNames.ENTRY,
             BuilderLambdaNames.STORAGE_PARAM_NAME
@@ -205,7 +208,7 @@ export function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): st
         return undefined;
     }
 
-    const property = annotation.properties.at(0);
+    const property = annotation.properties[0];
     if (!property || !arkts.isClassProperty(property)) {
         return undefined;
     }
@@ -222,10 +225,10 @@ export function findReuseId(chainingCall: arkts.CallExpression): arkts.Expressio
         return undefined;
     }
     if (callee.name === BuilderLambdaNames.REUSE_ID_PARAM_NAME) {
-        return chainingCall.arguments.at(0);
+        return chainingCall.arguments[0];
     }
     if (callee.name === BuilderLambdaNames.REUSE_PARAM_NAME) {
-        return findReusableV2Id(chainingCall.arguments.at(0)!);
+        return findReusableV2Id(chainingCall.arguments[0]!);
     }
     return undefined;
 }
@@ -316,7 +319,7 @@ export function isStyleWithReceiverCallee(
     if (node.arguments.length === 0) {
         return false;
     }
-    return !!isReceiver && arkts.isIdentifier(callee) && arkts.isCallExpression(node.arguments.at(0)!);
+    return !!isReceiver && arkts.isIdentifier(callee) && arkts.isCallExpression(node.arguments[0]!);
 }
 
 /**
@@ -537,7 +540,7 @@ export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): Buil
         isFromCommonMethod = findComponentAttributeFromCommonMethod(originType);
     }
     if (isCustomFunctionCall) {
-        const constraintType = func.typeParams?.params?.at(0)?.constraint;
+        const constraintType = func.typeParams?.params?.[0]?.constraint;
         const constraintNameNode = expectNameInTypeReference(constraintType);
         originType = constraintType;
         name = findComponentNameFromExtendableTypeName(constraintNameNode) ?? name;
@@ -576,7 +579,7 @@ export function collectDeclInfoFromInfo(
         isFromCommonMethod = findComponentAttributeFromCommonMethod(originType);
     }
     if (isCustomFunctionCall) {
-        const constraintType = func.typeParams?.params?.at(0)?.constraint;
+        const constraintType = func.typeParams?.params?.[0]?.constraint;
         const constraintNameNode = expectNameInTypeReference(constraintType);
         originType = constraintType;
         name = findComponentNameFromExtendableTypeName(constraintNameNode) ?? name;

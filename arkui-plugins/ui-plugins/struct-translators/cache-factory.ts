@@ -771,11 +771,11 @@ export class CacheFactory {
         const func: arkts.ScriptFunction = node.function;
         const params = func.params as arkts.ETSParameterExpression[];
         const body = func.body;
-        if (!name || !params.at(1) || !body || !arkts.isBlockStatement(body)) {
+        if (!name || !params[1] || !body || !arkts.isBlockStatement(body)) {
             return node;
         }
         const funcName: arkts.StringLiteral = arkts.factory.createStringLiteral(name);
-        const paramValue: arkts.ETSParameterExpression = params.at(1)!;
+        const paramValue: arkts.ETSParameterExpression = params[1]!;
         const statements = [...body.statements];
         const lastStatement = statements.pop();
         if (!lastStatement) {
@@ -1102,7 +1102,7 @@ export class CacheFactory {
             return resourceNode;
         }
         const resourceKind: Dollars = metadata.isResourceCall!;
-        const firstArg: arkts.Expression = args.at(0)!;;
+        const firstArg: arkts.Expression = args[0]!;;
         if (arkts.isStringLiteral(firstArg)) {
             const resultNode = StructFactory.processStringLiteralResourceNode(
                 resourceNode,

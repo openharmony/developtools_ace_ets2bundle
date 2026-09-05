@@ -375,7 +375,7 @@ export class FunctionTransformer extends AbstractVisitor {
                 node.overloads
             );
         }
-        this.modified ||= this.signatureTransformer.modified;
+        this.modified = this.modified || this.signatureTransformer.modified;
         return updateMethod;
     }
 
@@ -385,7 +385,7 @@ export class FunctionTransformer extends AbstractVisitor {
         ignoreSelf: boolean = false
     ): arkts.CallExpression {
         let updatedArguments: arkts.Expression[] = node.arguments.map((it, index) => {
-            const param = decl.function!.params.at(index);
+            const param = decl.function!.params[index];
             if (!param || !arkts.isETSParameterExpression(param)) {
                 return it;
             }
@@ -441,7 +441,7 @@ export class FunctionTransformer extends AbstractVisitor {
             }
             return it;
         });
-        this.modified ||= this.signatureTransformer.modified;
+        this.modified = this.modified || this.signatureTransformer.modified;
         return arkts.factory.updateCallExpression(node, newExpression, updatedArguments, node.typeParams, node.isOptional, node.hasTrailingComma, node.trailingBlock    );
     }
 
@@ -563,7 +563,7 @@ export class FunctionTransformer extends AbstractVisitor {
                     this.signatureTransformer.visitor(node.typeAnnotation),
                     node.annotations
                 );
-                this.modified ||= this.signatureTransformer.modified;
+                this.modified = this.modified || this.signatureTransformer.modified;
                 return newNode;
             }
             return node;

@@ -99,7 +99,7 @@ class ValidatorQueue extends ArkUISymbolValidator {
         }
         let isFromArkUI: boolean = false;
         for (const validator of this.children) {
-            isFromArkUI ||= validator.checkIsFromArkUI(name, decl);
+            isFromArkUI = isFromArkUI || validator.checkIsFromArkUI(name, decl);
         }
         ImportSymbolFromArkUICache.getInstance().set(key, isFromArkUI);
         return isFromArkUI;

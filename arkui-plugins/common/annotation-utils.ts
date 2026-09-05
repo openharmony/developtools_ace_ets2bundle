@@ -32,7 +32,7 @@ export function findPathArrayFromMonitorAnnotation(
     if (!monitorAnno) {
         return undefined;
     }
-    return findPathArrayFromMonitorAnnoProperty(monitorAnno.properties.at(0)!)?.map((pair) => pair[1]);
+    return findPathArrayFromMonitorAnnoProperty(monitorAnno.properties[0]!)?.map((pair) => pair[1]);
 }
 
 export function findPathArrayFromSyncMonitorAnnotation(
@@ -49,7 +49,7 @@ export function findPathArrayFromSyncMonitorAnnotation(
     if (!syncMonitorAnno) {
         return undefined;
     }
-    return findPathArrayFromMonitorAnnoProperty(syncMonitorAnno.properties.at(0)!)?.map((pair) => pair[1]);
+    return findPathArrayFromMonitorAnnoProperty(syncMonitorAnno.properties[0]!)?.map((pair) => pair[1]);
 }
 
 /**

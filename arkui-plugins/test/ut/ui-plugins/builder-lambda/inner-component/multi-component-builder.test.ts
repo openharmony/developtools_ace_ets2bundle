@@ -41,7 +41,7 @@ buildConfig.compileFiles = [
 
 const utilExternalSourceName = [
     buildConfig.packageName,
-    MOCK_ENTRY_DIR_PATH.replaceAll('/', '.'),
+    MOCK_ENTRY_DIR_PATH.replace(/\//g, '.'),
     BUILDER_LAMBDA_DIR_PATH,
     INNER_COMPONENT_DIR_PATH,
     UTIL_DIR_PATH,

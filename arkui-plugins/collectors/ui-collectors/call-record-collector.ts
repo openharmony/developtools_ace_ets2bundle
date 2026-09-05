@@ -165,10 +165,10 @@ function checkParentHasChainInThisCall(thisCall: arkts.CallExpression, parent: a
         return true;
     }
     const args = parent.arguments;
-    if (args.length === 0 || !args.at(0)) {
+    if (args.length === 0 || !args[0]) {
         return false;
     }
-    const firstArg = args.at(0)!;
+    const firstArg = args[0]!;
     if (firstArg.peer === thisCall.peer || firstArg.findNodeInInnerChild(thisCall)) {
         // whether the first argument has inner child of this call, impling possible function receiver call.
         const callee = findRootCallee(parent.callee);

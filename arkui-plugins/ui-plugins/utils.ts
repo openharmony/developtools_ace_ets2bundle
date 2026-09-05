@@ -259,7 +259,7 @@ export function collectCustomComponentScopeInfo(
         for (const anno of definition.annotations) {
             const { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout, isCustomDialog } =
                 getAnnotationInfoForStruct(anno, shouldIgnoreDecl);
-            isCustomComponent ||= isComponent || isComponentV2 || isCustomDialog;
+            isCustomComponent = isCustomComponent || isComponent || isComponentV2 || isCustomDialog;
             annotations = {
                 ...annotations,
                 ...(isComponent && !annotations?.component && { component: anno }),
@@ -455,25 +455,25 @@ export function isCustomDialogControllerOptions(
 
 export function getComponentExtendsName(annotations: CustomComponentAnontations, componentType: ComponentType): string {
     if (!!annotations.reusable) {
-        componentType.hasReusable ||= true;
+        componentType.hasReusable = componentType.hasReusable || true;
     } else if (!!annotations.reusableV2) {
-        componentType.hasReusableV2 ||= true;
+        componentType.hasReusableV2 = componentType.hasReusableV2 || true;
     }
     if (!!annotations.entry) {
-        componentType.hasEntry ||= true;
+        componentType.hasEntry = componentType.hasEntry || true;
     }
     if (!!annotations.customLayout) {
-        componentType.hasCustomLayout ||= true;
+        componentType.hasCustomLayout = componentType.hasCustomLayout || true;
     }
     if (!!annotations.customDialog) {
-        componentType.hasCustomDialog ||= true;
+        componentType.hasCustomDialog = componentType.hasCustomDialog || true;
         return CustomComponentNames.BASE_CUSTOM_DIALOG_NAME;
     }
     if (!!annotations.componentV2) {
-        componentType.hasComponentV2 ||= true;
+        componentType.hasComponentV2 = componentType.hasComponentV2 || true;
         return CustomComponentNames.COMPONENT_V2_CLASS_NAME;
     }
-    componentType.hasComponent ||= true;
+    componentType.hasComponent = componentType.hasComponent || true;
     return CustomComponentNames.COMPONENT_CLASS_NAME;
 }
 

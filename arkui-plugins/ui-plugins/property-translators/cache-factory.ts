@@ -100,10 +100,10 @@ export class CacheFactory {
         const newName: string = backingField(originalName);
         const scriptFunction = node.function;
         const params = scriptFunction.params;
-        if (params.length <= 0 || !arkts.isETSParameterExpression(params.at(0)!)) {
+        if (params.length <= 0 || !arkts.isETSParameterExpression(params[0]!)) {
             return node;
         }
-        const originParam: arkts.ETSParameterExpression = params.at(0)! as arkts.ETSParameterExpression;
+        const originParam: arkts.ETSParameterExpression = params[0]! as arkts.ETSParameterExpression;
         const type = originParam.typeAnnotation;
         if (!type || !arkts.isTypeNode(type)) {
             return node;
@@ -169,10 +169,10 @@ export class CacheFactory {
         const newName: string = backingField(originalName);
         const scriptFunction = node.function;
         const params = scriptFunction.params;
-        if (params.length <= 0 || !arkts.isETSParameterExpression(params.at(0)!)) {
+        if (params.length <= 0 || !arkts.isETSParameterExpression(params[0]!)) {
             return node;
         }
-        const originParam: arkts.ETSParameterExpression = params.at(0)! as arkts.ETSParameterExpression;
+        const originParam: arkts.ETSParameterExpression = params[0]! as arkts.ETSParameterExpression;
         const type = originParam.typeAnnotation;
         if (!type || !arkts.isTypeNode(type)) {
             return node;

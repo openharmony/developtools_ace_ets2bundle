@@ -829,7 +829,7 @@ export class factory {
         if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
             const func = method.function!;
             const newParam: arkts.Expression | undefined = factory.wrapStateManagementTypeToParam(
-                method.function.params.at(0),
+                method.function.params[0],
                 decorator,
                 metadata
             );

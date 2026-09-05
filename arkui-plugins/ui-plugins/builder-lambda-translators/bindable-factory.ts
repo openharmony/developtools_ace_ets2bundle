@@ -30,7 +30,7 @@ export class BindableFactory {
         } else {
             _call = arg;
         }
-        const bindableArg = _call.arguments.at(0);
+        const bindableArg = _call.arguments[0];
         if (!bindableArg) {
             return arg;
         }
@@ -87,7 +87,7 @@ export class BindableFactory {
         } else {
             _value = value;
         }
-        const bindableArg = _value.arguments.at(0);
+        const bindableArg = _value.arguments[0];
         if (!bindableArg) {
             return prop;
         }

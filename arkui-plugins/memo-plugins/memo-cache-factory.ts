@@ -416,11 +416,11 @@ export function prepareRewriteScriptFunctionParameters(
         const metadata = { isWithinTypeParams };
         if (hasReceiver && node.params.length === 2) {
             newParams = [
-                node.params.at(0)!,
-                RewriteFactory.rewriteParameter(node.params.at(1)! as arkts.ETSParameterExpression, metadata),
+                node.params[0]!,
+                RewriteFactory.rewriteParameter(node.params[1]! as arkts.ETSParameterExpression, metadata),
             ];
         } else {
-            newParams = [RewriteFactory.rewriteParameter(node.params.at(0)! as arkts.ETSParameterExpression, metadata)];
+            newParams = [RewriteFactory.rewriteParameter(node.params[0]! as arkts.ETSParameterExpression, metadata)];
         }
     }
     return newParams;

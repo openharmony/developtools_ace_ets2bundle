@@ -64,8 +64,10 @@ export class StructTransformer extends AbstractVisitor {
         if (arkts.isMethodDefinition(node) && this.scope.customComponents.length > 0) {
             const name = node.id!.name;
             const scopeInfo = this.scope.customComponents.pop()!;
-            scopeInfo.hasInitializeStruct ||= name === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT;
-            scopeInfo.hasUpdateStruct ||= name === CustomComponentNames.COMPONENT_UPDATE_STRUCT;
+            scopeInfo.hasInitializeStruct =
+                scopeInfo.hasInitializeStruct || name === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT;
+            scopeInfo.hasUpdateStruct =
+                scopeInfo.hasUpdateStruct || name === CustomComponentNames.COMPONENT_UPDATE_STRUCT;
             this.scope.customComponents.push(scopeInfo);
         }
     }

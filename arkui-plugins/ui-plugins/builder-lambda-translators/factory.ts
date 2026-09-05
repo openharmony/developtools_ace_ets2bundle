@@ -557,8 +557,8 @@ export class factory {
         let isBuilderParam: boolean = false;
         let isLink: boolean = false;
         propertyDecl.function.annotations.forEach((anno) => {
-            isBuilderParam ||= isDecoratorAnnotation(anno, DecoratorNames.BUILDER_PARAM);
-            isLink ||= isDecoratorAnnotation(anno, DecoratorNames.LINK);
+            isBuilderParam = isBuilderParam || isDecoratorAnnotation(anno, DecoratorNames.BUILDER_PARAM);
+            isLink = isLink || isDecoratorAnnotation(anno, DecoratorNames.LINK);
         });
         return factory.updateSpecificProperties(prop, key, value, { isBuilderParam, isLink, isNotBacking }, declInfo);
     }
@@ -824,7 +824,7 @@ export class factory {
         const sourceName: string | undefined = moduleName ?? MetaDataCollector.getInstance().externalSourceName;
         if (isNavigationOrNavDestination(typeName, sourceName)) {
             const isUserCreateStack = typeName === InnerComponentNames.NAVIGATION
-                ? filteredModifiedArgs.length > 0 && !arkts.isUndefinedLiteral(filteredModifiedArgs.at(0)!)
+                ? filteredModifiedArgs.length > 0 && !arkts.isUndefinedLiteral(filteredModifiedArgs[0]!)
                 : undefined;
             filteredModifiedArgs.push(factory.createModuleInfoArg(isUserCreateStack));
         }
@@ -1568,7 +1568,7 @@ export class factory {
         const componentAttributeCache = ComponentAttributeCache.getInstance();
         const methods: arkts.MethodDefinition[] = [];
         componentNames.forEach((name: string) => {
-            const record = componentAttributeCache.getComponentRecord(name)?.at(0);
+            const record = componentAttributeCache.getComponentRecord(name)?.[0];
             const hasLastTrailingLambda = componentAttributeCache.getHasLastTrailingLambda(name);
             const attributeName = componentAttributeCache.getAttributeName(name);
             const attributeTypeParams = componentAttributeCache.getAttributeTypeParams(name);
