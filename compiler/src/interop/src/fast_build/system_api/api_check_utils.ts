@@ -167,14 +167,18 @@ interface HasJSDocNode extends ts.Node {
 }
 
 /**
- * get the bundleInfo of ohm
+ * Parse the bundleInfo from the bundle tag comment embedded in an SDK API file.
+ *
+ * The SDK API declaration carries a metadata comment of the form
+ * `<tag> <bundlePath> <bundleVersion>` (e.g. `@bundle ...` or `@normalized ...`).
  *
  * @param {string} modulePath
+ * @param {string} tag - bundle tag prefix, e.g. '@bundle' or '@normalized'
  * @return {BundleInfo}
  */
-function parseOhmBundle(modulePath: string): BundleInfo {
+function parseBundleInfo(modulePath: string, tag: string): BundleInfo {
   const apiCode: string = fs.readFileSync(modulePath, { encoding: 'utf-8' });
-  const bundleTags: string[] = apiCode.match(/@bundle.+/g);
+  const bundleTags: string[] = apiCode.match(new RegExp(`${tag}.+`, 'g'));
   const bundleInfo: BundleInfo = {
     bundlePath: '',
     bundleVersion: ''
@@ -191,30 +195,49 @@ function parseOhmBundle(modulePath: string): BundleInfo {
 }
 
 /**
- * jude a version string , string has two format
- *   xx:is a number and need greater than 10
- *   x.x.x: a string join '.', the first part and second part is number and need greater than 4.1
+ * Check whether the SDK version satisfies the bundle version requirement.
+ *
+ * Both bundleVersion and the SDK version may appear in any of these forms:
+ *   - M.S.F(X): legacy, the parenthesized X is used for comparison
+ *   - X:        legacy integer, X is used for comparison
+ *   - M.S.F:    new format (e.g. 26.0.0), used as-is
+ *
+ * Comparison is done per M.S.F segment (major, then sub, then feature);
+ * a plain integer is treated as N.0.0. Returns true when
+ * bundleRequiredVersion <= compatibleVersion.
  *
  * @param {string} bundleVersion - version string
  * @returns {boolean}
  */
 function checkBundleVersion(bundleVersion: string): boolean {
-  if (!projectConfig.compatibleSdkVersion) {
-    return true;
-  }
   const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion;
-  let bundleVersionNumber: number = 0;
-  const bundleVersionArr = bundleVersion.match(/(?<=\().*(?=\))/g);
-  if (bundleVersionArr && bundleVersionArr.length === 1) {
-    bundleVersionNumber = Number(bundleVersionArr[CONSTANT_STEP_0]);
-  } else {
-    bundleVersionNumber = Number(bundleVersion);
-  }
-  if (bundleVersion && bundleVersion !== '' && !isNaN(bundleVersionNumber) &&
-    !isNaN(Number(compatibleSdkVersion)) && Number(compatibleSdkVersion) >= bundleVersionNumber) {
+  const originCompatibleSdkVersion = projectConfig.originCompatibleSdkVersion?.toString();
+  // Neither origin nor compatible SDK version is configured → cannot compare, treat as available.
+  // (For a string, `!v` is true for '' / undefined / null, so the empty-string case is covered.)
+  if (!originCompatibleSdkVersion && !compatibleSdkVersion) {
     return true;
   }
-  return false;
+  // Empty bundleVersion (no @bundle version info) → not available. Mirrors the legacy
+  // `bundleVersion && bundleVersion !== ''` guard and avoids emitting an empty `@bundle:`.
+  if (!bundleVersion || bundleVersion === '') {
+    return false;
+  }
+  // Pick the value to compare: parenthesized content for legacy
+  // M.S.F(X), otherwise the whole string (integer or new M.S.F).
+  const pickCompareVersion = (version: string): string => {
+    const parenContent: RegExpMatchArray | null = version.match(/(?<=\().*(?=\))/g);
+    return parenContent && parenContent.length === 1 ? parenContent[CONSTANT_STEP_0] : version;
+  };
+  // A comparable version must be a plain integer or an M.S.F (1-3 numeric segments);
+  // reject non-numeric input (e.g. "abc", "a.b.c"), mirroring the legacy `!isNaN(...)` guard.
+  const isValidCompareVersion = (version: string): boolean => /^\d+(?:\.\d+){0,2}$/.test(version);
+  const bundleRequiredVersion: string = pickCompareVersion(bundleVersion);
+  const compatibleVersion: string = pickCompareVersion(originCompatibleSdkVersion || compatibleSdkVersion);
+  if (!isValidCompareVersion(bundleRequiredVersion) || !isValidCompareVersion(compatibleVersion)) {
+    return false;
+  }
+  // 4. Available when bundleRequiredVersion <= compatibleVersion.
+  return comparePointVersion(compatibleVersion, bundleRequiredVersion) >= ComparisonResult.Equal;
 }
 
 /**
@@ -263,20 +286,28 @@ export function moduleRequestCallback(moduleRequest: string, _: string,
     if (config.prefix === '@arkui-x') {
       continue;
     }
-    if (moduleRequest.startsWith(config.prefix + '.')) {
-      let compileRequest: string = `${config.prefix}:${systemKey}`;
-      const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(config.apiPath, moduleRequest,
-        ['.d.ts', '.d.ets']);
-      const modulePath: string = resolveModuleInfo.modulePath;
-      if (!fs.existsSync(modulePath)) {
-        return compileRequest;
-      }
-      const bundleInfo: BundleInfo = parseOhmBundle(modulePath);
-      if (checkBundleVersion(bundleInfo.bundleVersion)) {
-        compileRequest = `@bundle:${bundleInfo.bundlePath}`;
-      }
+    if (!moduleRequest.startsWith(config.prefix + '.')) {
+      continue;
+    }
+    let compileRequest: string = `${config.prefix}:${systemKey}`;
+    const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(config.apiPath, moduleRequest,
+      ['.d.ts', '.d.ets']);
+    const modulePath: string = resolveModuleInfo.modulePath;
+    if (!fs.existsSync(modulePath)) {
       return compileRequest;
     }
+    if (projectConfig.useNormalizedOHMUrl) {
+      const bundleInfo: BundleInfo = parseBundleInfo(modulePath, '@normalized');
+      if (checkBundleVersion(bundleInfo.bundleVersion)) {
+        compileRequest = `@normalized:${bundleInfo.bundlePath}`;
+        return compileRequest;
+      }
+    }
+    const bundleInfo: BundleInfo = parseBundleInfo(modulePath, '@bundle');
+    if (checkBundleVersion(bundleInfo.bundleVersion)) {
+      compileRequest = `@bundle:${bundleInfo.bundlePath}`;
+    }
+    return compileRequest;
   }
   return '';
 }
@@ -2546,7 +2577,6 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
 
   return validateApiAvailableArgument({
     node,
-    typeOfNodeFunc,
     isOpenHarmonyRuntime,
     isCheckDistributionOSVersion
   });
