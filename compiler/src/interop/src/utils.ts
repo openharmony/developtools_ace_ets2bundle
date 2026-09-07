@@ -53,6 +53,7 @@ import {
   HvigorLogInfo,
   HvigorErrorInfo
 } from './hvigor_error_code/hvigor_error_info';
+import { EXT_WHITE_LIST } from './component_map';
 
 export enum LogType {
   ERROR = 'ERROR',
@@ -1577,4 +1578,24 @@ export function isArrayEqualIgnoreOrder<T extends string | number>(
   const sortA = [...a].sort();
   const sortB = [...b].sort();
   return sortA.every((v, i) => v === sortB[i]);
+}
+
+function isCompatibleVersionOverTarget(apiNum: number): boolean {
+  const COMPATIBLE_SDK_VERSION: number = apiNum;
+  if (projectConfig &&
+    projectConfig.compatibleSdkVersion &&
+    projectConfig.compatibleSdkVersion >= COMPATIBLE_SDK_VERSION
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function equalToHiddenNavComplementation(
+  componentName: string
+): boolean {
+  if (isCompatibleVersionOverTarget(20)) {
+    return false;
+  }
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]);
 }
