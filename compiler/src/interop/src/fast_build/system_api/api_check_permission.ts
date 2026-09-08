@@ -154,6 +154,11 @@ export class JsDocCheckService {
     if (calcValidResult.finish) {
       return;
     }
+    if (atomStacks.length === 0) {
+      calcValidResult.valid = calcValidResult.currentPermissionMatch;
+      calcValidResult.finish = true;
+      return;
+    }
     if (atomStacks[0] === 'and') {
       calcValidResult.currentToken = PermissionVaildTokenState.And;
     } else if (atomStacks[0] === 'or') {
