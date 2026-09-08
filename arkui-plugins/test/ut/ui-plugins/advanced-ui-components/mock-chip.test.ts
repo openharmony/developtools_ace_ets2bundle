@@ -2681,7 +2681,7 @@ class EnvironmentCallbackEntry implements EnvironmentCallback {
   }
 
   private isValidLengthString(length: string): boolean {
-    const matches = length.match(new RegExp("(-?\\d+(?:\\.\\d+)?)_?(fp|vp|px|lpx)?$", "i"));
+    const matches = length.match(new RegExp("(-?\\\\d+(?:\\\\.\\\\d+)?)_?(fp|vp|px|lpx)?$", "i"));
     if (((!matches) || (((matches.length) < (3))))) {
       return false;
     }
@@ -2744,7 +2744,7 @@ class EnvironmentCallbackEntry implements EnvironmentCallback {
       return (length as double);
     }
     if ((((typeof length)) === ("string"))) {
-      const regexp = new RegExp("(\\d+)(vp|px|lpx|fp)?");
+      const regexp = new RegExp("(\\\\d+)(vp|px|lpx|fp)?");
       const matches = regexp.match((length as string));
       if (((!matches) || (((matches.length) < (2))))) {
         return undefined;

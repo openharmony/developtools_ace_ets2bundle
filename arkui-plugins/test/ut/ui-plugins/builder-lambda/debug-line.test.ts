@@ -120,7 +120,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.debugLine("mock\\\\builder-lambda\\\\debug-line.ets(22:5)", "entry");
+      __memo_parameter_instance.value.debugLine("mock\\\\\\\\builder-lambda\\\\\\\\debug-line.ets(22:5)", "entry");
       __memo_parameter_instance.value.setColumnOptions(undefined);
       __memo_parameter_instance.value.applyAttributesFinish();
       {
@@ -140,7 +140,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.debugLine("mock\\\\builder-lambda\\\\debug-line.ets(23:7)", "entry");
+        __memo_parameter_instance.value.debugLine("mock\\\\\\\\builder-lambda\\\\\\\\debug-line.ets(23:7)", "entry");
         __memo_parameter_instance.value.setTextOptions("Hello", undefined);
         __memo_parameter_instance.value.applyAttributesFinish();
         {
@@ -155,7 +155,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.debugLine("mock\\\\builder-lambda\\\\debug-line.ets(24:7)", "entry");
+        __memo_parameter_instance.value.debugLine("mock\\\\\\\\builder-lambda\\\\\\\\debug-line.ets(24:7)", "entry");
         __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
@@ -209,7 +209,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.debugLine("mock\\\\builder-lambda\\\\debug-line.ets(32:5)", "entry");
+      __memo_parameter_instance.value.debugLine("mock\\\\\\\\builder-lambda\\\\\\\\debug-line.ets(32:5)", "entry");
       __memo_parameter_instance.value.setColumnOptions(undefined);
       __memo_parameter_instance.value.applyAttributesFinish();
       {
@@ -229,7 +229,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.debugLine("mock\\\\builder-lambda\\\\debug-line.ets(33:7)", "entry");
+        __memo_parameter_instance.value.debugLine("mock\\\\\\\\builder-lambda\\\\\\\\debug-line.ets(33:7)", "entry");
         __memo_parameter_instance.value.setButtonOptions("Hello", undefined);
         __memo_parameter_instance.value.applyAttributesFinish();
         {
