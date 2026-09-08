@@ -48,7 +48,6 @@ if (has_ui2abc) {
 }
 
 npm_cmd("interop_compile") {
-  outputs = [ "$target_out_dir/interop_compile" ]
   if (!koala_mr.is_rri) {
     project_path = rebase_path("..")
     run_tasks = [ "compile:interop" ]
