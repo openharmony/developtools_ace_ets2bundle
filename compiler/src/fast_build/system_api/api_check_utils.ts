@@ -1096,13 +1096,19 @@ function collectOhSyscapInfos(deviceType: string, deviceDir: string, deviceInfoM
   } else {
     syscapFilePath = path.resolve(deviceDir, deviceType + '.json');
   }
-  if (fs.existsSync(syscapFilePath)) {
-    const content: SyscapConfig = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
-    if (deviceInfoMap.get(deviceType)) {
-      deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content.SysCaps));
-    } else {
-      deviceInfoMap.set(deviceType, content.SysCaps);
-    }
+  if (!fs.existsSync(syscapFilePath)) {
+    return;
+  }
+  let content: SyscapConfig;
+  try {
+    content = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
+  } catch (error) {
+    return;
+  }
+  if (deviceInfoMap.get(deviceType)) {
+    deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content.SysCaps));
+  } else {
+    deviceInfoMap.set(deviceType, content.SysCaps);
   }
 }
 
@@ -1123,16 +1129,23 @@ function collectExternalSyscapInfos(
       let syscapFilePath: string = '';
       const files: string[] = fs.readdirSync(externalDeviceDir);
       files.forEach((fileName: string) => {
-        if (fileName.startsWith(deviceType)) {
-          syscapFilePath = path.resolve(externalDeviceDir, fileName);
-          if (fs.existsSync(syscapFilePath)) {
-            const content: SyscapConfig = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
-            if (deviceInfoMap.get(deviceType)) {
-              deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content.SysCaps));
-            } else {
-              deviceInfoMap.set(deviceType, content.SysCaps);
-            }
-          }
+        if (!fileName.startsWith(deviceType)) {
+          return;
+        }
+        syscapFilePath = path.resolve(externalDeviceDir, fileName);
+        if (!fs.existsSync(syscapFilePath)) {
+          return;
+        }
+        let content: SyscapConfig;
+        try {
+          content = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
+        } catch (error) {
+          return;
+        }
+        if (deviceInfoMap.get(deviceType)) {
+          deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content.SysCaps));
+        } else {
+          deviceInfoMap.set(deviceType, content.SysCaps);
         }
       });
     });
@@ -1722,7 +1735,7 @@ export function checkPermissionValue(
       ? permissionTag.comment
       : ts.getTextOfJSDocComment(permissionTag.comment);
 
-    if (comment === '') {
+    if (!comment) {
       continue;
     }
 
