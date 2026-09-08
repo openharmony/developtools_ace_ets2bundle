@@ -1097,6 +1097,9 @@ export class factory {
 
         const resultPaths = propertyPathResult.getAllResultPaths();
         for (let varIdx = 1; varIdx < resultPaths[0].length; varIdx++) {
+            if (resultPaths.some(path => path[varIdx].segment === '*')) {
+                continue;
+            }
             let elseBranch: arkts.Statement = arkts.factory.createReturnStatement(
                 arkts.factory.createUndefinedLiteral()
             );
