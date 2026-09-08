@@ -227,11 +227,11 @@ function isValidString(dimension: string, regex: RegExp): boolean {
 }
 
 function isValidDimensionString(dimension: string): boolean {
-  return isValidString(dimension, new RegExp("(-?\\d+(?:\\.\\d+)?)_?(fp|vp|px|lpx|%)?$", "i"));
+  return isValidString(dimension, new RegExp("(-?\\\\d+(?:\\\\.\\\\d+)?)_?(fp|vp|px|lpx|%)?$", "i"));
 }
 
 function isValidDimensionNoPercentageString(dimension: string): boolean {
-  return isValidString(dimension, new RegExp("(-?\\d+(?:\\.\\d+)?)_?(fp|vp|px|lpx)?$", "i"));
+  return isValidString(dimension, new RegExp("(-?\\\\d+(?:\\\\.\\\\d+)?)_?(fp|vp|px|lpx)?$", "i"));
 }
 
 function toStringFormat(resource: (ResourceStr | undefined)): string {

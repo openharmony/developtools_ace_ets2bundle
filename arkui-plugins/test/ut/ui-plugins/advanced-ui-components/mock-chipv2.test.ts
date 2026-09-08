@@ -3332,7 +3332,7 @@ class ChipV2EnvironmentCallbackEntry implements EnvironmentCallback {
       return (length as double);
     }
     if ((((typeof length)) === ("string"))) {
-      const regexp = new RegExp("(\\d+)(vp|px|lpx|fp)?");
+      const regexp = new RegExp("(\\\\d+)(vp|px|lpx|fp)?");
       const matches = regexp.match((length as string));
       if (((!matches) || (((matches.length) < (2))))) {
         return undefined;
