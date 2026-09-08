@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+import ts from 'typescript';
 import MagicString, { SourceMap } from 'magic-string';
 import { createFilter } from '@rollup/pluginutils';
 import path from 'path';
@@ -71,28 +72,36 @@ export function apiTransform() {
       map: SourceMap;
     } {
       let hiresStatus: boolean = this.share.projectConfig.needCompleteSourcesMap;
+      // Whether the current module should be processed as emitted JS text.
+      // The flag is always true when:
+      //   1. id is a '.js' file, which never goes through etsTransform and thus always carries JS text;
+      //   2. etsTransform emitted JS for this file (the per-file flag is cached in shouldEmitJsFlagMap during
+      //      etsTransform's transform, and read back here via shouldEmitJsFlagById);
+      //   3. compileMode is not esmodule (JSBUNDLE): the AST-collection path is never used, and system api /
+      //      libso imports must always be replaced by regex.
+      // When the flag is false (esmodule + ark es2abc), etsTransform only transforms the AST, so the module
+      // carries meta.tsAst instead of JS text: we collect import modules from the AST and return null.
       const shouldEmitJsFlag: boolean = id.endsWith('.js') ||
         shouldEmitJsFlagById(id) || projectConfig.compileMode !== 'esmodule';
-      if (!shouldEmitJsFlag &&
-        !this.share.projectConfig.isCrossplatform &&
-        !this.share.projectConfig.widgetCompile) {
+      if (!shouldEmitJsFlag) {
+        if (projectConfig.isCrossplatform ? filterCrossplatform(id) : filter(id)) {
+          const moduleInfo = this.getModuleInfo(id);
+          if (moduleInfo && moduleInfo.meta && moduleInfo.meta.tsAst) {
+            collectImportModulesByAst(id, moduleInfo.meta.tsAst as ts.SourceFile, useOSFiles);
+          }
+        }
         return null;
       }
 
       if (projectConfig.isCrossplatform ? filterCrossplatform(id) : filter(id)) {
         if (projectConfig.compileMode === 'esmodule') {
           code = processSystemApiAndLibso(code, id, useOSFiles);
-          hiresStatus = hiresStatus || hasTsNoCheckOrTsIgnoreFiles.includes(id) ?
-            true :
-            false;
+          hiresStatus = !!(hiresStatus || hasTsNoCheckOrTsIgnoreFiles.includes(id));
         } else {
           code = processSystemApi(code, id);
           code = processLibso(code, id, useOSFiles);
           hiresStatus = true;
         }
-      }
-      if (!shouldEmitJsFlag) {
-        return null;
       }
       const magicString: MagicString = new MagicString(code);
       return {
@@ -195,6 +204,72 @@ function checkModuleExist(systemModule: string, sourcePath: string): void {
   }
 }
 
+/**
+ * Judges whether an import declaration imports value members (i.e. has runtime dependency after
+ * transpilation). Returns true when it is a type-only import, e.g. `import type { X } from 'mod'`
+ * or all named bindings are type-only, e.g. `import { type X } from 'mod'`.
+ */
+export function isTypeOnlyImportDeclaration(node: ts.ImportDeclaration): boolean {
+  const importClause: ts.ImportClause | undefined = node.importClause;
+  if (!importClause) {
+    // `import 'mod'` (side effect import) is always a value import.
+    return false;
+  }
+  if (importClause.isTypeOnly) {
+    return true;
+  }
+  if (importClause.name) {
+    // Default import is a value import unless the whole clause is type-only.
+    return false;
+  }
+  const namedBindings: ts.NamedImportBindings | undefined = importClause.namedBindings;
+  if (namedBindings) {
+    if (ts.isNamespaceImport(namedBindings)) {
+      return false;
+    }
+    return namedBindings.elements.every((element: ts.ImportSpecifier) => element.isTypeOnly);
+  }
+  return true;
+}
+
+/**
+ * Collects system module imports (e.g. '@ohos.xxx' / '@kit.xxx' / '@system.xxx') and user native
+ * library imports (e.g. 'libxxx.so') by recursively walking the AST. Type-only imports
+ * (`import type ...` / `import { type X } ...`) do not introduce runtime dependencies and are
+ * therefore not collected.
+ */
+export function collectImportModulesByAst(sourcePath: string, sourceFile: ts.SourceFile, useOSFiles: Set<string>): void {
+  const collectModule: (moduleSpecifier: string) => void = (moduleSpecifier: string): void => {
+    // Match system module imports, e.g. '@ohos.xxx' / '@kit.xxx' / '@system.xxx'.
+    // Each match creates a brand new regex to avoid sharing state (e.g. lastIndex with the 'g' flag)
+    // between consecutive exec/match calls on the same instance.
+    const systemModuleMatch: RegExpExecArray | null =
+      new RegExp(`^@(${sdkConfigPrefix})\\.(\\S+)`).exec(moduleSpecifier);
+    if (systemModuleMatch) {
+      const systemModule: string = `${systemModuleMatch[1]}.${systemModuleMatch[2]}`;
+      appImportModuleCollection.get(path.join(sourcePath))!.add(systemModule);
+      return;
+    }
+    // Match user native library (libso) imports, e.g. 'libxxx.so'.
+    if (new RegExp(`^lib(\\S+)\\.so$`).test(moduleSpecifier)) {
+      useOSFiles.add(sourcePath);
+    }
+  };
+  appImportModuleCollection.set(path.join(sourcePath), new Set());
+
+  ts.forEachChild(sourceFile, (node: ts.Node) => {
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier) && !isTypeOnlyImportDeclaration(node)) {
+      collectModule(node.moduleSpecifier.text);
+    }
+    if (ts.isImportEqualsDeclaration(node) && ts.isExternalModuleReference(node.moduleReference) && !node.isTypeOnly) {
+      const expression: ts.Expression = node.moduleReference.expression;
+      if (ts.isStringLiteral(expression)) {
+        collectModule(expression.text);
+      }
+    }
+  });
+}
+
 function processLibso(content: string, sourcePath: string, useOSFiles: Set<string>): string {
   const REG_LIB_SO: RegExp =
     /import\s+(.+)\s+from\s+['"]lib(\S+)\.so['"]|import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
@@ -291,13 +366,13 @@ function replaceKitModules(): void {
 /**
  * A generic path matching function that determines
  * whether two paths are identical after ignoring their format
- * @param targetPath 
- * @param currentPath 
- * @returns 
+ * @param targetPath
+ * @param currentPath
+ * @returns
  */
 function isSamePath(targetPath: string, currentPath: string): boolean {
   // Convert to a standardized format uniformly
-  const normalize = (p: string):string => path.normalize(p).replace(/\\/g, '/');
+  const normalize = (p: string): string => path.normalize(p).replace(/\\/g, '/');
   return normalize(targetPath) === normalize(currentPath);
 }
 
