@@ -18,9 +18,10 @@ import { BuilderMethodNames, InteroperAbilityNames, InteropInternalNames } from 
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
 import { stateProxy, getWrapValue, setPropertyESValue, createEmptyESValue } from './utils';
 import { hasDecorator } from '../property-translators/utils';
-import { DecoratorNames, DeprecatedDecoratorNames, LANGUAGE_VERSION } from '../../common/predefines';
+import { DecoratorNames, DeprecatedDecoratorNames, LANGUAGE_VERSION, NodeCacheNames } from '../../common/predefines';
 import { FileManager } from '../../common/file-manager';
 import { factory as UIFactory } from '../ui-factory';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, arkts.ClassProperty>,
     updateProp: arkts.Property[], node: arkts.CallExpression): arkts.Statement[] {
@@ -251,6 +252,9 @@ function isDynamicBuilder(decl: arkts.AstNode | undefined): boolean {
     }
     return true;
 }
+function collectBuilderParamWrapperToUpdate(value: arkts.Expression): void {
+    NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collectToUpdate(value);
+}
 
 /**
  * 
@@ -299,6 +303,7 @@ export function processBuilderParam(keyName: string, value: arkts.Expression): a
                 [value]
             );
         }
+        collectBuilderParamWrapperToUpdate(newValue);
     }
     
     const setProperty = setPropertyESValue(InteropInternalNames.PARAM, keyName, newValue);

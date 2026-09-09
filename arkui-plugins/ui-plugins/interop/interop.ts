@@ -31,6 +31,15 @@ import { DecoratorNames, LANGUAGE_VERSION, NodeCacheNames } from '../../common/p
 import { hasDecorator } from '../property-translators/utils';
 import { FileManager } from '../../common/file-manager';
 import { NodeCacheFactory } from '../../common/node-cache';
+import {
+    addMemoAnnotation,
+    collectMemoableInfoInFunctionReturnType,
+    collectMemoableInfoMapInFunctionParams,
+    collectMemoScriptFunctionBody,
+    collectScriptFunctionReturnTypeFromInfo,
+    findIdentifierFromCallee,
+    hasMemoAnnotation,
+} from '../../collectors/memo-collectors/utils';
 
 function paramsLambdaDeclaration(name: string, args?: arkts.ObjectExpression): arkts.Statement[] {
     const result: arkts.Statement[] = [];
@@ -314,6 +323,68 @@ function createUpdater(updateProp: arkts.Property[]): arkts.ArrowFunctionExpress
     return newNode;
 }
 
+function getMemoArrowFromExpression(expression: arkts.Expression): arkts.ArrowFunctionExpression | undefined {
+    if (arkts.isArrowFunctionExpression(expression)) {
+        return expression;
+    }
+    if (arkts.isTSAsExpression(expression) && !!expression.expr && arkts.isArrowFunctionExpression(expression.expr)) {
+        return expression.expr;
+    }
+    return undefined;
+}
+
+function getGeneratedMemoCallName(node: arkts.CallExpression): string | undefined {
+    const name = findIdentifierFromCallee(node.callee)?.name;
+    if (!name?.endsWith('Impl')) {
+        return undefined;
+    }
+    const hasMemoArgument = node.arguments.some((argument) => {
+        const arrow = getMemoArrowFromExpression(argument);
+        return !!arrow && hasMemoAnnotation(arrow);
+    });
+    return hasMemoArgument ? name : undefined;
+}
+
+function collectGeneratedInteropMemoNodes(node: arkts.AstNode): void {
+    node.getChildren().forEach(collectGeneratedInteropMemoNodes);
+    const memoCache = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO);
+    // Cache-mode visitors stop at any unmarked node. Generated interop trees have
+    // not gone through the normal collector, so every intermediate node must be visitable.
+    memoCache.addNodeToUpdate(node);
+    if (arkts.isArrowFunctionExpression(node) && hasMemoAnnotation(node)) {
+        if (!memoCache.has(node)) {
+            const func = node.function!;
+            const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
+            collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
+            const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(func);
+            if (!!func.body && arkts.isBlockStatement(func.body)) {
+                collectMemoScriptFunctionBody(func.body, returnMemoableInfo, paramMemoableInfoMap, gensymCount);
+            }
+        }
+        memoCache.collect(node);
+    }
+    if (arkts.isCallExpression(node)) {
+        const callName = getGeneratedMemoCallName(node);
+        if (!!callName) {
+            memoCache.collect(node, { callName });
+        }
+    }
+}
+
+function collectInteropBuilderContent(content: arkts.ArrowFunctionExpression): arkts.ArrowFunctionExpression {
+    const memoContent = addMemoAnnotation(content);
+    const func = memoContent.function!;
+    const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
+    collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
+    const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(func);
+    const body = func.body;
+    if (!!body && arkts.isBlockStatement(body)) {
+        collectMemoScriptFunctionBody(body, returnMemoableInfo, paramMemoableInfoMap, gensymCount);
+    }
+    collectGeneratedInteropMemoNodes(memoContent);
+    return memoContent;
+}
+
 function updateArguments(context: InteropContext, name: string): arkts.ObjectExpression {
     const property = arkts.factory.createProperty(
         arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
@@ -413,11 +484,8 @@ export function generateArkUICompatible(node: arkts.CallExpression, globalBuilde
     }
     const filePath = arkts.getProgramFromAstNode(decl)?.moduleName;
     const args = node.arguments;
-    const [options, storage, content] = getProperParams(args);
-
-    if (!!content) {
-        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(content);
-    }
+    const [options, storage, originalContent] = getProperParams(args);
+    const content = !!originalContent ? collectInteropBuilderContent(originalContent) : undefined;
     const context: InteropContext = {
         className: className,
         path: filePath,
@@ -447,5 +515,6 @@ export function generateArkUICompatible(node: arkts.CallExpression, globalBuilde
         node.trailingBlock
     );
     NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(result);
+    collectGeneratedInteropMemoNodes(result);
     return result;
 }
