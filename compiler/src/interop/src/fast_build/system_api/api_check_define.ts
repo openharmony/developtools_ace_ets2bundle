@@ -58,7 +58,9 @@ export const AVAILABLE_VERSION_FORMAT_ERROR: string = `The OpenHarmony version m
 export const APIAVAILABLE_CHECK_ERROR: string = 'Invalid parameters for apiAvailable.';
 export const APIAVAILABLE_OPENHARMONY_CONTENT_ERROR: string = `The api version must be a decimal integer between 1 and 25.
  The M.S.F format must meet the following requirements: The value must be in the three decimal format, M must be greater than or equal to 26, and S and F must be decimal integers between 0 and 99.`;
-export const APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR: string = 'Invalid $RUNTIMEOS version.';
+ export const APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR: string = `The api version must be a decimal integer between 1 and 25.
+ The M.S.F format must meet the following requirements: The value must be in the three decimal format, M must be decimal integers between 1 and 99, and S and F must be decimal integers between 0 and 99.`;
+export const APIAVAILABLE_DISTRIBUTIONOS_CONTENT_CHECK_ERROR: string = 'Invalid $RUNTIMEOS version.';
 export const APIAVAILABLE_TS_FILE_ERROR: string = 'apiAvailable cannot be used in .ts files. Please use .ets files instead.';
 export const APIAVAILABLE_NUMBER_FORMAT_ERROR: string = 'Only decimal digits are allowed.';
 export const APIAVAILABLE_STRING_OPENHARMONY_FORMAT_ERROR: string = 'Only digits and dots are allowed.';
@@ -268,7 +270,7 @@ export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'posi
   [SINCE_TAG_CHECK_ERROR, { code: '11706011', description: 'The API requires version $ApiVersion or newer.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
   [AVAILABLE_DECORATOR_WARNING, { code: '11706012', description: 'The API is only available in $ApiVersion or newer.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
   [APIAVAILABLE_CHECK_ERROR, { code: '11706013', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
-  [APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR, { code: '11706014', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
+  [APIAVAILABLE_DISTRIBUTIONOS_CONTENT_CHECK_ERROR, { code: '11706014', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
   [APIAVAILABLE_TS_FILE_ERROR, { code: '11706015', description: 'apiAvailable cannot be used in .ts files.', solutions: ['Use .ets files instead of .ts files for apiAvailable calls.'] }],
   [AVAILABLE_VERSION_FORMAT_ERROR_PREFIX, { code: '11706016', description: 'Invalid version format in @Available decorator.', solutions: ['Change the version number to an integer between 1 and 999, or use the standardized M.S.F format.'] }],
   [AVAILABLE_OSNAME_ERROR, { code: '11706017', description: 'Invalid OS name in @Available decorator.', solutions: ['Use the correct OS name matching the project runtime OS.'] }]
