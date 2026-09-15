@@ -524,9 +524,9 @@ function buildFullClassName(decl: ts.Declaration, finalType: ts.Type, className:
   const fullNamespace: string = getFullNamespaceName(decl);
   className = fullNamespace ? `${fullNamespace}$${className}` : className;
   const pkgName: string = arkTSEvoPkgNameOHMUrlMap.get(basePath);
-  return ts.isInterfaceDeclaration(decl) ? 
-    `L${basePath}/${pkgName}$${basePath.replace(pkgName + '/', '').split('/').join('$')}$${className}$ObjectLiteral;` :
-    `L${basePath}/${className};`;
+  return ts.isInterfaceDeclaration(decl) ?
+    `L${pkgName}/${basePath}/${pkgName}$${basePath.split('/').join('$')}$${className}$ObjectLiteral;` :
+    `L${pkgName}/${basePath}/${className};`;
 } 
 
 /**
@@ -666,7 +666,8 @@ function collectDeepInheritedInterfacesFromType(type: ts.Type, checker: ts.TypeC
   const isArkTSEvolution: boolean = decls?.some(decl => isFromArkTSEvolutionModule(decl));
   if (isArkTSEvolution) {
     const ifacePath: string = getArkTSEvoFileOHMUrl(type);
-    interfaces.add(`L${ifacePath}/${type.symbol.name};`);
+    const pkgName: string = arkTSEvoPkgNameOHMUrlMap.get(ifacePath);
+    interfaces.add(`L${pkgName}/${ifacePath}/${type.symbol.name};`);
   }
   if (hasResolvedBaseTypes(type)) {
     const baseTypes: ts.BaseType[] = checker.getBaseTypes(type) ?? [];

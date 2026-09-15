@@ -25,7 +25,8 @@ import {
   findNamesMatchingPattern, sortImportLinesFirst, transformToExportDeclare, ensureDeclareKeyword, stripExportFromText,
   isTypeParameterSymbol, isEnumMemberSymbol, isRightOfMatchingQualifiedName, getLocalNameOfDeclaration,
   getDeclarationNode, withNamespaceMemberModifiers, sanitizeDeclarationNode, validateOutput, resolveWithFallback,
-  buildBidirectionalMaps, createDeclarationModuleResolver, EntityKind, SourceFileExt, MergeEntity, NamespaceEmitItem,
+  buildBidirectionalMaps, createDeclarationModuleResolver, normalizeForTextDedup, pushCompanionMemberDeduped,
+  pushCompanionNsDeduped, EntityKind, SourceFileExt, MergeEntity, NamespaceEmitItem,
   NamespaceBlockMember, NamespaceSystemApiMember, NamespaceBlock, EmitContext, DeclarationMergeOptions
 } from './declaration_merger_utils';
 import {
@@ -1214,6 +1215,7 @@ export class DeclarationMerger {
       companionEmittedStatements: new Set(),
       primaryEmittedTexts: new Set(),
       companionEmittedTexts: new Set(),
+      companionEmittedNsTexts: new Set(),
       crossExtExportedNames: [],
       crossExtImportNamespaces: new Set(),
       crossExtImportNames: [],
@@ -1278,7 +1280,7 @@ export class DeclarationMerger {
       if (!text) {
         continue;
       }
-      const normalized: string = text.replace(/^export\s+/, '').replace(/^declare\s+/, '').trim();
+      const normalized: string = normalizeForTextDedup(text);
       if (!targetEmitted.has(normalized)) {
         targetEmitted.add(normalized);
         targetLines.push(text);
@@ -1319,7 +1321,7 @@ export class DeclarationMerger {
         blockData.nsName, blockData.entities, true
       );
       if (blockText) {
-        ctx.companionLines.push(blockText);
+        pushCompanionNsDeduped(ctx, blockText);
       }
     }
   }
@@ -1337,7 +1339,7 @@ export class DeclarationMerger {
         continue;
       }
 
-      const normalized: string = text.replace(/^export\s+/, '').replace(/^declare\s+/, '').trim();
+      const normalized: string = normalizeForTextDedup(text);
       if (!targetEmitted.has(normalized)) {
         targetEmitted.add(normalized);
         targetLines.push(text);
@@ -1374,7 +1376,7 @@ export class DeclarationMerger {
       } else {
         const blockText: string = this.emitNamespaceBlock(block, true);
         if (blockText) {
-          ctx.companionLines.push(blockText);
+          pushCompanionNsDeduped(ctx, blockText);
           ctx.crossExtExportedNames.push(block.name);
         }
       }
@@ -1413,11 +1415,7 @@ export class DeclarationMerger {
     for (const cm of companionMembers) {
       const text: string = this.emitCrossExtNamespaceMember(cm, allOverrides);
       if (text) {
-        const normalized: string = text.replace(/^export\s+/, '').replace(/^declare\s+/, '').trim();
-        if (!ctx.companionEmittedTexts.has(normalized)) {
-          ctx.companionEmittedTexts.add(normalized);
-          ctx.companionLines.push(text);
-        }
+        pushCompanionMemberDeduped(ctx, text);
       }
       ctx.crossExtNamespaceImports.add(cm.emitName);
     }
