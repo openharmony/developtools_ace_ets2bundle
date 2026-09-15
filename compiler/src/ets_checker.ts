@@ -134,6 +134,7 @@ export interface LanguageServiceCache {
   useDeclarationFileSignature?: boolean;
   strictCheckerOnly?: boolean;
   tsImportSoCheck?: boolean;
+  obfuscationRuleHash?: string;
 }
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
@@ -358,6 +359,54 @@ function createHash(str: string): string {
   return hash.digest('hex');
 }
 
+function getObfuscationRuleHash(projectConfig: Object): string | undefined {
+  const obfuscationOptions: Object = projectConfig?.obfuscationOptions;
+  if (!obfuscationOptions?.selfConfig?.ruleOptions?.enable) {
+    return undefined;
+  }
+
+  const rulePaths: string[] = [];
+  const addRulePaths = (rules: string | string[] | undefined): void => {
+    if (!rules) {
+      return;
+    }
+    if (Array.isArray(rules)) {
+      rulePaths.push(...rules);
+      return;
+    }
+    rulePaths.push(rules);
+  };
+  const addConfigRulePaths = (config: Object): void => {
+    if (!config) {
+      return;
+    }
+    addRulePaths(config.ruleOptions?.rules);
+    addRulePaths(config.ruleOptions?.files);
+    addRulePaths(config.consumerRules);
+    addRulePaths(config.consumerFiles);
+  };
+
+  addConfigRulePaths(obfuscationOptions.selfConfig);
+  const dependencies = obfuscationOptions.dependencies;
+  if (dependencies) {
+    addRulePaths(dependencies.hars);
+    addRulePaths(dependencies.hsps);
+    (dependencies.libraries || []).forEach(addConfigRulePaths);
+    (dependencies.hspLibraries || []).forEach(addConfigRulePaths);
+  }
+
+  const hashInput: string[] = [String(obfuscationOptions.selfConfig.ruleOptions.enable)];
+  rulePaths.forEach((rulePath: string) => {
+    hashInput.push(rulePath);
+    try {
+      hashInput.push(fs.readFileSync(rulePath, 'utf-8'));
+    } catch (error) {
+      hashInput.push('missing');
+    }
+  });
+  return createHash(JSON.stringify(hashInput));
+}
+
 export function getFileContentWithHash(fileName: string): string {
   let fileContent: string | undefined = fileCache.get(fileName);
   if (fileContent === undefined) {
@@ -486,6 +535,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
 }
 
 export let targetESVersionChanged: boolean = false;
+export let obfuscationConfigChanged: boolean = false;
 
 function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFileNames: string[],
   parentEvent: CompileEvent, rollupShareObject?: any): ts.LanguageService {
@@ -493,6 +543,9 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   let cache: LanguageServiceCache | undefined = getRollupCache(rollupShareObject, projectConfig, cacheKey);
 
   let service: ts.LanguageService | undefined = cache?.service;
+  const currentObfuscationRuleHash: string | undefined = getObfuscationRuleHash(rollupShareObject?.projectConfig);
+  const obfuscationRuleHashDiffers: boolean = cache?.obfuscationRuleHash !== currentObfuscationRuleHash;
+  obfuscationConfigChanged = obfuscationConfigChanged || obfuscationRuleHashDiffers;
   const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
   const currentTargetESVersion: ts.ScriptTarget = compilerOptions.target;
   const currentTypes: string[] | undefined = compilerOptions.types;
@@ -537,7 +590,8 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     mixCompileDiff || typesDiff || autoLazyImportDiff || autoLazyFilterDiff ||
     useDeclarationFileSignatureDiff || strictCheckerOnlyDiff || tsImportSoCheckDiff;
   const shouldInvalidCache: boolean | undefined = targetESVersionDiffers || useTsHarDiff;
-  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || shouldInvalidCache || onlyDeleteBuildInfoCache;
+  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || shouldInvalidCache || onlyDeleteBuildInfoCache ||
+    obfuscationRuleHashDiffers;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
     needReCheckForChangedDepUsers = true;
   }
@@ -556,7 +610,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
       'disableStrictCheckPathsDiff: ' + disableStrictCheckPathsDiff + ';' +
       'mixCompileDiff: ' + mixCompileDiff + ';' + 'typesDiff: ' + typesDiff + ';'
     );
-    rebuildProgram(shouldInvalidCache, onlyDeleteBuildInfoCache);
+    rebuildProgram(shouldInvalidCache, onlyDeleteBuildInfoCache, obfuscationRuleHashDiffers);
     service = ts.createLanguageService(servicesHost, shareDocumentRegistryCache ?
       getOrCreateDocumentRegistryCache(rollupShareObject) : ts.createDocumentRegistry());
     stopEvent(eventShouldRebuild);
@@ -584,6 +638,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     useDeclarationFileSignature: currentUseDeclarationFileSignature,
     strictCheckerOnly: currentStrictCheckerOnly,
     tsImportSoCheck: currentTsImportSoCheck,
+    obfuscationRuleHash: currentObfuscationRuleHash,
     autoLazyImport: currentAutoLazyImport,
     autoLazyFilterInclude: currentAutoLazyFilterInclude ? [...currentAutoLazyFilterInclude] : undefined,
     autoLazyFilterExclude: currentAutoLazyFilterExclude ? [...currentAutoLazyFilterExclude] : undefined
@@ -687,11 +742,14 @@ function hasSendableClassDecoratorRule(sendableCheckRules: string[] | undefined)
   return sendableCheckRules?.includes(SENDABLE_CLASS_DECORATOR_RULE);
 }
 
-function rebuildProgram(shouldInvalidCache: boolean | undefined, onlyDeleteBuildInfoCache: boolean | undefined): void {
-  if (shouldInvalidCache) {
-    // If the targetESVersion or usTsHar is changed, we need to delete the build info cahce files & rollup caches
+function rebuildProgram(shouldInvalidCache: boolean | undefined, onlyDeleteBuildInfoCache: boolean | undefined,
+  obfuscationRuleHashDiffers: boolean = false): void {
+  if (shouldInvalidCache || obfuscationRuleHashDiffers) {
+    // If the targetESVersion, useTsHar, or obfuscation rules changed, delete build info cache files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
-    targetESVersionChanged = true;
+    if (shouldInvalidCache) {
+      targetESVersionChanged = true;
+    }
   } else if (onlyDeleteBuildInfoCache) {
     // When tsImportSendable or types or maxFlowDepth or skipOhModuleslint or enableStrictCheckOHModule
     //  or disableStrictCheckPaths or disableSendableCheckRules or mixCompile is changed, delete cahce files
@@ -2225,6 +2283,7 @@ export function resetEtsCheck(): void {
   dirExistsCache.clear();
   moduleResolutionCache?.clear();
   targetESVersionChanged = false;
+  obfuscationConfigChanged = false;
   fileToIgnoreDiagnostics = undefined;
   maxMemoryInServiceChecker = 0;
 }

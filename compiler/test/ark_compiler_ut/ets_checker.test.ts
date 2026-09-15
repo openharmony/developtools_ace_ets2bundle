@@ -15,6 +15,7 @@
 
 import mocha from 'mocha';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { expect } from 'chai';
 import * as ts from 'typescript';
@@ -41,6 +42,7 @@ import {
   fileCache,
   getFileContentWithHash,
   areEqualArrays,
+  obfuscationConfigChanged,
   isOhExport
 } from '../../lib/ets_checker';
 import { TS_BUILD_INFO_SUFFIX } from '../../lib/pre_define';
@@ -208,7 +210,279 @@ mocha.describe('test ets_checker file api', function () {
         expect(globalProgram.program == null).to.be.true;
         expect(compilerOptions.skipPathsInKeyForCompilationSettings).to.be.true;
     });
-    mocha.it('1-5: test GetEmitHost of program', function () {
+    mocha.it('1-5: test obfuscation rule change rebuilds language service', function () {
+        this.timeout(10000);
+        this.rollup.build();
+        this.rollup.share.initWithCache();
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ets-checker-obfuscation-'));
+        const rulePath = path.join(tempDir, 'obfuscation-rules.txt');
+        fs.writeFileSync(rulePath, '-keep-global-name A\n', 'utf-8');
+        this.rollup.share.projectConfig.obfuscationOptions = {
+            selfConfig: {
+                ruleOptions: {
+                    enable: true,
+                    rules: [rulePath]
+                }
+            }
+        };
+        Object.assign(projectConfig, this.rollup.share.projectConfig);
+
+        serviceChecker([EXPECT_INDEX_ETS], null, null, null, this.rollup.share);
+        resetEtsCheck();
+        serviceChecker([EXPECT_INDEX_ETS], null, null, null, this.rollup.share);
+        expect(obfuscationConfigChanged).to.be.false;
+        resetEtsCheck();
+
+        fs.writeFileSync(rulePath, '-keep-global-name B\n', 'utf-8');
+        serviceChecker([EXPECT_INDEX_ETS], null, null, null, this.rollup.share);
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+        fs.rmSync(tempDir, { recursive: true, force: true });
+    });
+
+    mocha.it('1-6: test disabled or absent obfuscation never rebuilds language service', function () {
+        this.timeout(30000);
+        this.rollup.build();
+        this.rollup.share.initWithCache();
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ets-checker-obfuscation-'));
+        const rulePath = path.join(tempDir, 'obfuscation-rules.txt');
+        fs.writeFileSync(rulePath, '-keep-global-name A\n', 'utf-8');
+        const share = this.rollup.share;
+        share.projectConfig.obfuscationOptions = {
+            selfConfig: {
+                ruleOptions: {
+                    enable: false,
+                    rules: [rulePath]
+                }
+            }
+        };
+        Object.assign(projectConfig, share.projectConfig);
+        const check = (): void => serviceChecker([EXPECT_INDEX_ETS], null, null, null, share);
+
+        check();
+        resetEtsCheck();
+        check();
+        expect(obfuscationConfigChanged).to.be.false;
+        resetEtsCheck();
+
+        fs.writeFileSync(rulePath, '-keep-global-name B\n', 'utf-8');
+        check();
+        expect(obfuscationConfigChanged).to.be.false;
+        resetEtsCheck();
+
+        share.projectConfig.obfuscationOptions = undefined;
+        check();
+        expect(obfuscationConfigChanged).to.be.false;
+        resetEtsCheck();
+
+        share.projectConfig.obfuscationOptions = {
+            selfConfig: {
+                ruleOptions: {
+                    enable: true,
+                    rules: [rulePath]
+                }
+            }
+        };
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+        fs.rmSync(tempDir, { recursive: true, force: true });
+    });
+
+    mocha.it('1-7: test obfuscation rule path list change rebuilds language service', function () {
+        this.timeout(30000);
+        this.rollup.build();
+        this.rollup.share.initWithCache();
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ets-checker-obfuscation-'));
+        const firstRulePath = path.join(tempDir, 'first-rules.txt');
+        const secondRulePath = path.join(tempDir, 'second-rules.txt');
+        fs.writeFileSync(firstRulePath, '-keep-global-name A\n', 'utf-8');
+        fs.writeFileSync(secondRulePath, '-keep-global-name B\n', 'utf-8');
+        const share = this.rollup.share;
+        share.projectConfig.obfuscationOptions = {
+            selfConfig: {
+                ruleOptions: {
+                    enable: true,
+                    rules: [firstRulePath]
+                }
+            }
+        };
+        Object.assign(projectConfig, share.projectConfig);
+        const check = (): void => serviceChecker([EXPECT_INDEX_ETS], null, null, null, share);
+        const updateRules = (rules: string | string[]): void => {
+            share.projectConfig.obfuscationOptions.selfConfig.ruleOptions.rules = rules;
+        };
+
+        check();
+        resetEtsCheck();
+        check();
+        expect(obfuscationConfigChanged).to.be.false;
+        resetEtsCheck();
+
+        updateRules(firstRulePath);
+        check();
+        expect(obfuscationConfigChanged).to.be.false;
+        resetEtsCheck();
+
+        updateRules([firstRulePath, secondRulePath]);
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+
+        updateRules([firstRulePath]);
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+        fs.rmSync(tempDir, { recursive: true, force: true });
+    });
+
+    mocha.it('1-8: test obfuscation files and consumer rule paths rebuild language service', function () {
+        this.timeout(30000);
+        this.rollup.build();
+        this.rollup.share.initWithCache();
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ets-checker-obfuscation-'));
+        const rulePath = path.join(tempDir, 'rules.txt');
+        const filesPath = path.join(tempDir, 'files.txt');
+        const consumerRulePath = path.join(tempDir, 'consumer-rules.txt');
+        const consumerFilesPath = path.join(tempDir, 'consumer-files.txt');
+        fs.writeFileSync(rulePath, '-keep-global-name R\n', 'utf-8');
+        fs.writeFileSync(filesPath, '-keep-global-name F\n', 'utf-8');
+        fs.writeFileSync(consumerRulePath, '-keep-global-name C\n', 'utf-8');
+        fs.writeFileSync(consumerFilesPath, '-keep-global-name D\n', 'utf-8');
+        const share = this.rollup.share;
+        share.projectConfig.obfuscationOptions = {
+            selfConfig: {
+                ruleOptions: {
+                    enable: true,
+                    rules: [rulePath],
+                    files: [filesPath]
+                },
+                consumerRules: [consumerRulePath],
+                consumerFiles: [consumerFilesPath]
+            }
+        };
+        Object.assign(projectConfig, share.projectConfig);
+        const check = (): void => serviceChecker([EXPECT_INDEX_ETS], null, null, null, share);
+
+        check();
+        resetEtsCheck();
+        check();
+        expect(obfuscationConfigChanged).to.be.false;
+        resetEtsCheck();
+
+        fs.writeFileSync(filesPath, '-keep-global-name F2\n', 'utf-8');
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+
+        fs.writeFileSync(consumerRulePath, '-keep-global-name C2\n', 'utf-8');
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+
+        fs.writeFileSync(consumerFilesPath, '-keep-global-name D2\n', 'utf-8');
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+        fs.rmSync(tempDir, { recursive: true, force: true });
+    });
+
+    mocha.it('1-9: test missing obfuscation rule file appearing rebuilds language service', function () {
+        this.timeout(30000);
+        this.rollup.build();
+        this.rollup.share.initWithCache();
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ets-checker-obfuscation-'));
+        const missingRulePath = path.join(tempDir, 'missing-rules.txt');
+        const share = this.rollup.share;
+        share.projectConfig.obfuscationOptions = {
+            selfConfig: {
+                ruleOptions: {
+                    enable: true,
+                    rules: [missingRulePath]
+                }
+            }
+        };
+        Object.assign(projectConfig, share.projectConfig);
+        const check = (): void => serviceChecker([EXPECT_INDEX_ETS], null, null, null, share);
+
+        check();
+        resetEtsCheck();
+        check();
+        expect(obfuscationConfigChanged).to.be.false;
+        resetEtsCheck();
+
+        fs.writeFileSync(missingRulePath, '-keep-global-name A\n', 'utf-8');
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+        fs.rmSync(tempDir, { recursive: true, force: true });
+    });
+
+    mocha.it('1-10: test obfuscation dependency rule paths rebuild language service', function () {
+        this.timeout(40000);
+        this.rollup.build();
+        this.rollup.share.initWithCache();
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ets-checker-obfuscation-'));
+        const rulePath = path.join(tempDir, 'rules.txt');
+        const harRulePath = path.join(tempDir, 'har-rules.txt');
+        const hspRulePath = path.join(tempDir, 'hsp-rules.txt');
+        const libraryRulePath = path.join(tempDir, 'library-rules.txt');
+        const hspLibraryRulePath = path.join(tempDir, 'hsp-library-rules.txt');
+        fs.writeFileSync(rulePath, '-keep-global-name R\n', 'utf-8');
+        fs.writeFileSync(harRulePath, '-keep-global-name H\n', 'utf-8');
+        fs.writeFileSync(hspRulePath, '-keep-global-name S\n', 'utf-8');
+        fs.writeFileSync(libraryRulePath, '-keep-global-name L\n', 'utf-8');
+        fs.writeFileSync(hspLibraryRulePath, '-keep-global-name P\n', 'utf-8');
+        const share = this.rollup.share;
+        share.projectConfig.obfuscationOptions = {
+            selfConfig: {
+                ruleOptions: {
+                    enable: true,
+                    rules: [rulePath]
+                }
+            }
+        };
+        Object.assign(projectConfig, share.projectConfig);
+        const check = (): void => serviceChecker([EXPECT_INDEX_ETS], null, null, null, share);
+
+        check();
+        resetEtsCheck();
+        check();
+        expect(obfuscationConfigChanged).to.be.false;
+        resetEtsCheck();
+
+        share.projectConfig.obfuscationOptions.dependencies = {
+            hars: [harRulePath],
+            hsps: [hspRulePath],
+            libraries: [{ ruleOptions: { rules: [libraryRulePath] } }],
+            hspLibraries: [{ consumerRules: [hspLibraryRulePath] }]
+        };
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+
+        check();
+        expect(obfuscationConfigChanged).to.be.false;
+        resetEtsCheck();
+
+        fs.writeFileSync(harRulePath, '-keep-global-name H2\n', 'utf-8');
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+
+        fs.writeFileSync(libraryRulePath, '-keep-global-name L2\n', 'utf-8');
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+
+        fs.writeFileSync(hspLibraryRulePath, '-keep-global-name P2\n', 'utf-8');
+        check();
+        expect(obfuscationConfigChanged).to.be.true;
+        resetEtsCheck();
+        fs.rmSync(tempDir, { recursive: true, force: true });
+    });
+
+    mocha.it('1-11: test GetEmitHost of program', function () {
         const compilerOptions: ts.CompilerOptions = {
             target: ts.ScriptTarget.ES2021
         };

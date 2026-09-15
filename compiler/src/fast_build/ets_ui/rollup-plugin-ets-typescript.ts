@@ -68,6 +68,7 @@ import {
 import {
   appComponentCollection,
   compilerOptions as etsCheckerCompilerOptions,
+  obfuscationConfigChanged,
   resolveModuleNames,
   resolveTypeReferenceDirectives,
   resetEtsCheck,
@@ -244,7 +245,7 @@ export function etsTransform() {
         storedFileInfo.collectCachedFiles(fileName);
       }
       stopEvent(eventEtsShouldInvalidCache);
-      return shouldDisable;
+      return shouldDisable || obfuscationConfigChanged;
     },
     buildEnd(): void {
       const fileToDelete: string[] = Array.from(CreateProgramMoment.deleteFileCollect);
