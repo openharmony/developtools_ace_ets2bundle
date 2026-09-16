@@ -141,6 +141,29 @@ if (current_toolchain == host_toolchain) {
   }
 }
 
+action("copy_bridges_with_sdk_dep") {
+  deps = [ ":panda_sdk_run" ]
+  script = "gn/command/copy_file.py"
+  inputs = [ "${koala_mr.root_path}/libarkts/native/src/bridges.cpp" ]
+  outputs = [ "$target_out_dir/sdk_dep/bridges.cpp" ]
+  args = [
+    rebase_path(inputs[0], root_build_dir),
+    rebase_path(outputs[0], root_build_dir),
+  ]
+}
+
+action("copy_common_with_sdk_dep") {
+  deps = [ ":panda_sdk_run" ]
+  script = "gn/command/copy_file.py"
+  inputs = [ "${koala_mr.root_path}/libarkts/native/src/common.cpp" ]
+  outputs = [ "$target_out_dir/sdk_dep/common.cpp" ]
+  args = [
+    rebase_path(inputs[0], root_build_dir),
+    rebase_path(outputs[0], root_build_dir),
+  ]
+}
+
+
 shared_library("es2panda_lib") {
   if (defined(is_arkui_x) && is_arkui_x) {
     deps = [
@@ -160,8 +183,8 @@ shared_library("es2panda_lib") {
     "${koala_mr.root_path}/interop/src/cpp/common-interop.cpp",
     "${koala_mr.root_path}/interop/src/cpp/interop-logging.cpp",
     "${koala_mr.root_path}/interop/src/cpp/napi/convertors-napi.cpp",
-    "${koala_mr.root_path}/libarkts/native/src/bridges.cpp",
-    "${koala_mr.root_path}/libarkts/native/src/common.cpp",
+    "$target_out_dir/sdk_dep/bridges.cpp",
+    "$target_out_dir/sdk_dep/common.cpp",
     "${koala_mr.root_path}/libarkts/native/src/memoryTracker.cpp",
   ]
 
@@ -191,6 +214,8 @@ shared_library("es2panda_lib") {
   deps = [
     ":regenerate",
     ":panda_sdk_run",
+    ":copy_bridges_with_sdk_dep",
+    ":copy_common_with_sdk_dep",
   ]
   sources += get_target_outputs(deps[0])
 
