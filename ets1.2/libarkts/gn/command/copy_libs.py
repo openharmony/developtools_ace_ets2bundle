@@ -77,8 +77,14 @@ def copy_output(options):
     if (tail_dir == compiler):
         from_path = head_dir
 
-    if os.path.exists(to_path):
-        shutil.rmtree(to_path)
+    # Only remove subdirectories this script manages (lib/, build/).
+    # Do NOT rmtree the entire to_path — other build steps (e.g. npm_cmd
+    # depfiles) may place files in the same directory, and deleting them
+    # would break incremental build dependency tracking.
+    for managed_subdir in ('lib', 'build'):
+        subdir_path = os.path.join(to_path, managed_subdir)
+        if os.path.exists(subdir_path):
+            shutil.rmtree(subdir_path)
 
     copy_files(os.path.join(options.source_path, 'lib'),
                os.path.join(to_path, 'lib'))

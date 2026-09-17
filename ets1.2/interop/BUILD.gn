@@ -55,6 +55,9 @@ npm_cmd("interop_compile") {
     project_path = rebase_path(".")
     run_tasks = [ "compile" ]
   }
+  # Main module entry compiled by tsc into the source tree (gitignored);
+  # tracked via depfile so ninja regenerates it after git clean -fdx.
+  depfile_deps = [ "${koala_mr.root_path}/interop/build/lib/src/interop/index.js" ]
 }
 
 if (has_ui2abc) {
