@@ -1119,7 +1119,7 @@
     ],
     "syncMonitorDuplicateDecorators": [
         {
-            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.",
             "type": "ERROR",
             "code": "10905325"
         },
@@ -1639,7 +1639,7 @@
             "code": "10905119"
         },
         {
-            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.",
             "type": "ERROR",
             "code": "10905325"
         },
@@ -1871,12 +1871,12 @@
             "code": "10905327"
         },
         {
-            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.",
             "type": "ERROR",
             "code": "10905325"
         },
         {
-            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.",
             "type": "ERROR",
             "code": "10905325"
         },
@@ -1893,7 +1893,7 @@
     ],
     "syncmonitor_require_check": [
         {
-            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.",
             "type": "ERROR",
             "code": "10905325"
         },
@@ -4467,7 +4467,7 @@
     ],
     "requireV2InV1Error": [
         {
-            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.",
             "type": "ERROR",
             "code": "10905325"
         }

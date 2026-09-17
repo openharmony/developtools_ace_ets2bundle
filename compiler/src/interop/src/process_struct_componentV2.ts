@@ -542,7 +542,7 @@ function parseMethodDeclaration(member: ts.MethodDeclaration, decorators: readon
 function checkRequireDecoratorV2(member: ts.MethodDeclaration | ts.PropertyDeclaration, log: LogInfo[],
   sourceFileNode: ts.sourceFile): void {
   const message: string = 'In a struct decorated with \'@ComponentV2\', \'@Require\' can only be used with \'@Param\'' +
-    ' and \'@BuilderParam\'.';
+    ' or \'@BuilderParam\'.';
   addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905325' });
 }
 
