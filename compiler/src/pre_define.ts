@@ -69,6 +69,7 @@ export const PUSH_RECYCLE_ELMTID_TO_RENDERSTACK: string = '__pushRecycleElmtIdTo
 export const POP_RECYCLE_ELMTID_TO_RENDERSTACK: string = '__popRecycleElmtIdFromRenderStack__Internal';
 export const SHARED: string = 'shared';
 export const PERINSTANCE: string = 'perInstance';
+export const IS_GLOBALPOOLACTIVE_INTERNAL: string = '__isGlobalPoolActive__Internal';
 
 export const CLASS_TRACK_DECORATOR: string = 'Track';
 export const CLASS_MIN_TRACK_DECORATOR: string = 'Trace';
@@ -194,6 +195,8 @@ export const COMPONENT_TRANSITION_NAME: string = 'PageTransition';
 export const CUSTOM_COMPONENT: string = 'CustomComponent';
 export const GLOBAL_THIS_REQUIRE_NATIVE_MODULE: string = 'globalThis.requireNativeModule';
 export const GLOBAL_THIS_REQUIRE_NAPI: string = 'globalThis.requireNapi';
+export const REQUIRE_NAPI: string = 'requireNapi';
+export const DEVICE_INFO: string = 'deviceInfo';
 
 export const COMPONENT_BUTTON: string = 'Button';
 export const COMPONENT_FOREACH: string = 'ForEach';

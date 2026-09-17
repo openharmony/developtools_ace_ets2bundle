@@ -110,7 +110,10 @@ import {
   POOLACCEPTS,
   OWNER,
   SHARED,
-  PERINSTANCE
+  PERINSTANCE,
+  REQUIRE_NAPI,
+  DEVICE_INFO,
+  SDK_API_VERSION_FUNCTION_NAME
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -149,7 +152,7 @@ import {
   processComponentBuild,
   processComponentBlock
 } from './process_component_build';
-import { isCompatibleVersionOverTarget, isRecycle, isReuseInV2 } from './process_custom_component';
+import { isRecycle, isReuseInV2 } from './process_custom_component';
 import {
   LogType,
   LogInfo,
@@ -301,7 +304,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
       [...freezeStatements, ...reuseStatements], true);
   }
   const currentLinkCollection: Set<string> = linkCollection.get(parentComponentName.getText());
-  isReusableComponent(decoratorNode, false) && isCompatibleVersionOverTarget(26) &&
+  isReusableComponent(decoratorNode, false) &&
     createResetStateVarsOnReuseForV1(newMembers, addStatementsInResetOnReuseV1, currentLinkCollection);
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
   if (decoratorNode && Array.isArray(decoratorNode) && decoratorNode.length) {
@@ -494,14 +497,7 @@ function createReusePoolPropertyDecl(
     ]
   );
 
-  const callExpr = ts.factory.createCallExpression(
-    ts.factory.createPropertyAccessExpression(
-      ts.factory.createIdentifier('__ReusePool__Internal'),
-      ts.factory.createIdentifier('create')
-    ),
-    undefined,
-    [optionsLiteral]
-  );
+  const callExpr = createReusePoolConditionExpression(optionsLiteral);
 
   const result = ts.factory.createPropertyDeclaration(
     modifiers,
@@ -512,6 +508,38 @@ function createReusePoolPropertyDecl(
   );
 
   return result;
+}
+
+function createReusePoolConditionExpression(
+  optionsLiteral: ts.ObjectLiteralExpression
+): ts.ConditionalExpression {
+  return ts.factory.createConditionalExpression(
+    ts.factory.createParenthesizedExpression(
+      ts.factory.createBinaryExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createCallExpression(
+            ts.factory.createIdentifier(REQUIRE_NAPI),
+            undefined,
+            [ts.factory.createStringLiteral(DEVICE_INFO)]
+          ),
+          ts.factory.createIdentifier(SDK_API_VERSION_FUNCTION_NAME)
+        ),
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createNumericLiteral('26')
+      )
+    ),
+    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier('__ReusePool__Internal'),
+        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
+      ),
+      undefined,
+      [optionsLiteral]
+    ),
+    ts.factory.createToken(ts.SyntaxKind.ColonToken),
+    ts.factory.createIdentifier('undefined')
+  );
 }
 
 function createPoolAcceptsArrayLiteral(
