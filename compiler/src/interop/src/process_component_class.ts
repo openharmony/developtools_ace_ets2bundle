@@ -524,7 +524,7 @@ function createReusePoolConditionExpression(
           ),
           ts.factory.createIdentifier(SDK_API_VERSION_FUNCTION_NAME)
         ),
-        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
         ts.factory.createNumericLiteral('26')
       )
     ),
