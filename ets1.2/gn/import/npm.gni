@@ -29,6 +29,24 @@ template("npm_cmd") {
          "--stamp",
         rebase_path("$target_out_dir/$target_name.stamp", root_build_dir),
       ]
+
+      # depfile_deps: source-tree files produced by this target.
+      # After npm tasks complete, npm.py writes a depfile listing these files
+      # as dependencies of the stamp file. When `git clean -fdx` deletes these
+      # gitignored files, ninja reads the depfile, finds the dependency missing,
+      # and re-runs this target to regenerate them.
+      if (defined(invoker.depfile_deps)) {
+        depfile = "$target_gen_dir/$target_name.d"
+        _depfile_paths = []
+        foreach(_p, invoker.depfile_deps) {
+          _depfile_paths += [ rebase_path(_p, root_build_dir) ]
+        }
+        args += [
+          "--depfile",
+          rebase_path(depfile, root_build_dir),
+          "--depfile-deps",
+        ] + _depfile_paths
+      }
     } else {
       outputs = invoker.outputs
     }

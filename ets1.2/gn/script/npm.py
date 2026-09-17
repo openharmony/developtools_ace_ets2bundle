@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import os
 import sys
+from pathlib import Path
 
 NPM_REPO = "https://repo.huaweicloud.com/repository/npm/"
 
@@ -37,6 +38,8 @@ def prepare():
     parser.add_argument("--pack", action='store_true', help="pack package on project-path")
     parser.add_argument("--pack-destination", help="where to place packed .tgz archive")
     parser.add_argument("--stamp", help="stamp file to create after successful execution")
+    parser.add_argument("--depfile", help="path to write a depfile listing source-tree outputs as dependencies")
+    parser.add_argument("--depfile-deps", nargs="+", help="source-tree output files to list in the depfile")
 
     args = parser.parse_args()
 
@@ -65,7 +68,18 @@ def prepare():
     if args.stamp:
         stamp_abs = os.path.abspath(args.stamp)
 
-    return args, project_path, stamp_abs
+    depfile_abs = None
+    if args.depfile:
+        depfile_abs = os.path.abspath(args.depfile)
+
+    # Save build directory and resolve depfile-deps to absolute paths
+    # while cwd is still the ninja build dir (before any os.chdir).
+    build_dir = os.getcwd()
+    depfile_dep_abs = None
+    if args.depfile_deps:
+        depfile_dep_abs = [os.path.abspath(f) for f in args.depfile_deps]
+
+    return args, project_path, stamp_abs, depfile_abs, build_dir, depfile_dep_abs
 
 def run(args_list, project_path, dir = None):
     os.chdir(dir or project_path)
@@ -134,14 +148,30 @@ def stamp(stamp_abs):
     # bytes, breaking downstream `npm install`). Skip stamping in that case.
     if os.path.exists(stamp_abs) and os.path.getsize(stamp_abs) > 0:
         return
-    stamp_dir = os.path.dirname(stamp_abs)
-    if stamp_dir and not os.path.isdir(stamp_dir):
-        os.makedirs(stamp_dir, exist_ok=True)
-    with open(stamp_abs, "w") as f:
-        f.write("")
+    p = Path(stamp_abs)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.touch()
 
 
-def main(args, project_path, stamp_abs):
+def write_depfile(depfile_abs, stamp_path, depfile_dep_abs, build_dir):
+    # Write a depfile so ninja can detect if source-tree outputs are deleted
+    # (e.g. by `git clean -fdx`). Paths are converted to relative form using
+    # build_dir so they match ninja's working directory. Only files that
+    # actually exist are listed; missing files are omitted to avoid spurious
+    # rebuilds on configurations that don't produce them.
+    if not depfile_abs or not stamp_path:
+        return
+    dep_entries = []
+    for f in depfile_dep_abs or []:
+        if os.path.exists(f):
+            dep_entries.append(os.path.relpath(f, build_dir))
+    depfile = Path(depfile_abs)
+    depfile.parent.mkdir(parents=True, exist_ok=True)
+    depfile.write_text(f"{stamp_path}: {' '.join(dep_entries)}\n")
+
+
+def main(args, project_path, stamp_abs, depfile_abs=None, build_dir=None,
+         depfile_dep_abs=None):
     if args.install:
         install(project_path, args.install_path)
     if args.run_tasks:
@@ -153,8 +183,10 @@ def main(args, project_path, stamp_abs):
         pack(args.project_path, args.pack_destination)
     # Only stamp after every requested operation has succeeded.
     stamp(stamp_abs)
+    # Write depfile so ninja can detect when source-tree outputs are missing.
+    write_depfile(depfile_abs, args.stamp, depfile_dep_abs, build_dir)
 
 if __name__ == '__main__':
-    args, project_path, stamp_abs = prepare()
-    main(args, project_path, stamp_abs)
+    args, project_path, stamp_abs, depfile_abs, build_dir, depfile_dep_abs = prepare()
+    main(args, project_path, stamp_abs, depfile_abs, build_dir, depfile_dep_abs)
 
