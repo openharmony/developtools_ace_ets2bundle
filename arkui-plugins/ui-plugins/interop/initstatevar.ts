@@ -64,7 +64,7 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
             const errorMessage = 'The @Consume property cannot be assigned.';
             logDiagnostic(errorMessage, node);
         } else if (
-            hasDecorator(keyProperty, DeprecatedDecoratorNames.PROP) ||
+            hasDecorator(keyProperty, DecoratorNames.PROP_REF) ||
             hasDecorator(keyProperty, DecoratorNames.OBJECT_LINK) ||
             hasDecorator(keyProperty, DecoratorNames.PARAM)
         ) {
