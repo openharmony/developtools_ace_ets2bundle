@@ -543,18 +543,31 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   }
 
   if (!service || shouldRebuild) {
+    const diffFlags: [string, boolean | undefined][] = [
+      ['hashDiffers', hashDiffers],
+      ['targetESVersionDiffers', targetESVersionDiffers],
+      ['useTsHarDiff', useTsHarDiff],
+      ['tsImportSendableDiff', tsImportSendableDiff],
+      ['maxFlowDepthDiffers', maxFlowDepthDiffers],
+      ['skipOhModulesLintDiff', skipOhModulesLintDiff],
+      ['enableStrictCheckOHModuleDiff', enableStrictCheckOHModuleDiff],
+      ['disableStrictCheckPathsDiff', disableStrictCheckPathsDiff],
+      ['disableSendableCheckRulesDiff', disableSendableCheckRulesDiff],
+      ['mixCompileDiff', mixCompileDiff],
+      ['typesDiff', typesDiff],
+      ['autoLazyImportDiff', autoLazyImportDiff],
+      ['autoLazyFilterDiff', autoLazyFilterDiff],
+      ['useDeclarationFileSignatureDiff', useDeclarationFileSignatureDiff],
+      ['strictCheckerOnlyDiff', strictCheckerOnlyDiff],
+      ['tsImportSoCheckDiff', tsImportSoCheckDiff]
+    ];
+    const diffsSummary: string = diffFlags.filter(([, diff]) => !!diff).map(([name]) => name).join(', ');
     const eventShouldRebuild = createAndStartEvent(parentEvent,
-      '!service: ' + !service + '\n' +
-      'the reason of shouldRebuild: ' + 'shouldRebuild: ' + shouldRebuild + ';' + '\n' +
-      'shouldRebuildForDepDiffers: ' + shouldRebuildForDepDiffers + ';' + '\n' +
-      'shouldInvalidCache: ' + shouldInvalidCache + ';' + '\n' +
-      'targetESVersionDiffers: ' + targetESVersionDiffers + ';' + 'useTsHarDiff: ' + useTsHarDiff + ';' + '\n' +
-      'onlyDeleteBuildInfoCache: ' + onlyDeleteBuildInfoCache + ';' + '\n' +
-      'tsImportSendableDiff: ' + tsImportSendableDiff + ';' + 'maxFlowDepthDiffers: ' + maxFlowDepthDiffers + ';' +
-      'skipOhModulesLintDiff: ' + skipOhModulesLintDiff + ';' +
-      'enableStrictCheckOHModuleDiff: ' + enableStrictCheckOHModuleDiff + ';' +
-      'disableStrictCheckPathsDiff: ' + disableStrictCheckPathsDiff + ';' +
-      'mixCompileDiff: ' + mixCompileDiff + ';' + 'typesDiff: ' + typesDiff + ';'
+      '!service: ' + !service + ', service: ' + service + '; shouldRebuild: ' + shouldRebuild +
+      '; shouldRebuildForDepDiffers: ' + shouldRebuildForDepDiffers +
+      '; shouldInvalidCache: ' + shouldInvalidCache +
+      '; onlyDeleteBuildInfoCache: ' + onlyDeleteBuildInfoCache +
+      '; diffs: [' + diffsSummary + ']'
     );
     rebuildProgram(shouldInvalidCache, onlyDeleteBuildInfoCache);
     service = ts.createLanguageService(servicesHost, shareDocumentRegistryCache ?
