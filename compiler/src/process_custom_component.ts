@@ -1043,7 +1043,7 @@ function parseValueArrayIndex(
         ts.factory.createIdentifier(`__${keyName}__Link__Internal`),
         newInitializer
       )
-    )
+    );
   }
 }
 
