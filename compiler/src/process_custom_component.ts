@@ -1134,7 +1134,7 @@ function parseIfCustomComponentBlock(
     componentParamDetachment(newNode, isRecycleComponent, name, log, componentNode),
     isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
       createNewComponent(COMPONENT_CALL, name, componentNode),
-    assignComponentParams(componentNode, isBuilder),
+    assignComponentParams(componentNode, isBuilder, true, parentName, name),
     assignmentFunction(COMPONENT_CALL)
   ]
 }
