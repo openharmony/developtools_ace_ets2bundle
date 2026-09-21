@@ -429,7 +429,7 @@ function createReusePropertyDecl(
         [
           ts.factory.createPropertyAccessExpression(
             ts.factory.createIdentifier(RESOURCE_NAME_PARAMS),
-            ts.factory.createIdentifier(propertyName)
+            ts.factory.createIdentifier(`__${propertyName}__Link__Internal`)
           )
         ]
       )
@@ -993,7 +993,7 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
       [
         propertyAndStringKey.length === 0 ? ts.factory.createStringLiteral(propertyOrAliasName) :
           propertyAndStringKey.length === 4 && propertyAndStringKey[2] as ts.Expression, ts.factory.createStringLiteral(name)];
-  if (addStatementsInResetOnReuseV1 && isCompatibleVersionOverTarget(26)) {
+  if (addStatementsInResetOnReuseV1) {
     addStatementsInResetOnReuseV1.push(
       ts.factory.createExpressionStatement(
         ts.factory.createCallExpression(

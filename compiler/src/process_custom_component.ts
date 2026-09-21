@@ -71,7 +71,8 @@ import {
   ISPRERENDER,
   PUSH_RECYCLE_ELMTID_TO_RENDERSTACK,
   ABOUT_TO_BE_DELETE_FUNCTION_ID__,
-  POP_RECYCLE_ELMTID_TO_RENDERSTACK
+  POP_RECYCLE_ELMTID_TO_RENDERSTACK,
+  IS_GLOBALPOOLACTIVE_INTERNAL
 } from './pre_define';
 import {
   stateCollection,
@@ -762,7 +763,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
       ts.factory.createIdentifier(ISINITIALRENDER)
     )
   ];
-  const arrowBolck: ts.Statement[] = [
+  const arrowBlock: ts.Statement[] = [
     projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
     createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
       isBuilder, isRecycleComponent, componentAttrInfo, log)
@@ -773,11 +774,10 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
       undefined, undefined, ts.factory.createNull()
     ));
     // reuse_4
-    isCompatibleVersionOverTarget(26) &&
-      arrowArgArr.push(ts.factory.createParameterDeclaration(
-        undefined, undefined, ts.factory.createIdentifier(ISPRERENDER),
-        undefined, undefined, ts.factory.createFalse()
-      ));
+    arrowArgArr.push(ts.factory.createParameterDeclaration(
+      undefined, undefined, ts.factory.createIdentifier(ISPRERENDER),
+      undefined, undefined, ts.factory.createFalse()
+    ));
   } else if (partialUpdateConfig.optimizeComponent && isGlobalBuilder &&
     builderParamsResult && builderParamsResult.firstParam) {
     const paramName: ts.Identifier = builderParamsResult.firstParam.name as ts.Identifier;
@@ -786,18 +786,18 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     ));
   }
   if (isRecycleComponent || !partialUpdateConfig.optimizeComponent) {
-    arrowBolck.unshift(createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID));
-    arrowBolck.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
+    arrowBlock.unshift(createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID));
+    arrowBlock.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
   }
   const observeArgArr: ts.Node[] = [
     ts.factory.createArrowFunction(undefined, undefined, arrowArgArr, undefined,
       ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-      ts.factory.createBlock(arrowBolck, true))
+      ts.factory.createBlock(arrowBlock, true))
   ];
   if (isRecycleComponent) {
     componentAttrInfo.reuseId ? observeArgArr.unshift(componentAttrInfo.reuseId) :
       observeArgArr.unshift(ts.factory.createStringLiteral(name));
-    isCompatibleVersionOverTarget(26) && observeArgArr.push(ts.factory.createIdentifier(name));
+    observeArgArr.push(ts.factory.createIdentifier(name));
   } else if (partialUpdateConfig.optimizeComponent) {
     observeArgArr.push(componentPop(name));
   }
@@ -805,14 +805,22 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     generateReuseOrCreateArgArr(componentNode, componentAttrInfo, name, newNode), true)];
   return ts.factory.createBlock(
     [
-      // reuse_2
-      (isCompatibleVersionOverTarget(26) && isRecycleComponent) ?
-        ts.factory.createExpressionStatement(
-          ts.factory.createCallExpression(
-            ts.factory.createIdentifier('Reusable'),
-            undefined,
+      // reuse_2_modified
+      isRecycleComponent ?
+        ts.factory.createIfStatement(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createThis(),
+            ts.factory.createIdentifier(IS_GLOBALPOOLACTIVE_INTERNAL)
+          ),
+          ts.factory.createBlock(
             [
-              ts.factory.createIdentifier(name)
+              ts.factory.createExpressionStatement(
+                ts.factory.createCallExpression(
+                  ts.factory.createIdentifier('Reusable'),
+                  undefined,
+                  [ts.factory.createIdentifier(name)]
+                ),
+              )
             ]
           )
         ) : undefined,
@@ -983,7 +991,7 @@ function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[],
       ));
     } else {
       if (needDoubleUnderline) {
-        parseValueArrayIndex(keyArray, valueArray, index, currentName);
+        parseValueArrayIndex(keyArray, valueArray, index, currentName, returnProperties);
       }
       returnProperties.push(ts.factory.createPropertyAssignment(
         item,
@@ -994,8 +1002,13 @@ function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[],
   return returnProperties;
 }
 
-function parseValueArrayIndex(keyArray: ts.Node[],
-  valueArray: ts.Node[], index: number, currentName?: string): void {
+function parseValueArrayIndex(
+  keyArray: ts.Node[],
+  valueArray: ts.Node[],
+  index: number,
+  currentName?: string,
+  returnProperties?: (ts.PropertyAssignment | ts.ShorthandPropertyAssignment)[]
+): void {
   const LINK_REG: RegExp = /^\$/g;
   let initText: string;
   let newInitializer: ts.PropertyAccessExpression;
@@ -1024,8 +1037,13 @@ function parseValueArrayIndex(keyArray: ts.Node[],
     initText = currentValue.name.escapedText.toString().replace(LINK_REG, '');
     newInitializer = addInitializerDoubleUnderLine(initText);
   }
-  if (newInitializer) {
-    valueArray[index] = newInitializer;
+  if (newInitializer && returnProperties) {
+    returnProperties.push(
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier(`__${keyName}__Link__Internal`),
+        newInitializer
+      )
+    );
   }
 }
 
@@ -1084,23 +1102,39 @@ function parseIfCustomComponentBlock(
 ): ts.Statement[] {
   const structDecl: ts.StructDeclaration = ts.findAncestor(componentNode, ts.isStructDeclaration);
   const parentName: string | undefined = structDecl?.name?.getText?.();
-  if (isRecycleComponent && isCompatibleVersionOverTarget(26)) {
+  if (isRecycleComponent) {
     return [
       componentParamDetachment(newNode, isRecycleComponent, name, log, componentNode),
-      assignComponentParams(componentNode, isBuilder, true, parentName, name),
-      assignmentFunction(COMPONENT_CALL),
-      createRecycleFlagConditionalExpression(),
+      ts.factory.createIfStatement(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(IS_GLOBALPOOLACTIVE_INTERNAL)
+        ),
+        ts.factory.createBlock(
+          [assignComponentParams(componentNode, isBuilder, true, parentName, name),
+          assignmentFunction(COMPONENT_CALL),], true)),
       isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
         createNewComponent(COMPONENT_CALL, name, componentNode),
-    ]
+      ts.factory.createIfStatement(
+        ts.factory.createPrefixUnaryExpression(
+          ts.SyntaxKind.ExclamationToken,
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createThis(),
+            ts.factory.createIdentifier(IS_GLOBALPOOLACTIVE_INTERNAL)
+          )
+        ),
+        ts.factory.createBlock(
+          [assignComponentParams(componentNode, isBuilder),
+          assignmentFunction(COMPONENT_CALL),], true
+        )
+      )
+    ];
   }
   return [
     componentParamDetachment(newNode, isRecycleComponent, name, log, componentNode),
     isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
       createNewComponent(COMPONENT_CALL, name, componentNode),
-    isCompatibleVersionOverTarget(26) ?
-      assignComponentParams(componentNode, isBuilder, true, parentName, name) :
-      assignComponentParams(componentNode, isBuilder),
+    assignComponentParams(componentNode, isBuilder, true, parentName, name),
     assignmentFunction(COMPONENT_CALL)
   ]
 }
@@ -1334,138 +1368,168 @@ function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.
       ), undefined,
       [
         ts.factory.createIdentifier(COMPONENT_CALL),
-        // reuse_5
-        isCompatibleVersionOverTarget(26) ?
-          ts.factory.createIdentifier(RECYCLEFLAG) :
-          ts.factory.createBinaryExpression(
-            ts.factory.createIdentifier(RECYCLE_NODE),
-            ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
-            ts.factory.createNull()
-          ),
+        createIsPreRenderConditionalExpression(),
         componentAttrInfo.reuseId ? componentAttrInfo.reuseId as ts.Expression :
           ts.factory.createStringLiteral(name),
         ts.factory.createArrowFunction(undefined, undefined, [], undefined,
           ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
           ts.factory.createBlock([
-            isCompatibleVersionOverTarget(26) ?
-              ts.factory.createIfStatement(
-                ts.factory.createBinaryExpression(
-                  ts.factory.createPropertyAccessExpression(
-                    ts.factory.createThis(),
-                    ts.factory.createIdentifier(PUSH_RECYCLE_ELMTID_TO_RENDERSTACK)
-                  ),
-                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-                  ts.factory.createBinaryExpression(
-                    ts.factory.createTypeOfExpression(
-                      ts.factory.createPropertyAccessExpression(
-                        ts.factory.createThis(),
-                        ts.factory.createIdentifier(PUSH_RECYCLE_ELMTID_TO_RENDERSTACK)
-                      )
-                    ),
-                    ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                    ts.factory.createStringLiteral(FUNCTION)
-                  )
-                ),
-                ts.factory.createBlock(
-                  [
-                    ts.factory.createExpressionStatement(
-                      ts.factory.createCallExpression(
-                        ts.factory.createPropertyAccessExpression(
-                          ts.factory.createThis(),
-                          ts.factory.createIdentifier(PUSH_RECYCLE_ELMTID_TO_RENDERSTACK)
-                        ),
-                        undefined,
-                        [
-                          ts.factory.createCallChain(
-                            ts.factory.createPropertyAccessChain(
-                              ts.factory.createIdentifier(RECYCLE_NODE),
-                              ts.factory.createToken(ts.SyntaxKind.QuestionDotToken),
-                              ts.factory.createIdentifier(ABOUT_TO_BE_DELETE_FUNCTION_ID__)
-                            ),
-                            undefined,
-                            undefined,
-                            []
-                          )
-                        ]
-                      )
-                    )
-                  ],
-                  true
-                ),
-                undefined
-              ) : undefined,
-            ts.factory.createIfStatement(
-              ts.factory.createBinaryExpression(
-                ts.factory.createIdentifier(RECYCLE_NODE),
-                ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-                ts.factory.createBinaryExpression(
-                  ts.factory.createTypeOfExpression(
-                    createRecyclePropertyNode(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION)),
-                  ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                  ts.factory.createStringLiteral(FUNCTION)
-                )),
-              ts.factory.createBlock([
-                ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-                  createRecyclePropertyNode(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION),
-                  undefined,
-                  []
-                ))
-              ], true),
-              ts.factory.createBlock(
-                [
-                  ts.factory.createIfStatement(ts.factory.createBinaryExpression(
-                    createRecyclePropertyNode(ABOUT_TO_REUSE), ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-                    ts.factory.createBinaryExpression(
-                      ts.factory.createTypeOfExpression(createRecyclePropertyNode(ABOUT_TO_REUSE)),
-                      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                      ts.factory.createStringLiteral(FUNCTION)
-                    )),
-                  ts.factory.createBlock([ts.factory.createExpressionStatement(recycleNode)], true)),
-                  ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-                    createRecyclePropertyNode(COMPONENT_RERENDER_FUNCTION), undefined, []
-                  ))
-                ],
-                true
-              )
-            ),
-            isCompatibleVersionOverTarget(20) ?
-              ts.factory.createIfStatement(
-                ts.factory.createBinaryExpression(
-                  ts.factory.createPropertyAccessExpression(
-                    ts.factory.createThis(),
-                    ts.factory.createIdentifier(POP_RECYCLE_ELMTID_TO_RENDERSTACK)
-                  ),
-                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-                  ts.factory.createBinaryExpression(
-                    ts.factory.createTypeOfExpression(
-                      ts.factory.createPropertyAccessExpression(
-                        ts.factory.createThis(),
-                        ts.factory.createIdentifier(POP_RECYCLE_ELMTID_TO_RENDERSTACK)
-                      )
-                    ),
-                    ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                    ts.factory.createStringLiteral(FUNCTION)
-                  )
-                ),
-                ts.factory.createBlock(
-                  [
-                    ts.factory.createExpressionStatement(
-                      ts.factory.createCallExpression(
-                        ts.factory.createPropertyAccessExpression(
-                          ts.factory.createThis(),
-                          ts.factory.createIdentifier(POP_RECYCLE_ELMTID_TO_RENDERSTACK)
-                        ),
-                        undefined,
-                        []
-                      )
-                    )
-                  ],
-                  true
-                ),
-                undefined
-              ) : undefined,
+            createPushRecycleIfStatement(),
+            createAboutToReuseIfStatement(recycleNode),
+            createPopRecycleIfStatement(),
           ], true))
       ]));
+}
+
+function createAboutToReuseIfStatement(recycleNode: ts.CallExpression): ts.IfStatement {
+  return ts.factory.createIfStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createIdentifier(RECYCLE_NODE),
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      ts.factory.createBinaryExpression(
+        ts.factory.createTypeOfExpression(
+          createRecyclePropertyNode(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION)),
+        ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+        ts.factory.createStringLiteral(FUNCTION)
+      )),
+    ts.factory.createBlock([
+      ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        createRecyclePropertyNode(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION),
+        undefined,
+        []
+      ))
+    ], true),
+    ts.factory.createBlock(
+      [
+        ts.factory.createIfStatement(ts.factory.createBinaryExpression(
+          createRecyclePropertyNode(ABOUT_TO_REUSE), ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+          ts.factory.createBinaryExpression(
+            ts.factory.createTypeOfExpression(createRecyclePropertyNode(ABOUT_TO_REUSE)),
+            ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+            ts.factory.createStringLiteral(FUNCTION)
+          )),
+          ts.factory.createBlock([ts.factory.createExpressionStatement(recycleNode)], true)),
+        ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+          createRecyclePropertyNode(COMPONENT_RERENDER_FUNCTION), undefined, []
+        ))
+      ],
+      true
+    )
+  );
+}
+
+function createIsPreRenderConditionalExpression(): ts.ConditionalExpression {
+  return ts.factory.createConditionalExpression(
+    ts.factory.createIdentifier(ISPRERENDER),
+    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+    ts.factory.createBinaryExpression(
+      ts.factory.createIdentifier(RECYCLE_NODE),
+      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
+      ts.factory.createNull()
+    ),
+    ts.factory.createToken(ts.SyntaxKind.ColonToken),
+    ts.factory.createBinaryExpression(
+      ts.factory.createIdentifier(RECYCLE_NODE),
+      ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
+      ts.factory.createNull()
+    )
+  );
+}
+
+function createPushRecycleIfStatement(): ts.IfStatement {
+  return ts.factory.createIfStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createBinaryExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(IS_GLOBALPOOLACTIVE_INTERNAL)
+        ),
+        ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(PUSH_RECYCLE_ELMTID_TO_RENDERSTACK)
+        ),
+      ),
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      ts.factory.createBinaryExpression(
+        ts.factory.createTypeOfExpression(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createThis(),
+            ts.factory.createIdentifier(PUSH_RECYCLE_ELMTID_TO_RENDERSTACK)
+          )
+        ),
+        ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+        ts.factory.createStringLiteral(FUNCTION)
+      )
+    ),
+    ts.factory.createBlock(
+      [
+        ts.factory.createExpressionStatement(
+          ts.factory.createCallExpression(
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createThis(),
+              ts.factory.createIdentifier(PUSH_RECYCLE_ELMTID_TO_RENDERSTACK)
+            ),
+            undefined,
+            [
+              createPushRecycleNodeCallChain()
+            ]))], true
+    ), undefined
+  );
+}
+
+function createPushRecycleNodeCallChain(): ts.CallChain {
+  return ts.factory.createCallChain(
+    ts.factory.createPropertyAccessChain(
+      ts.factory.createIdentifier(RECYCLE_NODE),
+      ts.factory.createToken(ts.SyntaxKind.QuestionDotToken),
+      ts.factory.createIdentifier(ABOUT_TO_BE_DELETE_FUNCTION_ID__)
+    ),
+    undefined,
+    undefined,
+    []
+  );
+}
+
+function createPopRecycleIfStatement(): ts.IfStatement {
+  return ts.factory.createIfStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createBinaryExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(IS_GLOBALPOOLACTIVE_INTERNAL)
+        ),
+        ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(POP_RECYCLE_ELMTID_TO_RENDERSTACK)
+        )
+      ),
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      ts.factory.createBinaryExpression(
+        ts.factory.createTypeOfExpression(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createThis(),
+            ts.factory.createIdentifier(POP_RECYCLE_ELMTID_TO_RENDERSTACK)
+          )
+        ),
+        ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+        ts.factory.createStringLiteral(FUNCTION)
+      )
+    ),
+    ts.factory.createBlock(
+      [
+        ts.factory.createExpressionStatement(
+          ts.factory.createCallExpression(
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createThis(),
+              ts.factory.createIdentifier(POP_RECYCLE_ELMTID_TO_RENDERSTACK)
+            ),
+            undefined,
+            []
+          ))], true
+    ), undefined
+  );
 }
 
 function createRecyclePropertyNode(recycleFunctionName: string): ts.PropertyAccessExpression {
