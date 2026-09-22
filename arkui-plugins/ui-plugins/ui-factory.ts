@@ -250,18 +250,25 @@ export class factory {
         config: PartialNested<MethodDefinitionConfiguration>
     ): arkts.MethodDefinition {
         const key: arkts.Identifier = config.key ?? original.id!.clone();
+        const functionModifiers =
+            config.function?.modifiers ?? config.modifiers ?? original.function!.modifierFlags;
         const newFunc: arkts.ScriptFunction = factory.updateScriptFunction(original.function!, {
             ...config.function,
             key,
+            modifiers: functionModifiers,
         });
+        // generic onUpdate() invocation may restore old flags.
+        newFunc.modifierFlags = functionModifiers;
+        const methodModifiers = config.modifiers ?? original.modifierFlags;
         const newMethod: arkts.MethodDefinition = arkts.factory.updateMethodDefinition(
             original,
             config.kind ?? original.kind,
             key.clone(),
             arkts.factory.createFunctionExpression(key.clone(), newFunc),
-            config.modifiers ?? original.modifierFlags,
+            methodModifiers,
             config.isComputed ?? false
         );
+        newMethod.modifierFlags = methodModifiers;
         return newMethod;
     }
 
