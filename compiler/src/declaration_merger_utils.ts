@@ -75,6 +75,38 @@ export function sortImportLinesFirst(lines: string[]): string[] {
   return [...importLines, ...declarationLines];
 }
 
+export function normalizeForTextDedup(text: string): string {
+  return text.replace(/^export\s+/, '').replace(/^declare\s+/, '').trim();
+}
+
+export function normalizeForCrossPathDedup(text: string): string {
+  return normalizeForTextDedup(text)
+    .split('\n')
+    .map((line: string): string => line.trim())
+    .filter((line: string): boolean => line.length > 0)
+    .join('\n');
+}
+
+export function pushCompanionNsDeduped(ctx: EmitContext, text: string): boolean {
+  const normalized: string = normalizeForCrossPathDedup(text);
+  if (ctx.companionEmittedNsTexts.has(normalized)) {
+    return false;
+  }
+  ctx.companionEmittedNsTexts.add(normalized);
+  ctx.companionLines.push(text);
+  return true;
+}
+
+export function pushCompanionMemberDeduped(ctx: EmitContext, text: string): void {
+  const normalized: string = normalizeForTextDedup(text);
+  if (ctx.companionEmittedTexts.has(normalized)) {
+    return;
+  }
+  if (pushCompanionNsDeduped(ctx, text)) {
+    ctx.companionEmittedTexts.add(normalized);
+  }
+}
+
 // ─── AST Predicates ───
 
 export function isStructDeclaration(node: ts.Node): boolean {
@@ -534,6 +566,7 @@ export interface EmitContext {
   companionEmittedStatements: Set<string>;
   primaryEmittedTexts: Set<string>;
   companionEmittedTexts: Set<string>;
+  companionEmittedNsTexts: Set<string>;
   crossExtExportedNames: string[];
   crossExtImportNamespaces: Set<string>;
   crossExtImportNames: string[];

@@ -117,8 +117,8 @@ function createDualSourceProgram(testContent: string): { program: ts.Program, te
     declgenV1OutPath: declgenV1OutPath1
   });
 
-  const declFileName: string = path.join(declgenV1OutPath, 'arkTSEvo/src/main/ets/decl.d.ets');
-  const declFileName1: string = path.join(declgenV1OutPath1, '@arkTSEvo1/arkTSEvo/src/main/ets/decl.d.ets');
+  const declFileName: string = path.join(declgenV1OutPath, 'src/main/ets/decl.d.ets');
+  const declFileName1: string = path.join(declgenV1OutPath1, 'src/main/ets/decl.d.ets');
 
   const declSourceFile = ts.createSourceFile(declFileName, DECLFILE_CODE, ts.ScriptTarget.ESNext, true);
   const declSourceFile1 = ts.createSourceFile(declFileName1, DECLFILE_CODE_1, ts.ScriptTarget.ESNext, true);
