@@ -102,7 +102,6 @@ export class FileManager {
   static dynamicFileVersionMap: Map<string, string> = new Map();
   static staticFileVersionMap: Map<string, string> = new Map();
   static interopDynamicEntryFileCache: Map<string, string> = new Map<string, string>();
-  private static staticInteropDynamicImportFileCache: Set<string> = new Set<string>();
   private static staticInteropConcurrentImportFileCache: Set<string> = new Set<string>();
   private static byteCodeHarDeclarationEntryCache: Set<string> = new Set();
   private static glueCodeFileInfosPath: string = '';
@@ -175,14 +174,6 @@ export class FileManager {
 
   public static getGlueCodeFileInfos(): Map<string, FileInfo> {
     return FileManager.glueCodeFileInfos;
-  }
-
-  public static setStaticInteropDynamicImport(filePath: string): void {
-    FileManager.staticInteropDynamicImportFileCache.add(path.resolve(filePath));
-  }
-
-  public static hasStaticInteropDynamicImport(filePath: string): boolean {
-    return FileManager.staticInteropDynamicImportFileCache.has(path.resolve(filePath));
   }
 
   public static setStaticInteropConcurrentImport(filePath: string): void {
@@ -416,7 +407,6 @@ export class FileManager {
     FileManager.sdkPathMatchCache?.clear();
     FileManager.modulePathMatchCache?.clear();
     FileManager.interopDynamicEntryFileCache.clear();
-    FileManager.staticInteropDynamicImportFileCache.clear();
     FileManager.staticInteropConcurrentImportFileCache.clear();
     FileManager.staticInteropMetadata = undefined;
     FileManager.mixCompile = false;

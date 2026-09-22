@@ -75,7 +75,7 @@ export interface ArkTSEvolutionModule {
   declFilesPath?: string;
   byteCodeHar?: boolean;
   staticFiles: string[];
-  sourceRoots?: string[]; 
+  sourceRoots?: string[];
 }
 
 interface ResolvedFileInfo {
@@ -95,7 +95,7 @@ export let arkTSHybridModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
 
 let arkTSEvoFileOHMUrlMap: Map<string, string> = new Map();
 
-//This map is used to store the mapping between the relative paths of classes and their package names, 
+//This map is used to store the mapping between the relative paths of classes and their package names,
 //for the purpose of constructing fully qualified class names.
 //key: relative paths of classes;value: package names
 let arkTSEvoPkgNameOHMUrlMap: Map<string, string> = new Map();
@@ -161,7 +161,7 @@ export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): str
         pkgName,
         toUnixPath(path.join(declgenV1OutPath, 'src/main/ets'))
       ) + EXTNAME_D_ETS;
-      
+
       if (fs.existsSync(arktsEvoDeclFilePath)) {
         break;
       }
@@ -210,7 +210,7 @@ export function collectArkTSEvolutionModuleInfo(share: Object): void {
       ['Please check whether useNormalizedOHMUrl is true.']
     );
     CommonLogger.getInstance(share).printErrorAndExit(errInfo);
-    
+
   }
   // dependentModuleMap Contents eg.
   // 1.2 hap -> 1.1 har: It contains the information of 1.1 har
@@ -308,7 +308,7 @@ export function interopTransform(program: ts.Program, id: string, mixCompile: bo
       const globalDeclarations: Map<string, ts.Statement> = new Map();
       interopTransformLog.sourceFile = rootNode;
       const classToInterfacesMap: Map<ts.ClassDeclaration, Set<string>> = collectInterfacesMap(rootNode, typeChecker);
-      // Process ArkTS interop nodes and collect static dynamic imports in the same AST traversal.
+      // Process ArkTS interop nodes and validate static dynamic imports in the same AST traversal.
       const visitor: ts.Visitor =
         createInteropVisitor(rootNode, context, typeChecker, scopeUsedNames, fullNameToTmpVar, globalDeclarations);
       const processNode: ts.SourceFile = ts.visitEachChild(rootNode, visitor, context);
@@ -353,7 +353,7 @@ function updateEovMaps(filePath: string, relative:string , packageName: string):
         arkTSEvoFileOHMUrlMap.set(filePath, relative);
         if(!arkTSEvoPkgNameOHMUrlMap.has(relative)){
           arkTSEvoPkgNameOHMUrlMap.set(relative, packageName);
-         } 
+         }
       }
 }
 
@@ -361,9 +361,7 @@ function createInteropVisitor(rootNode: ts.SourceFile, context: ts.Transformatio
   typeChecker: ts.TypeChecker, scopeUsedNames: WeakMap<ts.Node, Set<string>>, fullNameToTmpVar: Map<string, string>,
   globalDeclarations: Map<string, ts.Statement>): ts.Visitor {
   return function visitor(node: ts.Node): ts.VisitResult<ts.Node> {
-    if (isStaticInteropDynamicImport(node, rootNode.fileName)) {
-      FileManager.setStaticInteropDynamicImport(rootNode.fileName);
-    }
+    validateStaticInteropDynamicImport(node, rootNode.fileName);
     if (hasConcurrentDecoratorNode(node)) {
       FileManager.setStaticInteropConcurrentImport(rootNode.fileName);
     }
@@ -378,7 +376,7 @@ function createInteropVisitor(rootNode: ts.SourceFile, context: ts.Transformatio
     const isRecordType: boolean = typeof typeChecker.isStaticRecord === 'function' && typeChecker.isStaticRecord(contextualType);
     const finalType: ts.Type = unwrapType(node, contextualType);
     const decl : ts.Declaration = (finalType.symbol?.declarations || finalType.aliasSymbol?.declarations)?.[0];
-    
+
     let className: string;
     let tmpObjName: string;
     if (!isRecordType) {
@@ -396,7 +394,7 @@ function createInteropVisitor(rootNode: ts.SourceFile, context: ts.Transformatio
       tmpObjName = getUniqueName(rootNode, 'tmpObj', scopeUsedNames);
       declareGlobalTemp(tmpObjName, globalDeclarations);
     }
-    
+
     const fullName: string = buildFullClassName(decl, finalType, className, isRecordType);
     const getCtorExpr: ts.Expression = buildGetConstructorCall(fullName, isRecordType);
     let tmpClassName: string;
@@ -434,15 +432,42 @@ function getDecoratorName(expression: ts.Expression): string | undefined {
   return undefined;
 }
 
-function isStaticInteropDynamicImport(node: ts.Node, containingFile: string): boolean {
+/**
+ * Reports an error when the node is a dynamic import call whose module specifier is a string constant
+ * resolving to an ArkTS 1.2 static file. Dynamic imports of static files have no runtime replacement,
+ * so they are rejected at the AST traversal source instead of being transformed.
+ */
+function validateStaticInteropDynamicImport(node: ts.Node, containingFile: string): void {
+  const resolvedFileName: string | undefined = getStaticInteropDynamicImportPath(node, containingFile);
+  if (resolvedFileName) {
+    recordStaticInteropDynamicImportError(node, resolvedFileName, containingFile);
+  }
+}
+
+function getStaticInteropDynamicImportPath(node: ts.Node, containingFile: string): string | undefined {
   if (!ts.isCallExpression(node) || node.expression.kind !== ts.SyntaxKind.ImportKeyword ||
     node.arguments.length === 0 || !ts.isStringLiteral(node.arguments[0])) {
-    return false;
+    return undefined;
   }
   const resolvedFileName: string | undefined =
     resolveModuleName(node.arguments[0].text, containingFile).resolvedModule?.resolvedFileName;
-  return !!resolvedFileName &&
-    FileManager.getInstance().getLanguageVersionByFilePath(resolvedFileName)?.languageVersion === ARKTS_1_2;
+  if (!resolvedFileName ||
+    FileManager.getInstance().getLanguageVersionByFilePath(resolvedFileName)?.languageVersion !== ARKTS_1_2) {
+    return undefined;
+  }
+  return resolvedFileName;
+}
+
+function recordStaticInteropDynamicImportError(node: ts.Node, targetFilePath: string,
+  sourceFileName: string): void {
+  interopTransformLog.errors.push({
+    type: LogType.ERROR,
+    message: `Dynamic import of static file '${toUnixPath(targetFilePath)}' is not supported. ` +
+      `Current file is '${toUnixPath(sourceFileName)}'`,
+    code: ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
+    description: ArkTSErrorDescription,
+    pos: node.getStart()
+  });
 }
 
 function unwrapType(node: ts.SourceFile, type: ts.Type): ts.Type {
@@ -527,10 +552,10 @@ function buildFullClassName(decl: ts.Declaration, finalType: ts.Type, className:
   return ts.isInterfaceDeclaration(decl) ?
     `L${pkgName}/${basePath}/${pkgName}$${basePath.split('/').join('$')}$${className}$ObjectLiteral;` :
     `L${pkgName}/${basePath}/${className};`;
-} 
+}
 
 /**
- 	  * Retrieves the full namespace of a declaration node, separated by `$` 
+ 	  * Retrieves the full namespace of a declaration node, separated by `$`
  	  * @param decl - TypeScript declaration node to analyze
  	  * @returns The full namespace path if exist ,otherwise undefined
  	  */
@@ -559,7 +584,7 @@ function buildGetConstructorCall(fullName: string, isRecord: boolean): ts.Expres
 function buildPropertyAssignments(node: ts.ObjectLiteralExpression, tmpObjName: string,
   usePropertyAccess: boolean = true): ts.Expression[] {
   return node.properties.map(property => {
-    if (!ts.isPropertyAssignment(property)) { 
+    if (!ts.isPropertyAssignment(property)) {
       return undefined;
     }
     const key = property.name;
