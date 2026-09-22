@@ -260,6 +260,9 @@ shared_library("es2panda_lib") {
       "-Wno-unused-variable",
       "-fPIC",
     ]
+    if (current_cpu == "arm64") {
+      cflags_cc += [ "--target=aarch64-linux-gnu" ]
+    }
 
     ldflags = [
       "-Wl,--allow-shlib-undefined",
@@ -277,6 +280,9 @@ shared_library("es2panda_lib") {
       "-Wl,--color-diagnostics",
       "-m64",
     ]
+    if (current_cpu == "arm64") {
+      ldflags += [ "--target=aarch64-linux-gnu" ]
+    }
     defines += [ "KOALA_LINUX" ]
     output_extension = "node"
   } else if (current_os == "mingw") {

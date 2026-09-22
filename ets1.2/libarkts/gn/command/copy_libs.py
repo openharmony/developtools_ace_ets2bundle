@@ -26,6 +26,8 @@ def get_compiler_name(os_name, cpu_name):
         return 'mingw_x86_64'
     elif (os_name == 'mac' and cpu_name == 'arm64'):
         return 'clang_arm64'
+    elif (os_name == 'linux' and cpu_name == 'arm64'):
+        return 'clang_arm64'
     else:
         return 'clang_x64'
 
