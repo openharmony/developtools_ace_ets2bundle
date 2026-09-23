@@ -805,7 +805,7 @@ export function mapDeclFileToSourcePath(declFilePath: string): string | undefine
       continue;
     }
     const pkgName: string = moduleInfo.packageName;
-    const declPrefix: string = toUnixPath(path.join(declgenV1OutPath, pkgName)) + '/';
+    const declPrefix: string = declgenV1OutPath + '/';
     if (filePath.startsWith(declPrefix)) {
       const relativePath: string = filePath.substring(declPrefix.length);
       return toUnixPath(path.join(toUnixPath(moduleInfo.modulePath),
