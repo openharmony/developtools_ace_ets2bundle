@@ -831,16 +831,16 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
   timePrinterInstance.setArkTSTimePrintSwitch(false);
   timePrinterInstance.appendTime(ts.TimePhase.START);
-  ts.PerformanceDotting?.startAdvanced('createProgram');
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GET_BUILDER_PROGRAM);
 
+  ts.PerformanceDotting?.startAdvanced('buildProgram');
   globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
   globalProgram.program = globalProgram.builderProgram.getProgram();
+  ts.PerformanceDotting?.stopAdvanced('buildProgram');
   traverseProgramSourceFiles(languageService.getProps());
   props = languageService.getProps();
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
   MemoryMonitor.stopRecordStage(recordInfo);
-  ts.PerformanceDotting?.stopAdvanced('createProgram');
 
   collectAllFiles(globalProgram.program, undefined, undefined, rollupShareObject);
   collectFileToIgnoreDiagnostics(rootFileNames);
