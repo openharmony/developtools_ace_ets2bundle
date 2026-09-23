@@ -823,7 +823,7 @@ mocha.describe('process arkts evolution tests', function () {
   });
 
   mocha.describe('3: process arkts evolution tests: interop transform', function () {
-    mocha.it('3-1-0: caches files containing a static dynamic import', function () {
+    mocha.it('3-1-0: reports an error for a dynamic import of a static file', function () {
       const code: string = 'async function load() { return import("arkTSEvo"); }';
       const { program, testSourceFile } = createDualSourceProgram(code);
       const etsChecker = require('../../../lib/ets_checker');
@@ -833,7 +833,33 @@ mocha.describe('process arkts evolution tests', function () {
       const languageVersionStub = stub(FileManager.getInstance(), 'getLanguageVersionByFilePath')
         .returns({ languageVersion: '1.2', pkgName: 'arkTSEvo' });
       ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]);
-      expect(FileManager.hasStaticInteropDynamicImport(testFileName)).to.be.true;
+      const hasError = interopTransformLog.errors.some(error =>
+        error.message.includes("Dynamic import of static file '/TestProject/arkTSEvo/Index.ets' is not supported.") &&
+        error.message.includes("Current file is '/TestProject/entry/test.ets'") &&
+        error.code === '10310026' &&
+        error.description === 'ArkTS: ERROR' &&
+        error.type === 'ERROR'
+      );
+      expect(hasError).to.be.true;
+      resolveModuleNameStub.restore();
+      languageVersionStub.restore();
+      cleanUpProcessArkTSEvolutionObj();
+    });
+
+    mocha.it('3-1-0-1: does not report an error for a dynamic import of a dynamic file', function () {
+      const code: string = 'async function load() { return import("arkTSEvo"); }';
+      const { program, testSourceFile } = createDualSourceProgram(code);
+      const etsChecker = require('../../../lib/ets_checker');
+      const resolveModuleNameStub = stub(etsChecker, 'resolveModuleName').returns({
+        resolvedModule: { resolvedFileName: '/TestProject/arkTSEvo/Index.ets' }
+      });
+      const languageVersionStub = stub(FileManager.getInstance(), 'getLanguageVersionByFilePath')
+        .returns({ languageVersion: '1.1', pkgName: 'arkTSEvo' });
+      ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]);
+      const hasError = interopTransformLog.errors.some(error =>
+        error.message.includes('Dynamic import of static file')
+      );
+      expect(hasError).to.be.false;
       resolveModuleNameStub.restore();
       languageVersionStub.restore();
       cleanUpProcessArkTSEvolutionObj();
