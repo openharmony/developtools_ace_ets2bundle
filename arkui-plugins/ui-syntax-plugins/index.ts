@@ -14,19 +14,9 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PluginContext, PluginHandler, Plugins } from '../common/plugin-context';
-import {
-    CheckedUISyntaxLinterTransformer,
-    ParsedUISyntaxLinterTransformer,
-} from './transformers/ui-syntax-linter-transformer';
-import { createUISyntaxRuleProcessor, UISyntaxRuleProcessor } from './processor';
-import { UISyntaxLinterVisitor } from './transformers/ui-syntax-linter-visitor';
-import rules from './rules';
-import { getConsistentResourceMap, getMainPages, getUIComponents, matchPrefix } from '../common/arkts-utils';
-import { EXCLUDE_EXTERNAL_SOURCE_PREFIXES, tracePerformance } from './utils';
-import { Debugger, debugLog, getDumpFileName } from '../common/debug';
-import { UIVisitor } from '../collectors/ui-collectors/ui-visitor';
-import { MemoVisitor } from '../collectors/memo-collectors/memo-visitor';
+import { PluginContext, Plugins } from '../common/plugin-context';
+import { getConsistentResourceMap, getMainPages, getUIComponents } from '../common/arkts-utils';
+import { Debugger, debugLog } from '../common/debug';
 import { Collector } from '../collectors/collector';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../common/predefines';
@@ -37,13 +27,10 @@ import { NodeCacheFactory } from '../common/node-cache';
 export function uiSyntaxLinterTransform(): Plugins {
     return {
         name: 'ui-syntax-plugin',
-        // parsed: parsedTransform,
         checked: collectAndLint,
         clean(): void {
             ProgramSkipper.clear();
             NodeCacheFactory.getInstance().clear();
-            visitedPrograms.clear();
-            visitedExternalSources.clear();
         },
     };
 }
@@ -113,128 +100,4 @@ function checkedProgramVisit(
         NodeCacheFactory.getInstance().perfLog(NodeCacheNames.MEMO, true);
     }
     return program;
-}
-
-
-function createTransformer(
-    phase: string,
-    processor: UISyntaxRuleProcessor,
-    transformer: UISyntaxLinterVisitor
-): PluginHandler {
-    const visitedPrograms: Set<arkts.KNativePointer> = new Set();
-    const visitedExternalSources: Set<arkts.KNativePointer> = new Set();
-    return tracePerformance(`UISyntaxPlugin::${phase}`, function (this: PluginContext): arkts.ETSModule | undefined {
-        const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
-        if (!contextPtr) {
-            return undefined;
-        }
-        const projectConfig = this.getProjectConfig();
-        if (!projectConfig) {
-            return undefined;
-        }
-        processor.setProjectConfig(projectConfig);
-        if (projectConfig.frameworkMode) {
-            return undefined;
-        }
-        const program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-        if (visitedPrograms.has(program.peer) || isHeaderFile(program.absoluteName)) {
-            return undefined;
-        }
-        const isCoding = this.isCoding?.() ?? false;
-        processor.setComponentsInfo(projectConfig, isCoding);
-        if (isCoding) {
-            const codingFilePath = this.getCodingFilePath();
-            if (program.absoluteName === codingFilePath) {
-                return transformProgram.call(this, transformer, program);
-            }
-        } else {
-            transformExternalSources.call(this, program, visitedExternalSources, visitedPrograms, transformer);
-            if (program.absoluteName) {
-                return transformProgram.call(this, transformer, program);
-            }
-        }
-        visitedPrograms.add(program.peer);
-        return undefined;
-    });
-}
-
-function transformExternalSources(
-    this: PluginContext,
-    program: arkts.Program,
-    visitedExternalSources: Set<arkts.KNativePointer>,
-    visitedPrograms: Set<arkts.KNativePointer>,
-    transformer: UISyntaxLinterVisitor
-): void {
-    const externalSources = program.getExternalSources();
-    for (const externalSource of externalSources) {
-        if (matchPrefix(EXCLUDE_EXTERNAL_SOURCE_PREFIXES, externalSource.getName())) {
-            continue;
-        }
-        if (visitedExternalSources.has(externalSource.peer)) {
-            continue;
-        }
-        const programs = externalSource.programs;
-        for (const program of programs) {
-            if (!program.isBuiltSimultaneously || visitedPrograms.has(program.peer) || isHeaderFile(program.absoluteName)) {
-                continue;
-            }
-            const script = transformer.transform(program.ast) as arkts.ETSModule;
-            this.setArkTSAst(script);
-        }
-        visitedExternalSources.add(externalSource.peer);
-    }
-}
-
-const visitedPrograms: Set<any> = new Set();
-const visitedExternalSources: Set<any> = new Set();
-function parsedTransform(this: PluginContext): arkts.ETSModule | undefined {
-    const isCoding = this.isCoding?.() ?? false;
-    arkts.Performance.getInstance().createEvent(`ui-syntax::parsed`);
-    const processor = createUISyntaxRuleProcessor(rules);
-    const transformer = new ParsedUISyntaxLinterTransformer(processor);
-    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
-    if (!contextPtr) {
-        return undefined;
-    }
-    const projectConfig = this.getProjectConfig();
-    if (!projectConfig) {
-        return undefined;
-    }
-    processor.setProjectConfig(projectConfig);
-    if (projectConfig.frameworkMode) {
-        return undefined;
-    }
-    const program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-    if (visitedPrograms.has(program.peer) || isHeaderFile(program.absoluteName)) {
-        return undefined;
-    }
-    processor.setComponentsInfo(projectConfig, isCoding);
-    if (isCoding) {
-        const codingFilePath = this.getCodingFilePath();
-        if (program.absoluteName === codingFilePath) {
-            return transformProgram.call(this, transformer, program);
-        }
-    } else {
-        transformExternalSources.call(this, program, visitedExternalSources, visitedPrograms, transformer);
-        if (program.absoluteName) {
-            return transformProgram.call(this, transformer, program);
-        }
-    }
-    visitedPrograms.add(program.peer);
-    arkts.Performance.getInstance().stopEvent(`ui-syntax::parsed`, true);
-    return undefined;
-}
-
-function transformProgram(
-    this: PluginContext,
-    transformer: UISyntaxLinterVisitor,
-    program: arkts.Program
-): arkts.ETSModule {
-    const script = transformer.transform(program.ast) as arkts.ETSModule;
-    this.setArkTSAst(script);
-    return script;
-}
-
-function isHeaderFile(fileName: string): boolean {
-    return fileName.endsWith('.d.ets');
 }
