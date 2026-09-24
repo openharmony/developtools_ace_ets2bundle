@@ -288,8 +288,12 @@ export class TryCatchValidator extends BaseValidator implements NodeValidator {
    */
   private isNodeWrappedInTryCatch(node: ts.Node): boolean {
     return this.findParentNode(node, (parent) => {
-      if (ts.isTryStatement(parent)) {
-        return node.getStart() >= parent.tryBlock.getStart();
+      if (ts.isTryStatement(parent) && parent.catchClause) {
+        const nodeStart = node.getStart();
+        const nodeEnd = node.getEnd();
+        const tryStart = parent.tryBlock.getStart();
+        const tryEnd = parent.tryBlock.getEnd();
+        return nodeStart >= tryStart && nodeEnd <= tryEnd;
       }
       return false;
     }) !== null;
