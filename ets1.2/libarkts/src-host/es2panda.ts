@@ -227,9 +227,33 @@ function invoke(
     }
 }
 
+function isPathInsideDirectory(parentDir: string, candidate: string): boolean {
+    const relative = path.relative(parentDir, candidate);
+    return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
+function resolvePluginPath(configDir: string, transform: string): string {
+    if (typeof transform !== 'string' || transform.length === 0) {
+        throw new Error(`Invalid plugin entry '${transform}': a non-empty string path is required`);
+    }
+    if (transform.startsWith('.') || transform.startsWith('/')) {
+        const pluginPath = path.normalize(path.resolve(configDir, transform));
+        if (!path.isAbsolute(transform) && !isPathInsideDirectory(configDir, pluginPath)) {
+            throw new Error(
+                `Plugin path '${transform}' is rejected: it resolves to '${pluginPath}', ` +
+                    `which is outside of the arktsconfig directory '${configDir}'`
+            );
+        }
+        return pluginPath;
+    }
+    if (transform.split(/[\\/]/).includes('..')) {
+        throw new Error(`Plugin module name '${transform}' is rejected: '..' path segments are not allowed`);
+    }
+    return transform;
+}
+
 function loadPlugin(configDir: string, transform: string) {
-    const plugin =
-        transform.startsWith('.') || transform.startsWith('/') ? path.resolve(configDir, transform) : transform;
+    const plugin = resolvePluginPath(configDir, transform);
     const pluginEntry = require(plugin);
     if (!pluginEntry.init) {
         throw new Error(`init is not specified in plugin ${transform}`);
