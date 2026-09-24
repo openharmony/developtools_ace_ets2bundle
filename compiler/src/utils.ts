@@ -54,6 +54,7 @@ import {
   HvigorLogInfo,
   HvigorErrorInfo
 } from './hvigor_error_code/hvigor_error_info';
+import { EXT_WHITE_LIST } from './component_map';
 
 export enum LogType {
   ERROR = 'ERROR',
@@ -1593,4 +1594,13 @@ function isCompatibleVersionOverTarget(apiNum: number): boolean {
     return true;
   }
   return false;
+}
+
+export function equalToHiddenNavComplementation(
+  componentName: string
+): boolean {
+  if (isCompatibleVersionOverTarget(20)) {
+    return false;
+  }
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]);
 }

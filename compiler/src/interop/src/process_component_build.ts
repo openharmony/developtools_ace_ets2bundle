@@ -195,7 +195,8 @@ import {
   componentInfo,
   storedFileInfo,
   findNonNullType,
-  CurrentProcessFile
+  CurrentProcessFile,
+  equalToHiddenNavComplementation
 } from './utils';
 import {
   globalProgram,
@@ -3901,7 +3902,7 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
     if (checkCreateArgumentBuilder(node, attrNode)) {
       argumentsArr = transformBuilder(argumentsArr);
     }
-    if (((compName === NAVIGATION) || equalToHiddenNav(compName)) &&
+    if (((compName === NAVIGATION) || equalToHiddenNav(compName) || equalToHiddenNavComplementation(compName)) &&
       type === COMPONENT_CREATE_FUNCTION && partialUpdateConfig.partialUpdateMode) {
       // @ts-ignore
       argumentsArr = navigationCreateParam(compName, type, argumentsArr);
@@ -3943,7 +3944,8 @@ function navigationCreateParam(compName: string, type: string,
     // @ts-ignore
     navigationOrNavDestination.push(...argumentsArr);
   } else if (partialUpdateMode && isCreate) {
-    if ((compName === NAVIGATION) || equalToHiddenNav(compName)) {
+    if ((compName === NAVIGATION) || equalToHiddenNav(compName) ||
+      equalToHiddenNavComplementation(compName)) {
       isHaveParam = false;
       navigationOrNavDestination.push(ts.factory.createNewExpression(
         ts.factory.createIdentifier(NAV_PATH_STACK), undefined, []
@@ -3961,7 +3963,8 @@ function navigationCreateParam(compName: string, type: string,
     }
   }
   if ((CREATE_ROUTER_COMPONENT_COLLECT.has(compName) ||
-    (isCompatibleVersionOver20() && EXT_WHITE_LIST.length >= 2 && EXT_WHITE_LIST.includes(compName))) &&
+    (isCompatibleVersionOver20() && EXT_WHITE_LIST.length >= 2 && EXT_WHITE_LIST.includes(compName)) ||
+    equalToHiddenNavComplementation(compName)) &&
     isCreate && partialUpdateMode) {
     navigationOrNavDestination.push(ts.factory.createObjectLiteralExpression(
       navigationOrNavDestinationCreateContent(compName, isHaveParam),
@@ -3984,7 +3987,8 @@ function navigationOrNavDestinationCreateContent(compName: string, isHaveParam: 
           path.relative(projectConfig.projectRootPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
       )
     ));
-  if ((compName === NAVIGATION) || equalToHiddenNav(compName)) {
+  if ((compName === NAVIGATION) || equalToHiddenNav(compName) ||
+    equalToHiddenNavComplementation(compName)) {
     navigationOrNavDestinationContent.push(ts.factory.createPropertyAssignment(
       ts.factory.createIdentifier(IS_USER_CREATE_STACK),
       isHaveParam ? ts.factory.createTrue() : ts.factory.createFalse()
