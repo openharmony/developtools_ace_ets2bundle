@@ -268,9 +268,15 @@ function traverseStructInfo(structInfo: StructInfo,
   const needInitFromParams: string[] = [...structInfo.builderParamDecoratorSet,
     ...structInfo.eventDecoratorMap.keys()];
   for (const property of structInfo.propertiesMap) {
-    if (!structInfo.staticPropertySet.has(property[0]) &&
-      !structInfo.envDecoratorSet.has(property[0]) &&
-      !structInfo.customEnvDecoratorSet.has(property[0])) {
+    if (structInfo.staticPropertySet.has(property[0]) ||
+      structInfo.envDecoratorSet.has(property[0])) {
+      continue;
+    }
+    if (structInfo.customEnvDecoratorSet.has(property[0])) {
+      if (property[1]) {
+        addStatementsInConstructor.push(createCustomEnvInitStatement(property[0], property[1]));
+      }
+    } else {
       setPropertyStatement(structInfo, addStatementsInConstructor, property[0], property[1],
         needInitFromParams, addStatementsInResetOnReuse);
     }
@@ -391,7 +397,7 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
     }
     return ts.factory.updatePropertyDeclaration(member,
       ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(member)),
-      member.name, member.questionToken, member.type, member.initializer);
+      member.name, member.questionToken, member.type, undefined);
   }
   if (structInfo.paramDecoratorMap.has(propName) && structInfo.builderParamDecoratorSet.has(propName)) {
     return processRequireBuilderParamProperty(member, decorators, initializer);
@@ -824,6 +830,12 @@ function createSuperV2(): ts.Statement {
     ts.factory.createSuper(), undefined, paramNames.map((name: string) => {
       return ts.factory.createIdentifier(name);
     })));
+}
+
+function createCustomEnvInitStatement(propName: string, initializer: ts.Expression): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), ts.factory.createIdentifier(propName)),
+    ts.factory.createToken(ts.SyntaxKind.EqualsToken), initializer));
 }
 
 function createInitOrUpdateParam(propName: string, initializer: ts.Expression, isInit: boolean): ts.ExpressionStatement {

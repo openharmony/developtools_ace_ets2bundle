@@ -1,5 +1,5 @@
 # 功能概述
-`@CustomEnv` 装饰器标记 V2 组件的自定义环境变量属性，从 `CustomEnvKey.create<T>()` 创建的全局常量读取值，支持运行时动态更新。
+`@CustomEnv` 装饰器标记 `@Component` 或 `@ComponentV2` 的自定义环境变量属性，从 `CustomEnvKey.create<T>()` 创建的全局常量读取值，支持运行时动态更新。
 
 ## 动态
 ### 源码参考位置
@@ -23,11 +23,12 @@ V2 装饰器仅支持 Partial Update 模式，无 Legacy 输出。
 
 ### 转换后的代码（Partial Update）
 ```typescript
-// 动态工具链仅校验，不生成代码
+// 简化展示：实际构造函数还有参数更新和 finalizeConstruction 等语句
 class MyComponent extends ViewV2 {
-  myEnv: string = 'default'
+  myEnv: string
   constructor(parent, params, __localStorage, elmtId, paramsLambda, extraInfo) {
     super(parent, elmtId, extraInfo)
+    this.myEnv = 'default'
     this.finalizeConstruction()
   }
   initialRender() { /* 命令式 */ }
@@ -38,7 +39,7 @@ class MyComponent extends ViewV2 {
 ### 关键转换逻辑
 - `checkCustomEnvDecoratorInterop`：校验 `@CustomEnv` 的 key 必须是 `CustomEnvKey.create<T>()` 创建的全局常量。
 - 校验属性类型必须与 key 的泛型类型一致。
-- 不生成额外代码，仅校验。
+- 移除装饰字段的初始化表达式；仅当字段声明了默认值时，在构造函数中按字段声明顺序通过属性 setter 生成赋值语句。`@Component` 和 `@ComponentV2` 均覆盖。
 
 ## 静态
 ### 源码参考位置
@@ -86,7 +87,7 @@ class MyComponent extends CustomComponentV2 {
 
 | 维度 | 动态工具链 | 静态工具链 |
 |---|---|---|
-| 代码生成 | 不生成代码，仅校验 | backing field + getter + 工厂调用 |
+| 代码生成 | 构造函数通过属性 setter 初始化，装饰字段不保留初始化表达式 | backing field + getter + 工厂调用 |
 | key 校验 | `CustomEnvKey.create<T>()` 类型一致性 | `getCustomEnvKey` 从注解提取 |
 | setter | 无 | `hasSetter = false`，不生成 setter |
 | 符号解析 | 无 | `__resolveDecoratorSymbols` 静态方法 |
