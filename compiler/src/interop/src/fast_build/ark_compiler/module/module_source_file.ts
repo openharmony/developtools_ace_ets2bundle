@@ -56,7 +56,8 @@ import {
 import {
   allSourceFilePaths,
   compilerOptions,
-  localPackageSet
+  localPackageSet,
+  resolveModuleName
 } from '../../../ets_checker';
 import { projectConfig } from '../../../../main';
 import {
@@ -72,6 +73,7 @@ import {
 } from '../logger';
 import {
   ArkTSInternalErrorDescription,
+  ArkTSErrorDescription,
   ErrorCode
 } from '../error_code';
 import { checkIfJsImportingArkts } from '../check_import_module';
@@ -154,16 +156,156 @@ export class ModuleSourceFile {
     if (!!rollupObject.share.projectConfig.mockParams.mockConfigKey2ModuleInfo) {
       ModuleSourceFile.mockConfigKeyToModuleInfo = rollupObject.share.projectConfig.mockParams.mockConfigKey2ModuleInfo;
     }
-    ModuleSourceFile.mockConfigInfo = require('json5').parse(
-      fs.readFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, 'utf-8'));
+    ModuleSourceFile.mockConfigInfo = ModuleSourceFile.readMockConfigInfo(rollupObject);
     for (let mockedTarget in ModuleSourceFile.mockConfigInfo) {
       if (ModuleSourceFile.mockConfigInfo[mockedTarget].source) {
+        ModuleSourceFile.validateMockConfigIsNotStaticFile(mockedTarget,
+          ModuleSourceFile.mockConfigInfo[mockedTarget].source, rollupObject);
         ModuleSourceFile.mockFiles.push(ModuleSourceFile.mockConfigInfo[mockedTarget].source);
         if (ModuleSourceFile.mockConfigKeyToModuleInfo && ModuleSourceFile.mockConfigKeyToModuleInfo[mockedTarget]) {
           ModuleSourceFile.generateTransformedMockInfo(ModuleSourceFile.mockConfigKeyToModuleInfo[mockedTarget],
             ModuleSourceFile.mockConfigInfo[mockedTarget].source, mockedTarget, rollupObject);
         }
       }
+    }
+  }
+
+  // Both the key (the mocked target module) and the source (the mock implementation file) of one
+  // mock-config entry must be dynamic (ArkTS 1.1) files: static (ArkTS 1.2) files are compiled by
+  // the static toolchain, so a static target can not be replaced by the runtime mock mechanism and
+  // a static source can not provide a mock implementation record in the dynamic abc.
+  private static validateMockConfigIsNotStaticFile(mockedTarget: string, source: string,
+    rollupObject: Object): void {
+    ModuleSourceFile.validateMockTargetIsNotStaticFile(mockedTarget, rollupObject);
+    ModuleSourceFile.validateMockSourceIsNotStaticFile(mockedTarget, source, rollupObject);
+  }
+
+  private static validateMockTargetIsNotStaticFile(mockedTarget: string, rollupObject: Object,
+    importerFile?: string, resolvedFilePath?: string): void {
+    // Static SDK apis are imported through the 'static@' request prefix,
+    // see interop_manager.parseStaticAlias.
+    if (mockedTarget.startsWith('static@')) {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_EXTERNAL_MOCK_TARGET_IS_STATIC_FILE,
+        ArkTSErrorDescription,
+        `The mocked target '${mockedTarget}' in mock-config.json5 is a static (ArkTS 1.2) module.`,
+        '',
+        ['Please mock an ArkTS 1.1 (dynamic) module instead of a static one.']
+      );
+      ModuleSourceFile.logger.printErrorAndExit(errInfo);
+      return;
+    }
+    // Hvigor only provides mockConfigKey2ModuleInfo for HSP targets. Resolve HAR and local
+    // file targets separately; absence from the HSP map does not mean a target is dynamic.
+    const targetFilePath: string | undefined = importerFile ?
+      ModuleSourceFile.resolveMockTargetFilePath(mockedTarget, rollupObject, importerFile) || resolvedFilePath :
+      ModuleSourceFile.mockConfigKeyToModuleInfo[mockedTarget]?.filePath ||
+        ModuleSourceFile.resolveMockTargetFilePath(mockedTarget, rollupObject);
+    if (targetFilePath && ModuleSourceFile.isStaticArkTSFile(targetFilePath)) {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_EXTERNAL_MOCK_TARGET_IS_STATIC_FILE,
+        ArkTSErrorDescription,
+        `The mocked target '${mockedTarget}' in mock-config.json5 is a static (ArkTS 1.2) file: '${targetFilePath}'.`,
+        '',
+        ['Please mock an ArkTS 1.1 (dynamic) module instead, ' +
+        'or remove the "use static" directive from the mocked file.']
+      );
+      ModuleSourceFile.logger.printErrorAndExit(errInfo);
+    }
+  }
+
+  private static resolveMockTargetFilePath(mockedTarget: string, rollupObject: Object,
+    importerFile?: string): string | undefined {
+    const config = rollupObject.share.projectConfig;
+    // Relative module requests only have meaning in the context of their actual importer.
+    // Defer them until getOhmUrl instead of guessing a path relative to the module root.
+    if (mockedTarget.startsWith('.') && !importerFile) {
+      return undefined;
+    }
+    // Use the raw checker resolver so ArkTS 1.2 sources are not replaced by interop declarations.
+    const containingFile: string = importerFile || path.join(config.modulePath, USER_DEFINE_MOCK_CONFIG);
+    const resolvedTarget = resolveModuleName(mockedTarget, containingFile).resolvedModule;
+    if (resolvedTarget) {
+      return resolvedTarget.resolvedFileName;
+    }
+
+    const isRelativeOrAbsolute: boolean = mockedTarget.startsWith('.') || path.isAbsolute(mockedTarget);
+    if (importerFile && !isRelativeOrAbsolute) {
+      return undefined;
+    }
+    const targetRoot: string = isRelativeOrAbsolute ? path.dirname(containingFile) :
+      path.join(config.modulePath, config.mockParams.etsSourceRootPath);
+    const targetPath: string = path.resolve(targetRoot, mockedTarget);
+    // The raw resolver does not resolve requests with an explicit .ets extension.
+    if (fs.existsSync(targetPath) && fs.statSync(targetPath).isFile()) {
+      return targetPath;
+    }
+    // Config keys such as common/calc.ets are relative to etsSourceRootPath.
+    // A module request must instead use its actual resolution result.
+    if (!isRelativeOrAbsolute && !importerFile) {
+      return resolveModuleName(`./${mockedTarget}`, path.join(targetRoot, USER_DEFINE_MOCK_CONFIG))
+        .resolvedModule?.resolvedFileName;
+    }
+    return undefined;
+  }
+
+  private static validateMockSourceIsNotStaticFile(mockedTarget: string, source: string,
+    rollupObject: Object): void {
+    const mockFilePath: string = ModuleSourceFile.resolveMockSourcePath(source, rollupObject);
+    if (ModuleSourceFile.isStaticArkTSFile(mockFilePath)) {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_EXTERNAL_MOCK_SOURCE_IS_STATIC_FILE,
+        ArkTSErrorDescription,
+        `The source file '${source}' of the mock target '${mockedTarget}' in mock-config.json5 ` +
+        'is a static (ArkTS 1.2) file.',
+        '',
+        ['Please replace the mock source with an ArkTS 1.1 (dynamic) file, ' +
+        'or remove the "use static" directive from it.']
+      );
+      ModuleSourceFile.logger.printErrorAndExit(errInfo);
+    }
+  }
+
+  // Resolves one mock source (the relative path written in mock-config.json5) to its absolute
+  // module path. source2ModuleIdMap is the authoritative mapping provided by hvigor for mock
+  // files outside the modulePath; when the map does not contain the source, fall back to the
+  // modulePath concatenation, which is where module local mock files live. The static file
+  // validation, generateNewMockInfo and isMockFile must share this single resolution rule so
+  // that they always agree on the identity of the mock file.
+  private static resolveMockSourcePath(source: string, rollupObject: Object): string {
+    const source2ModuleIdMap: Map<string, string> =
+      rollupObject.share.projectConfig.mockParams?.source2ModuleIdMap;
+    if (source2ModuleIdMap && source2ModuleIdMap.size > 0 && source2ModuleIdMap.has(source)) {
+      return source2ModuleIdMap.get(source);
+    }
+    return `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${source}`;
+  }
+
+  private static isStaticArkTSFile(filePath: string): boolean {
+    // getLanguageVersionByFilePath falls back to reading the first line of the file,
+    // so the file existence must be checked before the query.
+    if (!fs.existsSync(filePath)) {
+      return false;
+    }
+    return FileManager.getInstance().getLanguageVersionByFilePath(filePath)?.languageVersion === ARKTS_1_2;
+  }
+
+  // The mock config file is written by users, so a missing file or invalid JSON5 content must be
+  // reported as a friendly ArkTS error instead of an uncaught ENOENT/SyntaxError.
+  private static readMockConfigInfo(rollupObject: Object): Object {
+    const mockConfigPath: string = rollupObject.share.projectConfig.mockParams.mockConfigPath;
+    try {
+      return require('json5').parse(fs.readFileSync(mockConfigPath, 'utf-8'));
+    } catch (err) {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_EXTERNAL_MOCK_CONFIG_READ_FAILED,
+        ArkTSErrorDescription,
+        `Failed to read the mock config file '${mockConfigPath}': ${err.message}`,
+        '',
+        ['Please check that the mock-config.json5 file exists and contains valid JSON5 content.']
+      );
+      ModuleSourceFile.logger.printErrorAndExit(errInfo);
+      return {};
     }
   }
 
@@ -227,9 +369,7 @@ export class ModuleSourceFile {
       rollupObject.share.projectConfig.mockParams?.source2ModuleIdMap.size > 0) {
       source2ModuleIdMap = rollupObject.share.projectConfig.mockParams?.source2ModuleIdMap;
     }
-    let mockFilePath: string = source2ModuleIdMap.size > 0 ?
-      source2ModuleIdMap.get(mockFile) :
-     `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
+    let mockFilePath: string = ModuleSourceFile.resolveMockSourcePath(mockFile, rollupObject);
     let mockFileOhmUrl: string = '';
     if (useNormalizedOHMUrl) {
       const targetModuleInfo: Object = ModuleSourceFile.getModuleInfoOfMockFile(mockFilePath, rollupObject, source2ModuleIdMap);
@@ -266,7 +406,7 @@ export class ModuleSourceFile {
     }
 
     for (let mockFile of ModuleSourceFile.mockFiles) {
-      let absoluteMockFilePath: string = `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
+      let absoluteMockFilePath: string = ModuleSourceFile.resolveMockSourcePath(mockFile, rollupObject);
       if (toUnixPath(absoluteMockFilePath) === toUnixPath(file)) {
         return true;
       }
@@ -461,8 +601,19 @@ export class ModuleSourceFile {
     }
   }
 
+  private validateMockModuleRequest(rollupObject: Object, moduleRequest: string,
+    filePath: string | undefined): void {
+    // Validate matching requests before static interop or external-package branches can return.
+    // Resolve against this.moduleId even when filePath points at a generated interop declaration.
+    if (ModuleSourceFile.needProcessMock &&
+      Object.prototype.hasOwnProperty.call(ModuleSourceFile.mockConfigInfo, moduleRequest)) {
+      ModuleSourceFile.validateMockTargetIsNotStaticFile(moduleRequest, rollupObject, this.moduleId, filePath);
+    }
+  }
+
   private getOhmUrl(rollupObject: Object, moduleRequest: string, filePath: string | undefined,
     importerFile?: string): string | undefined {
+    this.validateMockModuleRequest(rollupObject, moduleRequest, filePath);
     let useNormalizedOHMUrl = false;
     if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
@@ -842,4 +993,3 @@ export class ModuleSourceFile {
     return ModuleSourceFile.ohmurlOfMockFiles;
   }
 }
-
