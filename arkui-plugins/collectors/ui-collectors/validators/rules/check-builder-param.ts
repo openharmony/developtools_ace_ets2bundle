@@ -129,10 +129,7 @@ function hasFunctionTypeParams(typeAnnotation: arkts.TypeNode | undefined): bool
     if (!typeAnnotation.params || typeAnnotation.params.length === 0) {
         return false;
     }
-    for (const param of typeAnnotation.params) {
-        if (param && typeof param === 'object' && 'optional' in param && !param.optional) {
-            return true;
-        }
-    }
-    return false;
+    return typeAnnotation.params.some(
+        (param: arkts.Expression) => arkts.isETSParameterExpression(param) && !param.isOptional
+    );
 }
