@@ -197,11 +197,11 @@ export function resolveTargetsPath(moduleRequest: string, pkgName: string, declg
   return arktsEvoDeclFilePath;
 }
 
-export function collectArkTSEvolutionModuleInfo(share: Object): void {
-  if (!share.projectConfig.dependentModuleMap) {
+export function collectArkTSEvolutionModuleInfo(rollupObject: Object): void {
+  if (!rollupObject.share.projectConfig.dependentModuleMap) {
     return;
   }
-  if (!share.projectConfig.useNormalizedOHMUrl) {
+  if (!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_EXTERNAL_COLLECT_INTEROP_INFO_FAILED,
       ArkTSErrorDescription,
@@ -209,19 +209,19 @@ export function collectArkTSEvolutionModuleInfo(share: Object): void {
       `Failed to compile mixed project because useNormalizedOHMUrl is false.`,
       ['Please check whether useNormalizedOHMUrl is true.']
     );
-    CommonLogger.getInstance(share).printErrorAndExit(errInfo);
-
+    CommonLogger.getInstance(rollupObject).printErrorAndExit(errInfo);
+    
   }
   // dependentModuleMap Contents eg.
   // 1.2 hap -> 1.1 har: It contains the information of 1.1 har
   // 1.1 hap -> 1.2 har -> 1.1 har : There is information about 3 modules.
 
   const throwCollectionError = (pkgName: string): void => {
-    share.throwArkTsCompilerError(red, 'ArkTS:INTERNAL ERROR: Failed to collect arkTs evolution module info.\n' +
+    rollupObject.share.throwArkTsCompilerError(red, 'ArkTS:INTERNAL ERROR: Failed to collect arkTs evolution module info.\n' +
       `Error Message: Failed to collect arkTs evolution module "${pkgName}" info from rollup.`, reset);
   };
 
-  for (const [pkgName, dependentModuleInfo] of share.projectConfig.dependentModuleMap) {
+  for (const [pkgName, dependentModuleInfo] of rollupObject.share.projectConfig.dependentModuleMap) {
     switch (dependentModuleInfo.language) {
       case ARKTS_1_2:
         if (dependentModuleInfo.declgenV1OutPath) {

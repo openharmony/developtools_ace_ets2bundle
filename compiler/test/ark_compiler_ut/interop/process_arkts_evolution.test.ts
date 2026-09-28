@@ -630,7 +630,7 @@ mocha.describe('process arkts evolution tests', function () {
     this.rollup.share.projectConfig.dependentModuleMap.set('evohar', { language: '1.2' });
     const throwArkTsCompilerErrorStub = stub(CommonLogger.getInstance(this.rollup), 'printErrorAndExit');
     try {
-      collectArkTSEvolutionModuleInfo(this.rollup.share);
+      collectArkTSEvolutionModuleInfo(this.rollup);
     } catch (e) {
     }
     expect(throwArkTsCompilerErrorStub.getCall(0).args[0].code === ErrorCode.ETS2BUNDLE_EXTERNAL_COLLECT_INTEROP_INFO_FAILED).to.be.true;
@@ -643,7 +643,7 @@ mocha.describe('process arkts evolution tests', function () {
     this.rollup.share.projectConfig.dependentModuleMap.set('evohar', { language: '1.2' });
     const throwArkTsCompilerErrorStub = stub(this.rollup.share, 'throwArkTsCompilerError');
     try {
-      collectArkTSEvolutionModuleInfo(this.rollup.share);
+      collectArkTSEvolutionModuleInfo(this.rollup);
     } catch (e) {
     }
     const errMsg: string = 'ArkTS:INTERNAL ERROR: Failed to collect arkTs evolution module info.\n' +
@@ -658,7 +658,7 @@ mocha.describe('process arkts evolution tests', function () {
     this.rollup.share.projectConfig.dependentModuleMap.set('har', { language: '1.1' });
     const throwArkTsCompilerErrorStub = stub(this.rollup.share, 'throwArkTsCompilerError');
     try {
-      collectArkTSEvolutionModuleInfo(this.rollup.share);
+      collectArkTSEvolutionModuleInfo(this.rollup);
     } catch (e) {
     }
     const errMsg: string = 'ArkTS:INTERNAL ERROR: Failed to collect arkTs evolution module info.\n' +
