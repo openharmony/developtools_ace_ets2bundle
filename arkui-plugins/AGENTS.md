@@ -8,7 +8,7 @@
 
 关键区域：
 - `ui-plugins/`：主力 UI 组件变换器。入口 `index.ts` 导出 `uiTransform()`，含 parsed（ComponentTransformer：@Component struct -> class）和 checked（Collector -> CheckedTransformer：状态管理、builder lambda、属性变换器）阶段处理器。包含 `component-transformer.ts`（parsed 阶段）、`checked-transformer.ts`（checked 阶段）、`property-translators/`（35 个文件：state、link、prop、local、param、once、event、computed、monitor 等）、`struct-translators/`、`builder-lambda-translators/`、`entry-translators/`、`insight-intent/`、`interop/`、`memo-collect-cache/`。
-- `ui-syntax-plugins/`：ArkUI 语法 linter。入口 `index.ts` 导出 `uiSyntaxLinterTransform()`。包含 `rules/`（64 个 lint 规则文件，覆盖装饰器检查、struct 规则、V1/V2 混用、命名、嵌套）、`processor/`、`transformers/`、`utils/`。
+- `ui-syntax-plugins/`：ArkUI 语法 linter 插件入口。入口 `index.ts` 导出 `uiSyntaxLinterTransform()`（仅 checked 阶段，通过 `Collector` 驱动 `collectors/ui-collectors/validators/` 中的 lint 规则）。
 - `memo-plugins/`：缓存变换器（"unmemoize"）。入口 `index.ts` 导出 `unmemoizeTransform()`（仅 checked 阶段，调用 `arkts.recheckSubtree()`）。包含 `function-transformer.ts`（773 行，核心）、`memo-factory.ts`、`parameter-transformer.ts`、`return-transformer.ts`、`signature-transformer.ts`、`internal-transformer.ts`、`import-transformer.ts`、`memo-cache-factory.ts`、`utils.ts`。
 - `interop-plugins/`：ArkTS 组件的 struct 到 class interop 桥接。入口 `index.ts` 导出 `interopTransform()`（parsed + checked 阶段）。包含 `decl_transformer.ts`（parsed：struct -> class）、`emit_transformer.ts`（checked：emit 生成）、`arkuiImportList.ts`（179 个 ArkUI 组件/装饰器名称集合）、`types.ts`。
 - `collectors/`：ui-plugins 和 ui-syntax-plugins 使用的元数据收集基础设施。包含 `collector.ts`（编排 UI + memo 收集）、`ui-collectors/`（UIVisitor、struct/normal-class/global-class collector、call-record、condition-scope、validators、records）、`memo-collectors/`（MemoVisitor、function-collector）、`utils/`。
@@ -22,7 +22,7 @@
 - struct 到 class parsed 阶段变换 -> `ui-plugins/component-transformer.ts` 或 `interop-plugins/decl_transformer.ts`
 - checked 阶段变换编排 -> `ui-plugins/checked-transformer.ts`
 - @Memo 变换 -> `memo-plugins/function-transformer.ts`
-- 语法 lint 规则 -> `ui-syntax-plugins/rules/`
+- 语法 lint 规则 -> `collectors/ui-collectors/validators/rules/`
 - 元数据收集逻辑 -> `collectors/`
 - 共享工具和常量 -> `common/`
 - 运行时路径解析 -> `path.ts`
@@ -44,7 +44,7 @@
 - struct 到 class 变换 -> 阅读 `ui-plugins/component-transformer.ts` 和 `interop-plugins/`
 - @Builder / @BuilderParam 变换 -> 阅读 `ui-plugins/builder-lambda-translators/`
 - @Memo 变换 -> 阅读 `memo-plugins/function-transformer.ts` 和 `memo-plugins/memo-factory.ts`
-- 语法 lint 规则变更 -> 阅读 `ui-syntax-plugins/rules/` 中的现有规则模式，及 `common/predefines.ts` 中的装饰器/组件名
+- 语法 lint 规则变更 -> 阅读 `collectors/ui-collectors/validators/rules/` 中的现有规则模式，及 `common/predefines.ts` 中的装饰器/组件名
 - Collector 或元数据变更 -> 阅读 `collectors/collector.ts` 和对应子 collector
 - 共享工具或常量变更 -> 阅读 `common/predefines.ts`（771 行）和 `common/arkts-utils.ts`
 - 运行时路径或构建问题 -> 阅读 `path.ts` 和 `custom-import-plugin.js`
@@ -53,7 +53,7 @@
 ### 路径路由
 - `ui-plugins/property-translators/` -> 阅读对应装饰器文件；所有 property translator 遵循相同的工厂模式
 - `ui-plugins/component-transformer.ts` -> 阅读 `common/predefines.ts`，了解 parsed 阶段使用的装饰器常量
-- `ui-syntax-plugins/rules/` -> 阅读附近的现有规则，匹配已建立的模式（visitor-based、诊断输出）
+- `collectors/ui-collectors/validators/rules/` -> 阅读附近的现有规则，匹配已建立的模式（visitor-based、诊断输出）
 - `memo-plugins/` -> 阅读 `memo-plugins/utils.ts`，了解注解检测模式后再修改 transformer
 - `common/predefines.ts` -> 这是装饰器名、组件名、导入源名、枚举类型的唯一事实来源
 - `collectors/` -> 阅读 `collectors/collector.ts`，了解收集标志和数据流
