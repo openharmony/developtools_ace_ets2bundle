@@ -836,7 +836,7 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
         );
         updatePropertyItem = ts.factory.updatePropertyDeclaration(propertyItem,
           ts.concatenateDecoratorsAndModifiers(updateDecorators, ts.getModifiers(propertyItem)),
-          propertyItem.name, propertyItem.questionToken, propertyItem.type, propertyItem.initializer);
+          propertyItem.name, propertyItem.questionToken, propertyItem.type, undefined);
         continue;
       }
       const newUpdatePropertyItem = createPropertyDeclaration(

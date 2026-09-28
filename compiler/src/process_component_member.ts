@@ -730,6 +730,10 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       break;
     case COMPONENT_BUILDERPARAM_DECORATOR:
       updateState = updateBuilderParamProperty(node, name, log);
+      break;
+    case COMPONENT_CUSTOM_ENV_DECORATOR:
+      updateState = updateCustomEnvProperty(node, name);
+      break;
   }
   const members = interfaceNode.members;
   members.push(ts.factory.createPropertySignature(undefined, name,
@@ -861,6 +865,16 @@ function updateNormalProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
     createPropertyAccessExpressionWithThis(name.getText()),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken), init ||
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)));
+}
+
+function updateCustomEnvProperty(node: ts.PropertyDeclaration,
+  name: ts.Identifier): ts.ExpressionStatement {
+  if (!node.initializer) {
+    return undefined;
+  }
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    ts.factory.createPropertyAccessExpression(ts.factory.createThis(), name),
+    ts.factory.createToken(ts.SyntaxKind.EqualsToken), node.initializer));
 }
 
 function updateObservedProperty(item: ts.PropertyDeclaration, name: ts.Identifier,
