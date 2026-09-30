@@ -714,6 +714,7 @@ export class PropertyPathTreeBuilder {
     private static readonly PATH_SEPARATOR = '.';
     private static readonly MINIMUM_SEGMENT_LENGTH = 1;
     private static readonly EMPTY_PROPERTY_NAME = '';
+    private static readonly WILDCARD_SEGMENT = '*';
     private segmentHandlers: NextSegmentHandler[] = [];
     private options: PropertyPathOptions;
     private hasExtendedArrayType: boolean = false;
@@ -927,6 +928,9 @@ export class PropertyPathTreeBuilder {
             // we should continue processing rather than marking it as terminal.
             const nextSegment = isLastSegment ? undefined : pathSegments[segmentIndex + 1];
             const isNextSegmentNumeric = nextSegment !== undefined && ArrayIndexSegmentHandler.isNumericSegment(nextSegment);
+            const isNextSegmentWildcard = !!this.options.enableWildcard &&
+                nextSegment === PropertyPathTreeBuilder.WILDCARD_SEGMENT &&
+                segmentIndex + 1 === pathSegments.length - 1;
             const isElementArrayType = PropertyPathTreeBuilder.isArrayType(elementType);
 
             // Builtin types (String, Number, Boolean, etc.) should be treated as terminal
@@ -945,6 +949,11 @@ export class PropertyPathTreeBuilder {
                 if (isElementArrayType && isNextSegmentNumeric) {
                     // Multi-dimensional array: continue processing the next array index
                     branch.setNext(this.buildArrayElementNode(elementType, pathSegments, segmentIndex + 1));
+                } else if (isNextSegmentWildcard) {
+                    // Wildcard after index access (e.g. "items.0.*"): the wildcard applies to the element
+                    // type, whether it is itself an array or a class/interface, mirroring
+                    // WildcardSegmentHandler (wildcard must be the last segment).
+                    branch.setNext(this.buildWildcardNode(elementType, pathSegments, segmentIndex + 1));
                 } else if (nextDeclaration) {
                     // Normal property access on the element type
                     branch.setNext(this.buildNode(nextDeclaration, pathSegments, segmentIndex + 1));
