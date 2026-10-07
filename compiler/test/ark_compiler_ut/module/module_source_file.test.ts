@@ -52,6 +52,7 @@ import projectConfig from '../utils/processProjectConfig';
 import { ModuleInfo as ModuleInfoMock } from '../mock/rollup_mock/module_info';
 import { scanFiles } from "../utils/utils";
 import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generate_sourcemap';
+import { compilerOptions } from '../../../lib/ets_checker';
 import {
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
@@ -902,7 +903,13 @@ mocha.describe('test module_source_file file api', function () {
       etsSourceRootPath: "src/main",
       mockConfigPath: this.rollup.share.projectConfig.aceModuleRoot + '/mock/mock-config.json5',
     }
-    ModuleSourceFile.collectMockConfigInfo(this.rollup);
+    // genAbc normally runs after the checker has converted tsconfig options to enum values.
+    const moduleResolutionStub = sinon.stub(compilerOptions, 'moduleResolution').value(ts.ModuleResolutionKind.NodeJs);
+    try {
+      ModuleSourceFile.collectMockConfigInfo(this.rollup);
+    } finally {
+      moduleResolutionStub.restore();
+    }
     let EXPECT_MOCKFILES = [
       "src/mock/ohos/I18nMock.ts",
       "src/mock/ohos/bluetooth.mock.ts",
